@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Embriones · Biología del Desarrollo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5efe6;--card:#fffaf3;--ink:#1e2733;--muted:#6b7380;--line:#e6dccd;--blue:#2f6db3;--coral:#d9654b;--green:#2e8b57;--yellow:#e8b931;--shadow:0 1px 2px rgba(60,40,20,.06),0 10px 30px rgba(60,40,20,.08)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{max-width:1100px;margin:0 auto;padding:22px 18px 60px}
+h1,h2,h3,h4{font-family:Fraunces,Georgia,serif;font-weight:700;letter-spacing:-.01em;margin:0}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin:10px 0 26px}
+.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.02}.hero h1 em{font-style:normal;color:var(--coral)}
+.hero p{color:var(--muted);margin:10px 0 0;max-width:580px;line-height:1.5}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;text-align:left;box-shadow:var(--shadow);transition:transform .15s,border-color .15s;display:flex;flex-direction:column;gap:8px;min-height:175px}
+.mcard:hover{transform:translateY(-2px);border-color:#cdbca4}
+.mcard .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px}
+.mcard h3{font-size:19px}.mcard p{margin:0;color:var(--muted);font-size:14px;line-height:1.45;flex:1}
+.mcard .acc{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.mcard.exam{background:#1e2733;color:#fdf6ea;border-color:#1e2733}.mcard.exam p{color:#c9c2b5}
+.bar{height:6px;background:#eee3d3;border-radius:6px;flex:1;overflow:hidden}.bar div{height:100%;background:var(--green);border-radius:6px}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:14px}.ghost:hover{background:#fff}
+.mode-title{font-family:Fraunces,serif;font-weight:700;font-size:20px;flex:1}
+.chips{display:flex;gap:8px}.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600}.chip.fire{color:var(--coral)}
+.progress{height:6px;background:#e9dfd0;border-radius:6px;margin:-4px 0 14px;overflow:hidden}.progress div{height:100%;background:var(--ink);transition:width .3s}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);overflow:hidden}
+.qcard.wide{grid-template-columns:1fr}
+.figwrap{background:#fbf6ee;border-right:1px solid var(--line);padding:12px;display:flex;flex-direction:column;justify-content:center;min-height:400px}
+svg.fig{width:100%;height:auto;display:block}svg.fig.click{cursor:crosshair}
+.qside{padding:24px;display:flex;flex-direction:column;gap:12px}
+.cat{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.qside h2,.qhead h2{font-size:23px;line-height:1.2}
+.sub{margin:-4px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+.glabel{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-top:4px}
+.opts{display:grid;gap:8px}.opts.two{grid-template-columns:1fr 1fr}
+.opt{display:flex;align-items:center;gap:10px;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:13px;padding:10px 13px;font-size:15px;font-weight:500;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:#bfae96}
+.opt.sel{border-color:var(--ink);background:#f3ece1}
+.opt.correct{border-color:var(--green);background:#e6f4ec}.opt.wrong{border-color:var(--coral);background:#fbe7e2}.opt:disabled{cursor:default}
+.fb{border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.55;animation:pop .25s ease}
+.fb.ok{background:#e6f4ec;border:1px solid #bfe0cc}.fb.ko{background:#fbeae5;border:1px solid #f1c7bb}.fb.mid{background:#fdf3d8;border:1px solid #f0dc9e}
+.fb p{margin:6px 0 0}
+.primary{background:var(--ink);color:#fff;border:0;border-radius:999px;padding:11px 20px;font-weight:600;font-size:15px}.primary:hover{background:#000}.primary:disabled{opacity:.35;cursor:default}
+.fb .primary{margin-top:12px}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.lbl{opacity:0;transition:opacity .4s;pointer-events:none}.lbl.show{opacity:1}
+.lt{font-family:Inter,sans-serif;font-size:12.5px;font-weight:600;fill:#1e2733;paint-order:stroke;stroke:#fffaf3;stroke-width:4px;stroke-linejoin:round}
+.lt.hi{fill:#1d6b41}
+.ln{font-family:Inter,sans-serif;font-size:11px;font-weight:700;fill:#fff}
+.leg{margin:0;padding-left:22px;line-height:1.55;font-size:14px;columns:2;column-gap:18px}.leg li{break-inside:avoid}.leg li.hi{color:#1d6b41;font-weight:700}
+@media (max-width:820px){.leg{columns:1}}
+.qhead{padding:22px 24px 6px}
+.wbody{padding:8px 24px 24px}
+.ocards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.ocard{position:relative;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13.5px;line-height:1.35;text-align:center;min-height:70px;justify-content:center;transition:border-color .12s,transform .08s}
+.ocard:hover:not(:disabled){border-color:#bfae96;transform:translateY(-1px)}
+.ocard svg{width:100%;height:auto;background:#fbf6ee;border-radius:9px}
+.ocard .num{position:absolute;top:-9px;left:-9px;width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:14px;display:none;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.ocard.done .num{display:grid}.ocard.done{border-color:var(--ink);background:#f6f0e6}
+.ocard.correct{border-color:var(--green);background:#e6f4ec}.ocard.correct .num{background:var(--green)}
+.ocard.wrong{border-color:var(--coral);background:#fbe7e2}.ocard.wrong .num{background:var(--coral)}
+.ocard .should{font-size:12px;font-weight:700;color:var(--coral)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.tray{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;padding:12px;border:1.5px dashed #d6c8b2;border-radius:14px;background:#fbf6ee;margin-bottom:14px}
+.tray.empty::after{content:'Todo colocado. Pulsa «Comprobar».';color:var(--muted);font-size:13.5px;align-self:center}
+.tag{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:500;transition:transform .08s,border-color .12s}
+.tag:hover{border-color:#bfae96}.tag.sel{border-color:var(--blue);background:#e3edf9;transform:scale(1.04)}
+.tag.correct{border-color:var(--green);background:#e6f4ec}.tag.wrong{border-color:var(--coral);background:#fbe7e2}
+.tag small{display:block;font-size:11.5px;color:var(--coral);font-weight:600}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.bin{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px;min-height:120px;transition:border-color .12s,background .12s;text-align:left}
+.bin.armed{border-color:var(--blue);background:#f3f8fe}
+.bin h4{font-size:15px;margin-bottom:8px;font-family:Inter,sans-serif;font-weight:700}
+.bin .bi{display:flex;flex-wrap:wrap;gap:6px}
+.atlas-grp{margin:22px 0 10px;font-size:20px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.thumb{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;text-align:left;font-size:13px;line-height:1.3;display:flex;flex-direction:column;gap:6px}
+.thumb:hover{border-color:#bfae96}.thumb svg{width:100%;height:auto;background:#fbf6ee;border-radius:9px}
+.thumb b{font-weight:600}.thumb span{color:var(--muted);font-size:12px}
+.results{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:30px;max-width:640px;margin:0 auto;text-align:center}
+.results .big{font-family:Fraunces,serif;font-size:72px;font-weight:700;line-height:1}
+.results .rows{text-align:left;margin:22px 0 6px;display:grid;gap:10px}
+.results .row{display:grid;grid-template-columns:170px 1fr 52px;gap:12px;align-items:center;font-size:14px}
+.results .btnrow{justify-content:center}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:#efe6d8;color:#5c5346}
+@media (max-width:820px){.qcard{grid-template-columns:1fr}.figwrap{border-right:0;border-bottom:1px solid var(--line);min-height:0}.opts.two{grid-template-columns:1fr}.results .row{grid-template-columns:120px 1fr 44px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<radialGradient id="shine" cx="35%" cy="28%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></radialGradient>
+<linearGradient id="gOpaca" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#e2c49a"/><stop offset=".26" stop-color="#e2c49a"/><stop offset=".3" stop-color="#fbf0df"/><stop offset=".7" stop-color="#fbf0df"/><stop offset=".74" stop-color="#e2c49a"/><stop offset="1" stop-color="#e2c49a"/></linearGradient>
+<marker id="arr" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#5a4a40"/></marker>
+<marker id="arrB" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#2f6db3"/></marker>
+</defs></svg>
+<div id="app"></div>
+<script>
+/* ===== Dibujos de embriones (viewBox 0 0 400 300). Convención de color: ectodermo azul, mesodermo rojo, endodermo amarillo ===== */
+const K={ecto:'#7eaad8',ectoD:'#3f6fa8',ectoL:'#a9c7e8',neu:'#5b8fd0',neuD:'#2a5a9a',neuL:'#bcd3ef',mes:'#e48a74',mesD:'#a8432f',mesL:'#f3b6a0',noto:'#b8433a',endo:'#f0c74e',endoD:'#a98318',endoL:'#f6dc8c',lum:'#fffaf2',pig:'#6e5048',veg:'#f1d98f',zp:'#cdb8e6',zpD:'#8d6fb6',tro:'#9fcf9b',troD:'#4f8a4b',sin:'#c9a3dc',sinD:'#7d4f97',icm:'#e07a6e',icmD:'#9e3b31',endom:'#f7d9de',endomD:'#c98a96',blood:'#c0392b',yolk:'#f3d27a',yolkD:'#c79d2c',opaca:'#e6cba2',opacaD:'#b89566',pel:'#fbf1e0',cell:'#f3e3d3',cellD:'#a88a74',sea:'#e8f0f7',seaD:'#7fa3c2',disc:'#f6d3c3',discD:'#c48f78'};
+const ell=(cx,cy,rx,ry,f,s,sw,x='')=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''} ${x}/>`;
+const cir=(cx,cy,r,f,s,sw,x='')=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''} ${x}/>`;
+const pth=(d,f,s,sw,x='')=>`<path d="${d}" fill="${f||'none'}"${s?` stroke="${s}" stroke-width="${sw}"`:''} ${x}/>`;
+const rct=(x,y,w,h,rx,f,s,sw,e='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}"${s?` stroke="${s}" stroke-width="${sw}"`:''} ${e}/>`;
+function tex(cx,cy,r,s,col='rgba(60,40,20,.13)'){let o='',row=0;const h=s*.866;for(let y=cy-r;y<=cy+r;y+=h,row++)for(let x=cx-r+(row%2?s/2:0);x<=cx+r;x+=s){if((x-cx)**2+(y-cy)**2<(r-s*.45)**2)o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(s*.47).toFixed(1)}" fill="none" stroke="${col}" stroke-width="1"/>`}return o}
+const shine=(cx,cy,r)=>cir(cx,cy,r,'url(#shine)');
+const zpRing=(r=112)=>cir(200,150,r,'none',K.zp,16)+cir(200,150,r+8,'none',K.zpD,1,'opacity=".55"')+cir(200,150,r-8,'none',K.zpD,1,'opacity=".55"');
+const blasto=(cx,cy,rx,ry)=>ell(cx,cy,rx,ry,K.cell,K.cellD,1.6)+ell(cx,cy,Math.min(rx,ry)*.28,Math.min(rx,ry)*.24,'#fbf6ee',K.cellD,1,'opacity=".8"');
+
+/* ---------- ANFIBIO ---------- */
+function d_x_huevo(u){return `<defs><clipPath id="c${u}"><circle cx="200" cy="150" r="110"/></clipPath></defs>
+${cir(200,150,110,K.veg,'#b79a55',2)}
+<path d="M88 140 Q200 172 312 140 L312 30 L88 30Z" fill="${K.pig}" clip-path="url(#c${u})"/>
+${pth('M262 142 Q292 134 309 120 Q315 150 305 180 Q284 166 262 154Z','#c9bdbd')}
+${shine(200,150,110)}
+${cir(118,88,5,'#222')}${pth('M114 84 q-20 -18 -38 -12 q-14 4 -26 -8','none','#333',1.5)}
+${pth('M252 26 Q200 8 150 26','none','#5a4a40',2.5,'marker-end="url(#arr)"')}`}
+function d_x_8cel(){return `<defs><clipPath id="c8"><circle cx="200" cy="150" r="105"/></clipPath></defs>
+${cir(200,150,105,K.veg,'#b79a55',2)}
+<path d="M95 120 Q200 150 305 120 L305 40 L95 40Z" fill="${K.pig}" clip-path="url(#c8)"/>
+${shine(200,150,105)}
+${pth('M200 45 L200 255','none','#3a2a24',2.5)}${pth('M200 45 C140 95 140 205 200 255','none','#3a2a24',2.2)}${pth('M200 45 C260 95 260 205 200 255','none','#3a2a24',2.2)}
+${pth('M96 120 Q200 152 304 120','none','#3a2a24',2.5)}`}
+function amphBall(u,cav){return `<defs><clipPath id="c${u}"><circle cx="200" cy="150" r="110"/></clipPath></defs>
+<g clip-path="url(#c${u})"><rect x="80" y="30" width="240" height="88" fill="${K.ecto}"/><rect x="80" y="118" width="240" height="50" fill="${K.mes}"/><rect x="80" y="168" width="240" height="150" fill="${K.endo}"/>${tex(200,150,110,15)}</g>
+${cav}
+${pth('M110 87 A110 110 0 0 1 290 87','none',K.pig,6)}${cir(200,150,110,'none','#8a7a66',2)}`}
+function d_x_blastula(u){return amphBall(u,ell(200,108,72,46,K.lum,'#d8c9b3',1.5))}
+function d_x_gast_temprana(u){return amphBall(u,ell(188,108,78,48,K.lum,'#d8c9b3',1.5))+
+pth('M310 166 L280 180 L306 194Z',K.endoD)+pth('M311 164 Q284 180 306 196','none','#4a3a1e',2.5)}
+function d_x_gast_tardia(){return `${cir(200,150,110,K.ecto,'#8a7a66',2)}${cir(200,150,96,K.mes)}${cir(200,150,86,K.endo)}${tex(200,150,86,15)}
+${pth('M255 245 C250 200 230 120 150 95 C120 88 105 110 125 125 C160 135 200 170 222 246Z',K.lum,K.endoD,2)}
+${ell(150,195,34,20,K.lum,'#d8c9b3',1.5)}
+${cir(240,255,20,K.endo,K.endoD,2)}
+${pth('M212 250 Q240 228 268 250','none',K.mesD,4)}
+${pth('M110 87 A110 110 0 0 1 290 87','none',K.pig,6)}`}
+function d_x_neurula(){return `${ell(200,155,150,115,'#f8e6dc',K.ecto,8)}
+${ell(200,212,108,50,K.endo,K.endoD,1.5)}${tex(200,212,50,14)}
+${ell(200,180,58,14,K.lum,K.endoD,1.5)}
+${pth('M95 140 Q78 200 122 250','none',K.mes,7,'stroke-linecap="round"')}${pth('M305 140 Q322 200 278 250','none',K.mes,7,'stroke-linecap="round"')}
+${rct(112,96,52,48,16,K.mes,K.mesD,2)}${rct(236,96,52,48,16,K.mes,K.mesD,2)}
+${cir(200,122,15,K.noto)}
+${pth('M142 60 Q150 42 172 54 Q190 90 200 92 Q210 90 228 54 Q250 42 258 60','none',K.neu,16,'stroke-linecap="round"')}
+${cir(148,47,7,'#9b7fd0','#5e3f99',1.5)}${cir(252,47,7,'#9b7fd0','#5e3f99',1.5)}`}
+
+/* ---------- ERIZO ---------- */
+function seaWall(icx,icy,irx,iry){let s=cir(200,150,108,K.sea,K.seaD,2)+ell(icx,icy,irx,iry,K.lum,K.seaD,1.5);
+  for(let k=0;k<44;k++){const a=2*Math.PI*k/44,c=Math.cos(a),n=Math.sin(a);
+    s+=`<line x1="${(200+108*c).toFixed(1)}" y1="${(150+108*n).toFixed(1)}" x2="${(icx+irx*c).toFixed(1)}" y2="${(icy+iry*n).toFixed(1)}" stroke="${K.seaD}" stroke-width="1" opacity=".7"/>`;
+    const b=a+Math.PI/44;s+=`<line x1="${(200+109*Math.cos(b)).toFixed(1)}" y1="${(150+109*Math.sin(b)).toFixed(1)}" x2="${(200+119*Math.cos(b+.03)).toFixed(1)}" y2="${(150+119*Math.sin(b+.03)).toFixed(1)}" stroke="${K.seaD}" stroke-width="1"/>`}
+  return s}
+function d_e_blastula(){return seaWall(200,145,92,88)}
+function d_e_pmc(){let s=seaWall(200,140,90,78);
+  [[176,205],[190,211],[204,207],[218,211],[230,203],[166,197],[199,198]].forEach(([x,y],i)=>{s+=`<line x1="${x}" y1="${y}" x2="${x+(i%2?14:-12)}" y2="${y-10-(i%3)*4}" stroke="${K.mesD}" stroke-width="1"/>`+cir(x,y,6,K.mes,K.mesD,1.2)});return s}
+function d_e_gastrula(){let s=seaWall(200,145,92,86)+rct(180,92,40,176,20,K.sea,K.seaD,1.5)+rct(191,102,18,170,9,K.lum)+rct(190,246,20,26,0,K.lum);
+  [[150,52],[250,52],[200,44],[170,47],[232,48]].forEach(([x,y],i)=>{s+=`<line x1="${[186,214,200,192,208][i]}" y1="90" x2="${x}" y2="${y}" stroke="${K.mesD}" stroke-width=".9"/>`});
+  s+=cir(186,92,5.5,K.mesL,K.mesD,1.2)+cir(214,92,5.5,K.mesL,K.mesD,1.2)+cir(200,85,5.5,K.mesL,K.mesD,1.2);
+  [[150,218],[160,226],[140,209],[250,218],[240,226],[260,209]].forEach(([x,y])=>s+=cir(x,y,5.5,K.mes,K.mesD,1.2));
+  s+=pth('M150 218 l-10 -12 M150 218 l12 -6 M150 218 l2 14 M250 218 l10 -12 M250 218 l-12 -6 M250 218 l-2 14','none','#555',1.5);return s}
+
+/* ---------- POLLO ---------- */
+function d_p_blastodisco(){return `${cir(200,590,400,K.yolk,K.yolkD,2)}${ell(200,193,85,9,K.lum,'#d8c9b3',1)}
+${pth('M50 222 Q200 120 350 222 Q200 150 50 222Z','url(#gOpaca)',K.opacaD,1.5)}
+${pth('M120 190 Q200 152 280 190','none','rgba(60,40,20,.25)',1,'stroke-dasharray="3 3"')}`}
+function d_p_bilam_corte(){let s=`${rct(0,212,400,90,0,K.yolk)}${pth('M0 212 Q200 196 400 212','none',K.yolkD,2)}
+${pth('M40 140 Q200 120 360 140 L360 154 Q200 134 40 154Z',K.ectoL,K.ectoD,1.5)}
+${pth('M70 185 Q190 178 300 186 L300 194 Q190 186 70 193Z',K.endoL,K.endoD,1.2)}
+${ell(318,166,22,24,'#f08a4b','#b5551d',1.5)}${ell(350,149,14,9,'#f6c26b','#b5801d',1.2)}`;
+  for(let x=50;x<356;x+=13)s+=`<line x1="${x}" y1="${(140-20*(1-((x-200)/160)**2)).toFixed(1)}" x2="${x}" y2="${(154-20*(1-((x-200)/160)**2)).toFixed(1)}" stroke="${K.ectoD}" stroke-width=".8" opacity=".6"/>`;
+  return s}
+function d_p_bilaminar(){return `${cir(200,150,130,K.opaca,K.opacaD,2)}${cir(200,145,85,K.pel,'#d8bf98',1.5)}
+${pth('M140 205 Q200 252 260 205 Q200 225 140 205Z','#f08a4b','#b5551d',1)}
+${pth('M130 220 Q200 275 270 220 Q200 258 130 220Z','#f6c26b','#b5801d',1)}`}
+const PEAR='M200 40 C265 40 275 120 265 170 C255 225 235 265 200 265 C165 265 145 225 135 170 C125 120 135 40 200 40Z';
+function d_p_linea(){return `${ell(200,152,150,135,K.opaca,K.opacaD,2)}${pth(PEAR,K.pel,'#d8bf98',1.5)}
+${rct(191,100,18,150,9,'#ead7bd',K.opacaD,1.5)}${pth('M200 110 L200 244','none','#7a5a35',2)}
+${cir(200,96,11,'#d9b98c','#7a5a35',1.8)}${cir(200,96,3.5,'#5a4026')}`}
+function d_p_prolong(){return `${ell(200,152,150,135,K.opaca,K.opacaD,2)}${pth(PEAR,K.pel,'#d8bf98',1.5)}
+${ell(200,112,50,54,K.neuL,K.neuD,1.5,'opacity=".85" stroke-dasharray="5 3"')}
+${pth('M148 76 Q200 50 252 76','none','#7a5a35',3)}
+${rct(196,92,8,62,4,'#c97c62')}
+${rct(192,168,16,84,8,'#ead7bd',K.opacaD,1.5)}${pth('M200 174 L200 246','none','#7a5a35',2)}
+${cir(200,162,10,'#d9b98c','#7a5a35',1.8)}${cir(200,162,3,'#5a4026')}`}
+function d_p_corte_linea(){let s=`${rct(0,232,400,70,0,K.yolk,null,0,'opacity=".7"')}
+${pth('M30 180 L120 180 L120 188 L30 188Z',K.endoL,K.endoD,1)}${pth('M280 180 L370 180 L370 188 L280 188Z',K.endoL,K.endoD,1)}
+${pth('M118 175 L282 175 L282 188 L118 188Z',K.endo,K.endoD,1.2)}`;
+  const cells=[[200,122,8,12,90],[190,134,9,6,30],[212,136,9,6,-30],[178,144,10,6,15],[224,146,10,6,-15],[160,150,10,6,5],[242,152,10,6,-5],[140,156,10,6,0],[262,156,10,6,0],[150,140,9,6,10],[252,140,9,6,-10],[126,160,9,6,0],[276,160,9,6,0],[170,160,9,6,0],[232,162,9,6,0],[200,152,9,6,0],[110,164,8,5,0],[292,164,8,5,0]];
+  cells.forEach(([x,y,rx,ry,a])=>s+=ell(x,y,rx,ry,K.mes,K.mesD,1.2,`transform="rotate(${a} ${x} ${y})"`));
+  s+=pth('M30 80 L168 80 Q200 112 232 80 L370 80 L370 98 L234 98 Q200 130 166 98 L30 98Z',K.ectoL,K.ectoD,1.5);
+  for(let x=40;x<370;x+=12){if(x>160&&x<240)continue;s+=`<line x1="${x}" y1="80" x2="${x}" y2="98" stroke="${K.ectoD}" stroke-width=".8" opacity=".6"/>`}
+  return s}
+
+/* ---------- MAMÍFERO / HUMANO ---------- */
+function d_h_cigoto(){return `${zpRing()}${cir(200,152,84,K.cell,K.cellD,1.8)}${tex(200,152,84,9,'rgba(140,100,70,.12)')}
+${cir(176,146,22,'#fbf6ee','#9c7f6a',1.8)}${cir(226,152,22,'#fbf6ee','#9c7f6a',1.8)}${cir(172,142,4,'#9c7f6a')}${cir(180,152,3,'#9c7f6a')}${cir(229,148,4,'#9c7f6a')}${cir(222,158,3,'#9c7f6a')}
+${cir(196,57,8,K.cell,K.cellD,1.4)}${cir(214,60,6.5,K.cell,K.cellD,1.4)}`}
+function d_h_2cel(){return `${zpRing()}${blasto(160,152,52,70)}${blasto(240,150,50,68)}${cir(200,60,7,K.cell,K.cellD,1.4)}${cir(214,64,6,K.cell,K.cellD,1.4)}`}
+function d_h_4cel(){return `${zpRing()}${blasto(150,152,42,44)}${blasto(252,150,42,44)}${blasto(200,103,44,40)}${blasto(201,198,44,40)}${cir(270,74,7,K.cell,K.cellD,1.4)}`}
+function d_h_morula(){return `${zpRing()}${[[200,150],[160,112],[242,110],[140,162],[262,160],[172,206],[230,206],[200,84],[200,212],[200,150]].map(([x,y],i)=>blasto(x,y,i===9?30:33,i===9?30:32)).join('')}`}
+function d_h_morula_comp(){let s=`${zpRing()}${cir(200,150,84,K.cell,K.cellD,2)}`;
+  [[160,112,240,112],[150,165,250,165],[200,70,200,232],[130,110,175,150],[270,110,225,150],[135,200,180,170],[265,200,220,170]].forEach(([a,b,c,d])=>s+=`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="${K.cellD}" stroke-width="1" opacity=".35"/>`);
+  [[160,100],[245,105],[140,170],[260,175],[200,215],[200,135]].forEach(([x,y])=>s+=ell(x,y,9,8,'#fbf6ee',K.cellD,1,'opacity=".7"'));return s}
+function blastocyst(cx,cy,r,icmX){let s=cir(cx,cy,r,K.tro,K.troD,1.5)+cir(cx,cy,r-10,'#cfe3f5','#7aa7d1',1);
+  if(icmX!=null)s+=ell(icmX,cy,38,46,K.icm,K.icmD,1.5)+tex(icmX,cy,40,13,'rgba(120,30,20,.25)');return s}
+function d_h_blastocisto(){return `${zpRing()}${blastocyst(200,150,98,138)}`}
+function d_h_eclosion(){return `${pth('M118 79 A112 112 0 1 1 118 221','none',K.zp,16)}${pth('M112 73 A120 120 0 1 1 112 227','none',K.zpD,1,'opacity=".55"')}
+${cir(215,150,85,K.tro,K.troD,1.5)}${cir(108,150,56,K.tro,K.troD,1.5)}${cir(215,150,75,'#cfe3f5')}${cir(108,150,46,'#cfe3f5')}${rct(140,128,40,44,0,'#cfe3f5')}
+${ell(262,150,32,40,K.icm,K.icmD,1.5)}${tex(262,150,34,12,'rgba(120,30,20,.25)')}`}
+function endoBG(){let s=rct(0,0,400,300,0,K.endom);
+  [[45,50,22,12],[350,60,18,26],[60,175,14,24],[345,190,20,13],[110,30,10,7],[300,30,12,8]].forEach(([x,y,a,b])=>s+=ell(x,y,a,b,'#fdf3f4',K.endomD,1.2));
+  [[90,110],[320,120],[40,120],[355,250],[30,240]].forEach(([x,y])=>s+=ell(x,y,7,4,K.blood,null,0,'opacity=".7"'));return s}
+function d_h_implant_8(){return `${endoBG()}${rct(0,258,400,42,0,K.lum)}${pth('M0 256 L150 256 M250 256 L400 256','none',K.endomD,7)}
+${pth('M138 256 C108 230 92 180 100 135 C108 95 140 62 178 54 C210 48 255 56 280 90 C306 125 310 195 290 235 C283 248 272 256 268 256Z',K.sin,K.sinD,1.5)}
+${ell(150,92,11,7,K.lum,K.sinD,1)}${ell(244,82,12,7,K.lum,K.sinD,1)}${ell(116,170,8,12,K.lum,K.sinD,1)}${ell(288,170,8,12,K.lum,K.sinD,1)}${ell(200,66,10,6,K.lum,K.sinD,1)}
+${cir(200,180,70,K.tro,K.troD,1.5)}${cir(200,180,61,'#cfe3f5','#7aa7d1',1)}
+${ell(200,130,30,10,K.lum,K.ectoD,1.2)}${rct(160,140,80,18,6,K.neu,K.neuD,1.2)}${rct(160,158,80,10,4,K.endo,K.endoD,1.2)}`}
+function d_h_12d(){let s=`${endoBG()}${rct(0,268,400,32,0,K.lum)}${pth('M0 266 L400 266','none',K.endomD,7)}
+${cir(200,150,122,K.sin,K.sinD,1.5)}`;
+  [[200,46],[130,70],[270,70],[95,135],[305,135],[100,200],[300,200],[150,250],[250,250],[200,262]].forEach(([x,y])=>s+=ell(x,y,13,8,K.blood,'#7d1a12',1));
+  s+=`${cir(200,150,88,K.tro,K.troD,1.5)}${cir(200,150,80,K.mesL,'#d98b73',1)}
+${ell(140,205,28,14,K.lum,'#d98b73',1)}${ell(262,205,26,13,K.lum,'#d98b73',1)}${ell(200,232,22,9,K.lum,'#d98b73',1)}
+${ell(200,105,40,17,K.lum,K.ectoD,1.5)}${rct(152,121,96,14,6,K.neu,K.neuD,1.2)}${rct(152,135,96,9,4,K.endo,K.endoD,1.2)}
+${cir(200,177,32,K.lum,K.endo,4)}`;return s}
+function d_h_trilaminar(){let s=`${pth('M50 112 Q200 -10 350 112','none',K.mesL,12)}${pth('M60 110 Q200 0 340 110Z',K.lum,K.ecto,4)}
+${pth('M50 163 Q200 300 350 163','none',K.mesL,12)}${pth('M60 165 Q200 290 340 165Z',K.lum,K.endo,4)}
+${pth('M60 154 L340 154 L340 166 L60 166Z',K.endo,K.endoD,1.2)}`;
+  [[200,128,8,11,90],[186,138,9,6,25],[214,138,9,6,-25],[170,143,10,6,8],[230,143,10,6,-8],[150,145,10,6,0],[250,145,10,6,0],[130,146,10,5,0],[270,146,10,5,0],[110,147,9,5,0],[290,147,9,5,0],[200,146,9,5,0],[90,148,8,5,0],[310,148,8,5,0]].forEach(([x,y,rx,ry,a])=>s+=ell(x,y,rx,ry,K.mes,K.mesD,1.1,`transform="rotate(${a} ${x} ${y})"`));
+  s+=pth('M60 110 L170 110 Q200 136 230 110 L340 110 L340 126 L232 126 Q200 148 168 126 L60 126Z',K.ectoL,K.ectoD,1.5);return s}
+const DISC20='M200 20 C280 20 300 90 280 150 C265 200 245 270 200 280 C155 270 135 200 120 150 C100 90 120 20 200 20Z';
+function d_h_disco16(){return `${ell(200,150,122,142,'#fbeee5','#b98a74',2,'stroke-dasharray="6 4"')}${ell(200,150,95,125,K.disc,K.discD,1.8)}
+${ell(200,45,17,8,'#fff',K.discD,1.5)}${ell(200,62,14,7,K.endoL,K.endoD,1)}
+${rct(196,72,8,72,4,'#e39a7c')}
+${rct(193,160,14,88,7,'#e8b9a0',K.discD,1.3)}${pth('M200 166 L200 244','none','#8a5a45',1.8)}
+${cir(200,152,9,'#e9b496','#8a5a45',1.6)}${cir(200,152,3,'#5a3a26')}
+${ell(200,262,15,8,'#fff',K.discD,1.5)}`}
+function d_h_disco20(){let s=`${pth(DISC20,K.disc,K.discD,1.8)}
+${pth('M200 35 C255 35 268 90 245 135 C232 165 215 190 200 195 C185 190 168 165 155 135 C132 90 145 35 200 35Z',K.neuL,K.neuD,3.5)}
+${pth('M200 48 L200 188','none',K.neuD,2.2)}`;
+  [145,160,175].forEach(y=>s+=rct(140,y,16,12,3,'#f2b9a7',K.mesD,1.2)+rct(244,y,16,12,3,'#f2b9a7',K.mesD,1.2));
+  s+=`${rct(194,212,12,44,6,'#e8b9a0',K.discD,1.3)}${cir(200,205,7,'#e9b496','#8a5a45',1.5)}${cir(200,205,2.5,'#5a3a26')}${ell(200,268,14,7,'#fff',K.discD,1.5)}`;return s}
+function d_r_cilindro(){return `${ell(200,40,52,24,K.tro,K.troD,1.5)}${tex(200,40,26,10,'rgba(40,90,40,.25)')}
+${pth('M161 62 L161 200 C161 232 239 232 239 200 L239 62Z',K.lum)}
+${pth('M140 60 L140 200 C140 266 260 266 260 200 L260 60','none',K.endo,12)}
+${rct(140,54,120,14,4,K.tro,K.troD,1)}${pth('M152 62 L152 126 M248 62 L248 126','none',K.tro,18)}
+${pth('M152 126 L152 200 C152 253 248 253 248 200 L248 126','none',K.neu,18)}
+${ell(145,218,9,24,'#f08a4b','#b5551d',1.2)}
+${pth('M256 140 L266 150 L266 205 L256 210Z',K.mes,K.mesD,1)}`}
+function d_h_nodo(){let s=ell(200,150,130,88,'#f6e7da','#b98a74',2);
+  for(let k=0;k<26;k++){const a=2*Math.PI*k/26,x=200+118*Math.cos(a),y=150+78*Math.sin(a),left=Math.cos(a)>.35;s+=cir(x.toFixed(1),y.toFixed(1),10,left?'#f5a3a3':'#e6c9b6',left?'#c0392b':'#a88a74',1.2)+`<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(x-6*Math.cos(a)).toFixed(1)}" y2="${(y-6*Math.sin(a)-6).toFixed(1)}" stroke="#555" stroke-width="1.4"/>`}
+  for(let r=0;r<4;r++)for(let c=0;c<7;c++){const x=128+c*24+(r%2?12:0),y=108+r*26;if(((x-200)/105)**2+((y-150)/62)**2>1)continue;
+    s+=cir(x,y,10,'#f0dccc','#b99a84',1)+pth(`M${x} ${y} q5 -10 0 -16`,'none','#333',1.4)+pth(`M${x-6} ${y-14} a6 3 0 1 0 12 0`,'none','#2f6db3',1,'opacity=".8"')}
+  s+=pth('M130 150 L268 150','none','#2f6db3',5,'marker-end="url(#arrB)"');return s}
+
+/* ===== Catálogo de dibujos ===== */
+const ORG_OPTS=[{id:'erizo',label:'Erizo de mar'},{id:'xenopus',label:'Anfibio (Xenopus)'},{id:'pollo',label:'Ave (pollo)'},{id:'raton',label:'Ratón'},{id:'humano',label:'Humano'}];
+const ORG_NAME={erizo:'Erizo de mar',xenopus:'Anfibio (Xenopus)',pollo:'Ave (pollo)',raton:'Ratón',humano:'Humano',mamifero:'Mamífero (ratón o humano)'};
+const MAM_NOTE=' Hasta el blastocisto el ratón y el humano son prácticamente iguales, por eso valen las dos respuestas: se diferencian después de la implantación (ratón: cilindro en U; humano: disco plano).';
+const D={
+ x_huevo:{org:'xenopus',tema:15,stage:'Huevo fecundado (rotación cortical)',draw:d_x_huevo,view:'Vista lateral',
+  hs:[['polo_animal','Polo animal (pigmentado)',200,62],['polo_vegetal','Polo vegetal (vitelo)',200,232],['creciente','Creciente gris (futuro lado dorsal)',292,150],['esperma','Punto de entrada del espermatozoide (futuro lado ventral)',118,88],['rotacion','Rotación cortical (30º hacia la entrada del espermatozoide)',200,16]],
+  clue:'Huevo grande y mesolecítico, con el polo animal pigmentado y el vegetal cargado de vitelo: es un anfibio. Aún no se ha dividido, pero ya tiene el creciente gris, que aparece por la rotación cortical en el lado opuesto a la entrada del espermatozoide y marca el futuro lado dorsal.'},
+ x_8cel:{org:'xenopus',tema:15,stage:'Segmentación: 8 células',draw:d_x_8cel,view:'Vista lateral',
+  hs:[['micromero','Micrómero (polo animal)',165,82],['macromero','Macrómero (polo vegetal)',165,200],['ecuatorial','Tercer surco: ecuatorial, desplazado hacia el polo animal',262,132],['meridiano','Surcos 1º y 2º: meridianos (eje animal-vegetal)',200,240]],
+  clue:'Segmentación holoblástica radial desplazada: los dos primeros surcos son meridianos y el tercero, ecuatorial, está desplazado hacia el polo animal porque al vitelo le cuesta más dividirse. Salen 4 micrómeros pigmentados arriba y 4 macrómeros abajo.'},
+ x_blastula:{org:'xenopus',tema:15,stage:'Blástula',draw:d_x_blastula,view:'Corte sagital',
+  hs:[['blastocele','Blastocele',200,108],['techo','Techo del blastocele (polo animal → ectodermo)',200,50],['marginal','Zona marginal (→ mesodermo)',300,143],['vegetal','Polo vegetal (→ endodermo)',200,225]],
+  clue:'Hay blastocele (aparece hacia el ciclo 7, unas 128 células), desplazado hacia el polo animal porque el polo vegetal está lleno de vitelo. En la blástula tardía el polo animal dará ectodermo, la zona marginal mesodermo y el polo vegetal endodermo.'},
+ x_gast_temprana:{org:'xenopus',tema:15,stage:'Gástrula temprana',draw:d_x_gast_temprana,view:'Corte sagital (dorsal a la derecha)',
+  hs:[['labio','Labio dorsal del blastoporo',308,163],['botella','Células en botella (→ endodermo anterior)',292,184],['blastocele','Blastocele',188,108],['animal','Polo animal (ectodermo)',200,50],['vegetal','Masa vegetal (endodermo)',190,228],['marginal','Zona marginal (mesodermo)',100,143]],
+  clue:'Aparece una hendidura en la zona marginal, justo bajo el creciente gris: las células en botella se invaginan y forman el labio dorsal del blastoporo. El blastocele sigue grande: gástrula temprana.'},
+ x_gast_tardia:{org:'xenopus',tema:15,stage:'Gástrula tardía (tapón vitelino)',draw:d_x_gast_tardia,view:'Corte sagital',
+  hs:[['tapon','Tapón vitelino',240,258],['arquenteron','Arquénteron',192,150],['blastocele','Blastocele (desplazado)',150,195],['mesodermo','Mesodermo',200,59],['ectodermo','Ectodermo',200,44],['endodermo','Endodermo (masa vitelina)',278,150],['labio','Labio del blastoporo',266,240]],
+  clue:'El blastoporo ya es circular y lo ocupa el tapón vitelino; el arquénteron es grande y el blastocele se ha desplazado hasta casi desaparecer. Ya hay tres capas: gástrula tardía.'},
+ x_neurula:{org:'xenopus',tema:15,stage:'Néurula',draw:d_x_neurula,view:'Corte transversal',
+  hs:[['pliegue','Pliegue neural',256,58],['placa','Placa / surco neural',200,88],['cresta','Cresta neural',148,47],['notocorda','Notocorda',200,122],['somita','Somita',138,120],['arquenteron','Arquénteron',200,180],['endodermo','Endodermo vitelino',200,232],['epidermis','Epidermis (ectodermo)',346,170],['lateral','Mesodermo lateral',300,200]],
+  clue:'Corte transversal con la placa neural plegándose (pliegues neurales con la cresta neural en la punta), la notocorda debajo y un endodermo grande y vitelino alrededor del arquénteron: néurula de anfibio.'},
+ e_blastula:{org:'erizo',tema:15,stage:'Blástula',draw:d_e_blastula,view:'Corte',
+  hs:[['blastocele','Blastocele',200,145],['pared','Pared de una sola capa de células',100,140],['cilios','Cilios',200,36],['placa','Placa vegetal (ligeramente engrosada)',200,246]],
+  clue:'Esfera hueca de una sola capa de células ciliadas, transparente y casi sin vitelo (huevo isolecítico): blástula de erizo.'},
+ e_pmc:{org:'erizo',tema:15,stage:'Ingresión del mesénquima primario',draw:d_e_pmc,view:'Corte',
+  hs:[['pmc','Mesénquima primario (PMC)',200,205],['placa','Placa vegetal engrosada',200,240],['blastocele','Blastocele',200,120],['animal','Polo animal',200,46]],
+  clue:'La placa vegetal se engrosa y unas células (descendientes de los micrómeros) hacen una EMT y entran sueltas en el blastocele por ingresión: es el mesénquima primario, el primer paso de la gastrulación en erizo.'},
+ e_gastrula:{org:'erizo',tema:15,stage:'Gástrula (invaginación del arquénteron)',draw:d_e_gastrula,view:'Corte',
+  hs:[['blastoporo','Blastoporo (futuro ano)',200,258],['arquenteron','Arquénteron',200,170],['pmc','Mesénquima primario (forma las espículas)',150,218],['secundario','Mesénquima secundario',200,85],['blastocele','Blastocele',130,130],['ectodermo','Ectodermo',291,108]],
+  clue:'El arquénteron se invagina desde el polo vegetal y el blastoporo será el ano (deuteróstomo). En su punta está el mesénquima secundario y en la base el mesénquima primario empieza a formar las espículas.'},
+ p_blastodisco:{org:'pollo',tema:16,stage:'Blastodisco (segmentación)',draw:d_p_blastodisco,view:'Corte',
+  hs:[['pelucida','Área pelúcida (sobre la cavidad subgerminal)',200,176],['opaca','Área opaca (apoyada en la yema)',85,204],['cavidad','Cavidad subgerminal',200,194],['vitelo','Vitelo (yema)',200,262]],
+  clue:'Un disco de células sobre una yema enorme: huevo telolecito con segmentación meroblástica discoidal. La parte central, sobre la cavidad subgerminal, es el área pelúcida (formará el embrión); la periferia apoyada en la yema es el área opaca.'},
+ p_bilam_corte:{org:'pollo',tema:16,stage:'Blastodisco bilaminar',draw:d_p_bilam_corte,view:'Corte medio-sagital (posterior a la derecha)',
+  hs:[['epiblasto','Epiblasto (embrión y parte de los anexos)',180,136],['hipoblasto','Hipoblasto (solo saco vitelino)',180,186],['blastocele','Blastocele',180,162],['koller','Hoz de Koller',318,166],['pmz','Zona marginal posterior (PMZ)',350,149],['vitelo','Vitelo',200,255]],
+  clue:'Dos capas, epiblasto e hipoblasto, separadas por el blastocele, encima de la yema; en el extremo posterior, la hoz de Koller y la zona marginal posterior, que equivalen al centro de Nieuwkoop de los anfibios.'},
+ p_bilaminar:{org:'pollo',tema:16,stage:'Blastodisco bilaminar',draw:d_p_bilaminar,view:'Vista dorsal (anterior arriba)',
+  hs:[['opaca','Área opaca',200,42],['pelucida','Área pelúcida',200,140],['koller','Hoz de Koller',200,222],['pmz','Zona marginal posterior (PMZ)',200,245]],
+  clue:'Vista dorsal del blastodisco: el área pelúcida, transparente, rodeada del área opaca, y la hoz de Koller en el borde posterior. Todavía no hay línea primitiva.'},
+ p_linea:{org:'pollo',tema:16,stage:'Línea primitiva completa',draw:d_p_linea,view:'Vista dorsal (anterior arriba)',
+  hs:[['nodo','Nodo de Hensen',200,96],['linea','Línea primitiva (crestas primitivas)',213,140],['surco','Surco primitivo',200,205],['pelucida','Área pelúcida',245,80],['opaca','Área opaca',330,152]],
+  clue:'Línea primitiva larga (unas 3/4 partes del área pelúcida, que ya tiene forma de pera) con el nodo de Hensen en su extremo anterior: la gastrulación está en pleno apogeo.'},
+ p_prolong:{org:'pollo',tema:16,stage:'Regresión de la línea y prolongación cefálica',draw:d_p_prolong,view:'Vista dorsal (anterior arriba)',
+  hs:[['prolongacion','Prolongación cefálica (notocorda)',200,122],['nodo','Nodo de Hensen (retrocediendo)',200,162],['linea','Línea primitiva (acortándose)',200,215],['placa','Placa neural',163,112],['pliegue','Pliegue cefálico',200,64]],
+  clue:'La línea primitiva se acorta y el nodo retrocede dejando por delante la prolongación cefálica (notocorda), que induce la placa neural. Por delante ya hay neurulación mientras detrás sigue la gastrulación: el desarrollo va en sentido céfalo-caudal.'},
+ p_corte_linea:{org:'pollo',tema:16,stage:'Gastrulación: ingresión por la línea primitiva',draw:d_p_corte_linea,view:'Corte transversal',
+  hs:[['surco','Surco primitivo',200,108],['epiblasto','Epiblasto',80,89],['mesodermo','Mesodermo (células en ingresión)',250,146],['endodermo','Endodermo definitivo',200,181],['hipoblasto','Hipoblasto desplazado',340,184],['vitelo','Vitelo',200,262]],
+  clue:'Corte transversal por la línea primitiva: el epiblasto se hunde en el surco primitivo y sus células entran por ingresión; las primeras forman el endodermo, que desplaza al hipoblasto, y las siguientes el mesodermo. Debajo está la yema y no hay ni amnios ni saco vitelino formado alrededor del disco: pollo.'},
+ h_cigoto:{org:'mamifero',tema:20,stage:'Cigoto con pronúcleos (día 0–1)',draw:d_h_cigoto,view:'',
+  hs:[['zp','Zona pelúcida',200,40],['pronucleo','Pronúcleos',176,146],['polar','Cuerpos polares',205,58],['pvs','Espacio perivitelino',289,182]],
+  clue:'Una sola célula con dos pronúcleos (masculino y femenino) dentro de la zona pelúcida, con los cuerpos polares en el espacio perivitelino: cigoto.'},
+ h_2cel:{org:'mamifero',tema:20,stage:'2 células (≈ día 1)',draw:d_h_2cel,view:'',
+  hs:[['zp','Zona pelúcida',200,40],['blastomero','Blastómero',160,152],['polar','Cuerpos polares',207,62]],
+  clue:'Dos blastómeros dentro de la zona pelúcida. La segmentación de mamíferos es holoblástica, asincrónica y muy lenta (12–24 h por ciclo, frente a 25 min en anfibios).'},
+ h_4cel:{org:'mamifero',tema:20,stage:'4 células (≈ día 2)',draw:d_h_4cel,view:'',
+  hs:[['zp','Zona pelúcida',200,40],['blastomero','Blastómero',150,152],['polar','Cuerpo polar',270,74]],
+  clue:'Cuatro blastómeros en cruz: la segmentación es rotacional (en la 2ª división un blastómero se divide meridianamente y el otro ecuatorialmente).'},
+ h_morula:{org:'mamifero',tema:20,stage:'Mórula de 8–10 células (≈ día 3)',draw:d_h_morula,view:'',
+  hs:[['zp','Zona pelúcida',200,40],['blastomero','Blastómero (aún no compactado)',262,160]],
+  clue:'Unas 8–10 células todavía redondeadas y sueltas, con los contornos bien visibles: mórula antes de la compactación.'},
+ h_morula_comp:{org:'mamifero',tema:20,stage:'Mórula compactada (≈ día 3,5)',draw:d_h_morula_comp,view:'',
+  hs:[['zp','Zona pelúcida',200,40],['compacta','Blastómeros compactados (externos polarizados)',270,150]],
+  clue:'La mórula se compacta: los blastómeros externos se aplanan, se unen con E-cadherina, hacen una MET y se polarizan (apical-basal). Ya no se distinguen bien los límites entre células.'},
+ h_blastocisto:{org:'mamifero',tema:20,stage:'Blastocisto (≈ día 5)',draw:d_h_blastocisto,view:'',
+  hs:[['zp','Zona pelúcida',200,38],['trofoblasto','Trofoblasto (trofoectodermo)',293,150],['mci','Masa celular interna (embrioblasto)',134,150],['blastocele','Blastocele',225,150],['polo_emb','Polo embrionario',74,150],['polo_abemb','Polo abembrionario',326,150]],
+  clue:'Trofoblasto epitelial por fuera, masa celular interna en el polo embrionario y blastocele formado por cavitación: blastocisto, todavía dentro de la zona pelúcida.'},
+ h_eclosion:{org:'mamifero',tema:20,stage:'Blastocisto eclosionando (≈ día 6)',draw:d_h_eclosion,view:'',
+  hs:[['zp','Zona pelúcida (rota)',279,71],['trofoblasto','Trofoblasto',58,150],['mci','Masa celular interna',262,150]],
+  clue:'El blastocisto sale por un agujero de la zona pelúcida justo antes de implantarse (la ZP evita la implantación prematura).'},
+ h_implant_8:{org:'humano',tema:21,stage:'Implantación: invasión (días 7–8)',draw:d_h_implant_8,view:'Corte',
+  hs:[['sincitio','Sincitiotrofoblasto',268,118],['citotrofoblasto','Citotrofoblasto',266,196],['epiblasto','Epiblasto',200,149],['hipoblasto','Hipoblasto',200,163],['amnios','Cavidad amniótica (inicio)',200,130],['lagunas','Lagunas trofoblásticas',150,92],['blastocele','Cavidad del blastocisto',200,212],['endometrio','Estroma endometrial',45,90],['epitelio','Epitelio uterino',60,256]],
+  clue:'Un blastocisto metido en el estroma endometrial, con un sincitiotrofoblasto invasivo y lagunas, y un disco bilaminar (epiblasto + hipoblasto) con la cavidad amniótica empezando: implantación humana, días 7–8.'},
+ h_12d:{org:'humano',tema:21,stage:'Embrión bilaminar implantado (días 12–13)',draw:d_h_12d,view:'Corte',
+  hs:[['amnios','Cavidad amniótica',200,104],['epiblasto','Epiblasto',230,128],['hipoblasto','Hipoblasto',230,140],['saco','Saco vitelino',200,180],['mesext','Mesodermo extraembrionario',128,145],['corionica','Cavidad coriónica (en formación)',140,205],['citotrofoblasto','Citotrofoblasto',284,150],['sincitio','Sincitiotrofoblasto',318,165],['lagunas','Lagunas con sangre materna',200,46],['epitelio','Epitelio uterino (cerrado)',60,266]],
+  clue:'Totalmente anidado: las lagunas ya tienen sangre materna, aparecen el mesodermo extraembrionario y los espacios de la cavidad coriónica, y el disco bilaminar queda entre la cavidad amniótica (arriba) y el saco vitelino (abajo): unos 12 días.'},
+ h_trilaminar:{org:'humano',tema:22,stage:'Gastrulación: disco trilaminar (3ª semana)',draw:d_h_trilaminar,view:'Corte transversal',
+  hs:[['amnios','Cavidad amniótica',200,70],['epiblasto','Epiblasto (→ ectodermo)',105,118],['surco','Surco primitivo',200,130],['mesodermo','Mesodermo intraembrionario',262,146],['endodermo','Endodermo embrionario',130,160],['saco','Saco vitelino',200,225],['mesext','Mesodermo extraembrionario',340,140]],
+  clue:'Corte por la línea primitiva con la cavidad amniótica encima y el saco vitelino debajo: disco trilaminar humano. Es plano (en el ratón sería una copa en U) y el amnios y el saco vitelino lo distinguen del pollo.'},
+ h_disco16:{org:'humano',tema:22,stage:'Gastrulación (días 16–18)',draw:d_h_disco16,view:'Vista dorsal (craneal arriba)',
+  hs:[['bucofaringea','Membrana bucofaríngea',200,45],['precordal','Placa precordal',200,62],['notocordal','Proceso notocordal',200,110],['nodo','Nodo primitivo',200,152],['linea','Línea primitiva',200,205],['cloacal','Membrana cloacal',200,262],['amnios','Borde cortado del amnios',320,150],['epiblasto','Epiblasto',145,150]],
+  clue:'Vista dorsal del disco con la línea primitiva y el nodo en la mitad caudal, el proceso notocordal hacia craneal y las membranas bucofaríngea y cloacal en los extremos (donde no hay mesodermo): mitad de la 3ª semana.'},
+ h_disco20:{org:'humano',tema:22,stage:'Inicio de la neurulación (≈ día 20)',draw:d_h_disco20,view:'Vista dorsal (craneal arriba)',
+  hs:[['pliegue','Pliegue neural',143,100],['placa','Placa neural',226,75],['surco','Surco neural',200,125],['somitas','Primeros somitas',148,163],['nodo','Nodo primitivo',200,205],['linea','Línea primitiva (acortada)',200,236],['cloacal','Membrana cloacal',200,268]],
+  clue:'La placa neural se pliega (surco y pliegues neurales), aparecen los primeros somitas y la línea primitiva se ha acortado: unos 20 días.'},
+ r_cilindro:{org:'raton',tema:16,stage:'Cilindro en U (≈ E6,5)',draw:d_r_cilindro,view:'Corte sagital (anterior a la izquierda)',
+  hs:[['epiblasto','Epiblasto (copa en U)',200,238],['ve','Endodermo visceral',134,100],['ave','Endodermo visceral anterior (AVE)',145,218],['exe','Ectodermo extraembrionario',248,90],['cavidad','Cavidad proamniótica',200,150],['linea','Línea primitiva (lado posterior)',263,175],['cono','Cono ectoplacentario',200,40]],
+  clue:'El epiblasto forma una copa en U (cilindro), con el endodermo visceral por fuera y el ectodermo extraembrionario encima: ratón. La parte cóncava es dorsal y la convexa ventral. El humano formaría un disco plano.'},
+ h_nodo:{org:'raton',tema:22,stage:'Nodo: asimetría izquierda-derecha',draw:d_h_nodo,view:'Vista ventral (¡en espejo!)',who:false,
+  hs:[['moviles','Cilios móviles del centro del nodo (9+0, giran)',200,150],['corona','Células de la corona con cilio inmóvil (sensor)',82,150],['flujo','Flujo nodal hacia la izquierda del embrión',250,135],['calcio','Señal de Ca²⁺ en la corona izquierda',318,150]],
+  clue:'En vista ventral la imagen está en espejo: la izquierda del embrión queda a tu derecha. Los cilios móviles del centro generan un flujo hacia la izquierda; los cilios inmóviles de la corona izquierda lo detectan (PKD1L1/PKD2) y se dispara una señal de Ca²⁺.'}
+};
+
+/* ===== Secuencias para ordenar ===== */
+const SEQ=[
+ {t:'Desarrollo preimplantacional humano',items:['h_cigoto','h_2cel','h_4cel','h_morula','h_morula_comp','h_blastocisto','h_eclosion'].map(f=>({fig:f,t:D[f].stage})),ex:'Cigoto (día 0–1) → 2 células (día 1) → 4 células (día 2) → mórula (día 3) → mórula compactada (día 3,5) → cavitación (día 4) → blastocisto (día 5) → eclosión de la ZP (día 6), todo mientras baja por la trompa.'},
+ {t:'Desarrollo temprano de Xenopus',items:['x_huevo','x_8cel','x_blastula','x_gast_temprana','x_gast_tardia','x_neurula'].map(f=>({fig:f,t:D[f].stage})),ex:'Huevo con rotación cortical → segmentación holoblástica radial desplazada → blástula con blastocele animal → labio dorsal y células en botella → tapón vitelino → néurula.'},
+ {t:'Del blastocisto al disco neural (humano)',items:['h_blastocisto','h_eclosion','h_implant_8','h_12d','h_disco16','h_disco20'].map(f=>({fig:f,t:D[f].stage})),ex:'Blastocisto (día 5) → eclosión (día 6) → invasión del estroma (días 7–8) → bilaminar anidado (día 12) → línea primitiva y nodo (3ª semana) → placa y surco neural con somitas (día 20).'},
+ {t:'Desarrollo temprano del pollo',items:['p_blastodisco','p_bilaminar','p_linea','p_prolong'].map(f=>({fig:f,t:D[f].stage})),ex:'Blastodisco por segmentación meroblástica → bilaminar con hoz de Koller → línea primitiva completa con nodo de Hensen → regresión del nodo y prolongación cefálica.'},
+ {t:'Gastrulación en erizo',items:['e_blastula','e_pmc','e_gastrula'].map(f=>({fig:f,t:D[f].stage})),ex:'Blástula ciliada → ingresión del mesénquima primario desde la placa vegetal → invaginación del arquénteron con mesénquima secundario en la punta.'},
+ {t:'Fases de la implantación',items:['Aposición','Adhesión estable','Invasión','Anidación'].map(t=>({t})),ex:'Aposición → adhesión estable → invasión → anidación, dentro de la ventana de implantación (días 20–24 del ciclo).'},
+ {t:'Implantación día a día',items:['Eclosión de la zona pelúcida (días 5–6)','Adhesión por el polo embrionario; se separan sincitio y citotrofoblasto (día 6)','Lagunas trofoblásticas, saco vitelino primario y saco amniótico (días 7–8)','El sincitio erosiona vasos maternos; vellosidades primarias y mesodermo extraembrionario (días 9–10)','Anidación completa, vellosidades secundarias y reacción decidual (días 11–12)'].map(t=>({t})),ex:'Primero eclosiona y se adhiere; luego invade (lagunas, amnios, saco vitelino), erosiona vasos y, hacia los días 11–12, queda anidado.'},
+ {t:'Especificación del eje dorsal en anfibios',items:['Entrada del espermatozoide (futuro lado ventral)','Rotación cortical de 30º','Wnt11 se transporta al creciente gris','β-catenina nuclear en el futuro lado dorsal','Centro de Nieuwkoop (β-catenina + Nodal-related)','El organizador (labio dorsal) se forma en la zona marginal','Antagonistas de BMP → inducción neural'].map(t=>({t})),ex:'El espermatozoide orienta la rotación cortical, que lleva Wnt11 al creciente gris; donde se solapan β-catenina y la señal TGF-β (Nodal-related, inducida por VegT) se forma el centro de Nieuwkoop, que induce el organizador; este secreta cordina, nogina y folistatina.'},
+ {t:'Orden de entrada por la línea primitiva (aves)',items:['Endodermo embrionario','Mesodermo paraxial (somitas)','Mesodermo intermedio','Mesodermo lateral','Mesodermo extraembrionario'].map(t=>({t})),ex:'Las células entran en orden antero-posterior: primero el endodermo y luego el mesodermo paraxial, intermedio, lateral y extraembrionario.'},
+ {t:'Orden de entrada por el nodo',items:['Endodermo anterior (faríngeo)','Placa precordal (mesodermo cefálico)','Notocorda (mesodermo axial)'].map(t=>({t})),ex:'Por el nodo (y por el labio dorsal en anfibios) entran primero el endodermo anterior, luego la placa precordal y por último la notocorda.'},
+ {t:'Gastrulación humana (3ª semana)',items:['Aparece la línea primitiva con el nodo (días 15–17)','Línea primitiva en su máxima longitud; empieza la notocorda (día 18)','Placa neural sobre la notocorda; el nodo retrocede (día 19)','Surco y pliegues neurales, primeros somitas y canal neuroentérico (día 20)'].map(t=>({t})),ex:'El primer signo morfológico de la gastrulación es la línea primitiva; la notocorda induce la placa neural y en la parte caudal sigue la gastrulación.'},
+ {t:'Asimetría izquierda-derecha en el nodo',items:['Los cilios móviles del centro del nodo giran','Flujo de líquido hacia la izquierda','Se abren canales PKD1L1/PKD2 en la corona izquierda','Señal de Ca²⁺ en el lado izquierdo','Se bloquea Cerl2 (inhibidor de Nodal)','Nodal activo a la izquierda → Lefty y Pitx2'].map(t=>({t})),ex:'Modelo mecanosensorial: el flujo hacia la izquierda activa los cilios sensores de la corona izquierda, el Ca²⁺ bloquea Cerl2 y Nodal se potencia a la izquierda; Pitx2 se mantiene a sí mismo (memoria celular).'},
+ {t:'¿Trofoblasto? La vía de Hippo en las células externas',items:['Célula externa con dominio apical (polarizada)','Amot secuestrado en el dominio apical','Hippo OFF','YAP/TAZ entra al núcleo y se une a TEAD','Expresión de Cdx2 → trofoblasto'].map(t=>({t})),ex:'En las células internas Amot se une a NF2, Hippo se activa, YAP/TAZ se fosforila y se degrada, y se expresan Nanog y Oct4 (masa celular interna).'},
+ {t:'Compactación y cavitación',items:['Mórula de 8 células','Compactación: E-cadherina y polaridad apical-basal','Bombas Na⁺/K⁺ del trofoblasto bombean Na⁺ hacia dentro','Entra agua por ósmosis y se forman microlúmenes','Los microlúmenes se fusionan → blastocele'].map(t=>({t})),ex:'Primero se compacta y sella (anillos de actina, uniones estrechas); después el trofoblasto bombea Na⁺, entra agua y se forma el blastocele.'},
+ {t:'Ciclo celular en la blástula de anfibio',items:['Divisiones sincrónicas S-M controladas por genes maternos','Ciclo 7 (128 células): aparece el blastocele','Ciclo 12: transición de la blástula media','Transcripción cigótica, aparecen G1 y G2 y se pierde la sincronía'].map(t=>({t})),ex:'Hasta la blástula temprana los ciclos son S-M y los controla la ciclina B materna (Cdk-M/MPF); en la transición de la blástula media empieza la transcripción del cigoto.'},
+ {t:'Regeneración epimórfica (salamandra)',items:['Amputación de la extremidad','Coágulo sin cicatriz y epidermis apical','Señales a los tejidos bajo la herida','Desdiferenciación → blastema','Proliferación del blastema (requiere nervios)','Rediferenciación de las estructuras distales'].map(t=>({t})),ex:'El blastema solo regenera estructuras distales a su origen y sus células son progenitores restringidos que recuerdan su tejido.'},
+ {t:'Potencia de las células madre (de más a menos)',items:['Totipotente (cigoto hasta 8 células)','Pluripotente (masa celular interna)','Multipotente (p. ej. célula madre hematopoyética)','Unipotente (p. ej. trofoblasto)','Célula diferenciada'].map(t=>({t})),ex:'Conforme avanza la diferenciación disminuye la capacidad de proliferación y de generar distintos tipos celulares (paisaje de Waddington).'}
+];
+
+/* ===== Conjuntos para clasificar ===== */
+const SETS=[
+ {t:'¿De qué parte del blastocisto sale? (mamífero)',bins:['Trofoblasto','Epiblasto','Hipoblasto'],items:[['Corion (parte fetal de la placenta)',0],['Sincitiotrofoblasto',0],['Citotrofoblasto',0],['Todo el embrión',1],['Amnios',1],['Alantoides',1],['Saco vitelino',2]],ex:'Trofoblasto → corion y parte fetal de la placenta; epiblasto → embrión, amnios y alantoides; hipoblasto → saco vitelino.'},
+ {t:'Aves: ¿epiblasto o hipoblasto?',bins:['Epiblasto','Hipoblasto'],items:[['Todo el embrión',0],['Amnios',0],['Alantoides',0],['Corion',0],['Ectodermo (células que no pasan por la línea)',0],['Saco vitelino',1]],ex:'En aves todo procede del epiblasto salvo el saco vitelino, que forma el hipoblasto (que además es desplazado por el endodermo definitivo).'},
+ {t:'Mapa de destino de la blástula tardía de anfibio',bins:['Polo animal','Zona marginal','Polo vegetal'],items:[['Epidermis',0],['Tubo neural',0],['Cresta neural',0],['Notocorda',1],['Somitas',1],['Placa precordal',1],['Intestino',2],['Hígado',2]],ex:'Polo animal → ectodermo (epidermis y neuroectodermo); zona marginal → mesodermo; polo vegetal → endodermo.'},
+ {t:'Humano: ¿por dónde ingresa cada población?',bins:['Por el nodo','Por la línea primitiva','No ingresa'],items:[['Placa precordal',0],['Notocorda',0],['Mesodermo paraxial (somitas)',1],['Mesodermo lateral',1],['Mesodermo cardiogénico',1],['Mesodermo extraembrionario (parte caudal)',1],['Ectodermo / placa neural',2]],ex:'El mesodermo axial (placa precordal y notocorda) entra por el nodo; el paraxial, el lateral y el cardiogénico por la línea primitiva, y el extraembrionario por su parte más caudal. El epiblasto que no entra es el ectodermo.'},
+ {t:'Equivalencias con el anfibio',bins:['Labio dorsal del blastoporo (organizador)','Centro de Nieuwkoop','Labios laterales y ventral del blastoporo'],items:[['Nodo de Hensen (ave)',0],['Nodo primitivo (mamífero)',0],['Hoz de Koller + zona marginal posterior',1],['Línea primitiva',2]],ex:'El nodo de Hensen es el organizador de las aves (un trasplante induce un segundo eje); la hoz de Koller con la PMZ equivale al centro de Nieuwkoop; la línea primitiva equivale al resto del blastoporo, pero lineal.'},
+ {t:'Señales del eje dorsoventral en Xenopus',bins:['Polo vegetal (materno)','Lado dorsal (creciente gris)','Organizador','Lado ventral'],items:[['VegT',0],['Vg1',0],['Wnt11',1],['β-catenina nuclear',1],['Cordina',2],['Nogina',2],['Folistatina',2],['BMP4',3],['Xwnt8',3]],ex:'VegT y Vg1 quedan en el polo vegetal; Wnt11 viaja al creciente gris y acumula β-catenina; el organizador secreta antagonistas de BMP, y BMP4 y Xwnt8 especifican lo ventral.'},
+ {t:'¿Trofoblasto o masa celular interna?',bins:['Trofoblasto','Masa celular interna'],items:[['Cdx2',0],['YAP/TAZ en el núcleo',0],['Hippo OFF',0],['Amot solo en el dominio apical',0],['Nanog',1],['Oct4',1],['Hippo ON',1],['YAP/TAZ fosforilado (degradado)',1]],ex:'Células externas polarizadas: Hippo apagado, YAP/TAZ nuclear con TEAD → Cdx2. Células internas apolares: Hippo encendido → Nanog y Oct4. Cdx2 y Nanog se reprimen mutuamente.'},
+ {t:'Tipos de regeneración',bins:['Mediada por células madre','Morfalaxis','Epimorfosis','Compensatoria'],items:[['Planaria (neoblastos)',0],['Sangre y folículo piloso',0],['Hydra',1],['Extremidad de salamandra',2],['Punta del dedo en la infancia',2],['Hígado de mamífero',3]],ex:'Hydra reorganiza sus células casi sin dividirse (morfalaxis); la salamandra forma un blastema de células desdiferenciadas (epimorfosis); el hígado regenera por división de células diferenciadas (compensatoria).'},
+ {t:'Potencia celular',bins:['Totipotente','Pluripotente','Multipotente','Unipotente'],items:[['Cigoto',0],['Blastómero de 4 células',0],['Masa celular interna',1],['Célula madre embrionaria en cultivo',1],['iPSC',1],['Célula madre hematopoyética',2],['Trofoblasto',3]],ex:'Totipotente: forma embrión y anexos (hasta ~8 células). Pluripotente: todo el embrión (MCI, ES, iPSC). Multipotente: un grupo de tipos (sangre). Unipotente: un solo destino (trofoblasto).'},
+ {t:'Origen de los anexos extraembrionarios',bins:['Ectodermo + mesodermo extraembrionario','Endodermo + mesodermo extraembrionario','Evaginación del intestino posterior','Trofoblasto + mesodermo extraembrionario'],items:[['Amnios',0],['Corion de ave',0],['Saco vitelino',1],['Alantoides',2],['Corion de mamífero',3]],ex:'Amnios: ectodermo y mesodermo extraembrionario. Saco vitelino: endodermo y mesodermo extraembrionario. Alantoides: evaginación del intestino posterior. Corion: en aves ectodermo + mesodermo; en mamíferos trofoblasto + mesodermo (parte fetal de la placenta).'},
+ {t:'Gemelos monocigóticos',bins:['Dos coriones, dos amnios','Un corion, dos amnios','Un corion, un amnios','Siameses'],items:[['Separación de blastómeros (antes de formarse el trofoblasto)',0],['Separación de la masa celular interna antes del día 9',1],['Separación tardía, ya formado el amnios',2],['Separación incompleta',3]],ex:'Cuanto más tarde se separan, más anexos comparten: un 33% tienen dos coriones (separación muy temprana); la mayoría, un corion y dos amnios; muy pocos comparten amnios.'},
+ {t:'Función de cada anexo (mamífero placentario)',bins:['Entorno acuático: evita la desecación','Primeros vasos y sangre','Vasos del cordón umbilical','Respiración, nutrición y excreción'],items:[['Amnios',0],['Saco vitelino',1],['Alantoides',2],['Corion / placenta',3]],ex:'En aves, en cambio, el saco vitelino capta alimento de la yema, la alantoides almacena residuos y la membrana corioalantoidea sirve para respirar.'}
+];
+
+/* ===== motor ===== */
+const $=(s,el=document)=>el.querySelector(s),$$=(s,el=document)=>[...el.querySelectorAll(s)];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let UID=0;const uid=()=>'u'+(++UID);
+const CATS={quien:'¿Quién y cuándo?',senala:'Señala la estructura',ordena:'Ordena la secuencia',destino:'Destino y origen'};
+let STATS={};try{STATS=JSON.parse(localStorage.getItem('emb_stats_v1')||'{}')}catch(e){}
+function record(c,ok){const s=STATS[c]||(STATS[c]={ok:0,n:0});s.n++;if(ok)s.ok++;try{localStorage.setItem('emb_stats_v1',JSON.stringify(STATS))}catch(e){}}
+const S={mode:null,q:null,answered:false,score:0,total:0,streak:0,best:0,exam:null};
+const OKS=['¡Correcto!','¡Eso es!','¡Bien visto!','¡Exacto!'],KOS=['Casi…','No exactamente.','Uy, esta no.'];
+
+function labelsSVG(d,hi){return d.hs.map(([k,t,x,y],i)=>`<g><circle cx="${x}" cy="${y}" r="9.5" fill="${k===hi?'#2e8b57':'#1e2733'}" stroke="#fffaf3" stroke-width="2"/><text x="${x}" y="${y+4}" text-anchor="middle" class="ln">${i+1}</text></g>`).join('')}
+function legendHTML(d,hi){return `<ol class="leg">${d.hs.map(([k,t])=>`<li class="${k===hi?'hi':''}">${t}</li>`).join('')}</ol>`}
+function figSVG(id,o={}){const d=D[id];return `<svg class="fig${o.click?' click':''}" id="fig" viewBox="-60 -6 520 312">${d.draw(uid())}<g id="lbl" class="lbl${o.show?' show':''}">${labelsSVG(d,o.hi)}</g><g id="mk"></g></svg>`}
+function thumbSVG(id){return `<svg viewBox="0 0 400 300">${D[id].draw(uid())}</svg>`}
+function chips(){return `<div class="chips"><span class="chip">✓ ${S.score} / ${S.total}</span><span class="chip fire">Racha ${S.streak}</span></div>`}
+function accHTML(id){const s=STATS[id];if(!s||!s.n)return '<span>Aún sin jugar</span>';const p=Math.round(100*s.ok/s.n);return `<div class="bar"><div style="width:${p}%"></div></div><span>${p}% · ${s.n}</span>`}
+function topbar(title){return `<div class="topbar"><button class="ghost" id="back">← Menú</button><div class="mode-title">${title}</div>${S.mode==='atlas'?'':chips()}</div>${S.exam?`<div class="progress"><div style="width:${100*(S.exam.i-1)/S.exam.queue.length}%"></div></div>`:''}`}
+
+/* ---------- generadores ---------- */
+const WHO=Object.keys(D).filter(k=>D[k].who!==false);
+let lastFig=null;
+function pickFig(pool){let k;do{k=pick(pool)}while(k===lastFig&&pool.length>1);lastFig=k;return k}
+function genQuien(){
+  const id=pickFig(WHO),d=D[id],orgOk=d.org==='mamifero'?['raton','humano']:[d.org];
+  const same=Object.keys(D).filter(k=>k!==id&&D[k].who!==false&&(D[k].org===d.org||(['mamifero','humano','raton'].includes(D[k].org)&&['mamifero','humano','raton'].includes(d.org)))).map(k=>D[k].stage).filter(s=>s!==d.stage);
+  const extra={erizo:['Segmentación: 16 células','Larva pluteus','Néurula'],xenopus:[],pollo:['Néurula'],mamifero:[],humano:[],raton:[]};
+  const pool=shuffle([...new Set([...same,...(extra[d.org]||[])])]).slice(0,3);
+  const st=shuffle([d.stage,...pool]).map((l,i)=>({id:'s'+i,label:l}));
+  return {cat:'quien',kind:'quien',fig:id,orgOk,stages:st,stageOk:st.find(s=>s.label===d.stage).id,explain:d.clue+(d.org==='mamifero'?MAM_NOTE:'')};
+}
+function genSenala(){
+  const pool=Object.keys(D).filter(k=>D[k].hs.length>=3),id=pickFig(pool),d=D[id],t=pick(d.hs);
+  return {cat:'senala',kind:'senala',fig:id,target:t,explain:`${ORG_NAME[d.org]} · ${d.stage}${d.view?' · '+d.view:''}.`};
+}
+let lastSeq=-1,lastSet=-1;
+function genOrdena(){let i;do{i=Math.floor(Math.random()*SEQ.length)}while(i===lastSeq);lastSeq=i;const s=SEQ[i];
+  let order;do{order=shuffle(s.items.map((_,k)=>k))}while(order.every((v,k)=>v===k));
+  return {cat:'ordena',kind:'ordena',seq:s,order};}
+function genDestino(){let i;do{i=Math.floor(Math.random()*SETS.length)}while(i===lastSet);lastSet=i;return {cat:'destino',kind:'destino',set:SETS[i],order:shuffle(SETS[i].items.map((_,k)=>k))}}
+const GEN={quien:genQuien,senala:genSenala,ordena:genOrdena,destino:genDestino};
+
+/* ---------- pantallas ---------- */
+const MODES=[
+ {id:'quien',ic:'🔍',bg:'#dfe9f6',t:'¿Quién y cuándo?',d:'Ves un embrión y dices de qué organismo es (erizo, Xenopus, pollo, ratón o humano) y en qué fase o día está.'},
+ {id:'senala',ic:'👆',bg:'#fbe3dc',t:'Señala la estructura',d:'Te nombro una estructura (labio dorsal, hoz de Koller, sincitiotrofoblasto, nodo…) y la tocas en el dibujo.'},
+ {id:'ordena',ic:'🔢',bg:'#fdf0cf',t:'Ordena la secuencia',d:'Toca las tarjetas en orden: fases del embrión, días de la implantación, cascadas de señales…'},
+ {id:'destino',ic:'🧩',bg:'#dcefe3',t:'Destino y origen',d:'Coloca cada estructura, gen o tejido en su grupo: de qué capa sale, por dónde entra, qué tipo es.'}
+];
+function renderHome(){
+  S.mode=null;S.exam=null;S.q=null;
+  $('#app').innerHTML=`<div class="hero"><div><h1>Embriones, <em>fase a fase</em></h1>
+  <p>Temas 15–22: erizo, anfibio, pollo, ratón y humano, desde el huevo hasta la neurulación. Aprende a reconocer cada embrión y lo que lleva dentro.</p></div>
+  <div class="legend"><span><i style="background:${K.ecto}"></i>Ectodermo</span><span><i style="background:${K.mes}"></i>Mesodermo</span><span><i style="background:${K.endo}"></i>Endodermo</span><span><i style="background:${K.tro}"></i>Trofoblasto</span></div></div>
+  <div class="grid">
+   <button class="mcard exam" data-m="exam"><div class="ic" style="background:#2c3846">🎯</div><h3>Modo examen</h3><p>10 preguntas mezcladas de los cuatro juegos, con nota final y lo que más fallas.</p><div class="acc" style="color:#c9c2b5">Ideal para enero</div></button>
+   ${MODES.map(m=>`<button class="mcard" data-m="${m.id}"><div class="ic" style="background:${m.bg}">${m.ic}</div><h3>${m.t}</h3><p>${m.d}</p><div class="acc">${accHTML(m.id)}</div></button>`).join('')}
+   <button class="mcard" data-m="atlas"><div class="ic" style="background:#ece4f6">📚</div><h3>Atlas</h3><p>Todos los dibujos con sus estructuras rotuladas y la pista para reconocerlos. Para estudiar antes de jugar.</p><div class="acc">${Object.keys(D).length} embriones</div></button>
+  </div>`;
+  $$('.mcard').forEach(b=>b.onclick=()=>{const m=b.dataset.m;m==='atlas'?renderAtlas():start(m)});
+}
+function start(m){S.mode=m;S.score=0;S.total=0;S.streak=0;S.best=0;
+  S.exam=m==='exam'?{queue:shuffle(['quien','quien','quien','senala','senala','senala','ordena','ordena','destino','destino']),i:0,res:[]}:null;next()}
+function next(){if(S.exam){if(S.exam.i>=S.exam.queue.length)return renderResults();S.q=GEN[S.exam.queue[S.exam.i++]]()}else S.q=GEN[S.mode]();S.answered=false;render()}
+function render(){const q=S.q,title=S.exam?'Modo examen':CATS[S.mode];let h=topbar(title);
+  const catline=`<div class="cat">${CATS[q.cat]}${S.exam?` · ${S.exam.i}/${S.exam.queue.length}`:''}</div>`;
+  if(q.kind==='quien'){h+=`<div class="qcard"><div class="figwrap">${figSVG(q.fig)}</div><div class="qside">${catline}<h2>¿Qué embrión es y en qué fase está?</h2><p class="sub">Elige el organismo y la fase. ${D[q.fig].view?`(${D[q.fig].view})`:''}</p>
+    <div class="glabel">Organismo</div><div class="opts two" id="go">${ORG_OPTS.map(o=>`<button class="opt" data-g="o" data-id="${o.id}">${o.label}</button>`).join('')}</div>
+    <div class="glabel">Fase</div><div class="opts" id="gs">${q.stages.map(o=>`<button class="opt" data-g="s" data-id="${o.id}">${o.label}</button>`).join('')}</div>
+    <div><button class="primary" id="chk" disabled>Comprobar</button></div><div id="fb"></div><div id="leg"></div></div></div>`}
+  else if(q.kind==='senala'){h+=`<div class="qcard"><div class="figwrap">${figSVG(q.fig,{click:true})}</div><div class="qside">${catline}<h2>Toca: <span style="color:var(--coral)">${q.target[1]}</span></h2><p class="sub">Toca en el dibujo el sitio donde está.</p><div id="fb"></div><div id="leg"></div></div></div>`}
+  else if(q.kind==='ordena'){const s=q.seq;h+=`<div class="qcard wide"><div class="qhead">${catline}<h2>${s.t}</h2><p class="sub" style="margin-top:6px">Toca las tarjetas en el orden correcto (de la primera a la última).</p></div><div class="wbody">
+    <div class="ocards">${q.order.map(k=>{const it=s.items[k];return `<button class="ocard" data-k="${k}"><span class="num"></span>${it.fig?thumbSVG(it.fig):''}<span>${it.t}</span><span class="should"></span></button>`}).join('')}</div>
+    <div class="btnrow"><button class="ghost" id="undo">Deshacer</button><button class="ghost" id="reset">Empezar de nuevo</button><button class="primary" id="chk" disabled>Comprobar</button></div><div id="fb" style="margin-top:12px"></div></div></div>`}
+  else if(q.kind==='destino'){const s=q.set;h+=`<div class="qcard wide"><div class="qhead">${catline}<h2>${s.t}</h2><p class="sub" style="margin-top:6px">Toca un elemento y luego el grupo donde va. Para moverlo, tócalo otra vez.</p></div><div class="wbody">
+    <div class="tray" id="tray">${q.order.map(k=>`<button class="tag" data-k="${k}">${s.items[k][0]}</button>`).join('')}</div>
+    <div class="bins">${s.bins.map((b,i)=>`<div class="bin" data-b="${i}"><h4>${b}</h4><div class="bi"></div></div>`).join('')}</div>
+    <div class="btnrow"><button class="primary" id="chk" disabled>Comprobar</button></div><div id="fb" style="margin-top:12px"></div></div></div>`}
+  $('#app').innerHTML=h;$('#back').onclick=renderHome;
+  ({quien:wireQuien,senala:wireSenala,ordena:wireOrdena,destino:wireDestino})[q.kind]();
+}
+function finish(ok,html,mid){const q=S.q;S.answered=true;S.total++;if(ok){S.score++;S.streak++;S.best=Math.max(S.best,S.streak)}else S.streak=0;record(q.cat,ok);if(S.exam)S.exam.res.push({cat:q.cat,ok});
+  const last=S.exam&&S.exam.i>=S.exam.queue.length;
+  $('#fb').innerHTML=`<div class="fb ${ok?'ok':mid?'mid':'ko'}">${html}<div><button class="primary" id="nx">${last?'Ver resultados':'Siguiente →'}</button></div></div>`;
+  $('.chips').outerHTML=chips();$('#nx').onclick=next;$('#nx').focus({preventScroll:true});}
+function showLabels(hi){const l=$('#lbl');if(l){l.innerHTML=labelsSVG(D[S.q.fig],hi);l.classList.add('show')}const g=$('#leg');if(g)g.innerHTML=`<div class="glabel" style="margin-bottom:6px">Estructuras del dibujo</div>`+legendHTML(D[S.q.fig],hi)}
+
+function wireQuien(){const q=S.q;let o=null,s=null;
+  $$('.opt').forEach(b=>b.onclick=()=>{if(S.answered)return;$$(`.opt[data-g="${b.dataset.g}"]`).forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(b.dataset.g==='o')o=b.dataset.id;else s=b.dataset.id;$('#chk').disabled=!(o&&s)});
+  $('#chk').onclick=()=>{const okO=q.orgOk.includes(o),okS=s===q.stageOk;
+    $$('.opt').forEach(b=>{b.disabled=true;const g=b.dataset.g,id=b.dataset.id;if((g==='o'&&q.orgOk.includes(id))||(g==='s'&&id===q.stageOk))b.classList.add('correct');else if(b.classList.contains('sel'))b.classList.add('wrong')});
+    $('#chk').style.display='none';showLabels();const d=D[q.fig];
+    const head=okO&&okS?pick(OKS):(okO||okS)?'Medio bien.':pick(KOS);
+    finish(okO&&okS,`<strong>${head}</strong> Es <b>${ORG_NAME[d.org]}</b>, <b>${d.stage.toLowerCase()}</b>.<p>${q.explain}</p>`,okO!==okS)}}
+function wireSenala(){const q=S.q,svg=$('#fig'),d=D[q.fig];
+  svg.addEventListener('click',e=>{if(S.answered)return;const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+    let best=null,bd=1e9;for(const h of d.hs){const dd=Math.hypot(h[2]-p.x,h[3]-p.y);if(dd<bd){bd=dd;best=h}}
+    const ok=best[0]===q.target[0];const [,,tx,ty]=q.target;
+    $('#mk').innerHTML=`${ok?'':`<path d="M${p.x-7} ${p.y-7} L${p.x+7} ${p.y+7} M${p.x+7} ${p.y-7} L${p.x-7} ${p.y+7}" stroke="#d9654b" stroke-width="3.5" stroke-linecap="round"/>`}<circle cx="${tx}" cy="${ty}" r="15" fill="none" stroke="#2e8b57" stroke-width="3.5"/>`;
+    showLabels(q.target[0]);svg.classList.remove('click');
+    finish(ok,`<strong>${ok?pick(OKS):pick(KOS)}</strong> ${ok?'':`Has tocado <b>${best[1].toLowerCase()}</b>; lo que buscábamos está marcado en verde.`}<p>${q.explain} ${d.clue}</p>`)})}
+function wireOrdena(){const q=S.q,seqArr=[];const upd=()=>{$$('.ocard').forEach(c=>{const i=seqArr.indexOf(c);c.classList.toggle('done',i>=0);c.querySelector('.num').textContent=i>=0?i+1:''});$('#chk').disabled=seqArr.length!==q.seq.items.length};
+  $$('.ocard').forEach(c=>c.onclick=()=>{if(S.answered)return;const i=seqArr.indexOf(c);if(i>=0)seqArr.splice(i,1);else seqArr.push(c);upd()});
+  $('#undo').onclick=()=>{if(S.answered)return;seqArr.pop();upd()};$('#reset').onclick=()=>{if(S.answered)return;seqArr.length=0;upd()};
+  $('#chk').onclick=()=>{let n=0;seqArr.forEach((c,i)=>{c.disabled=true;const k=+c.dataset.k;if(k===i){n++;c.classList.add('correct')}else{c.classList.add('wrong');c.querySelector('.should').textContent='→ va en el '+(k+1)+'º'}});
+    $$('#undo,#reset,#chk').forEach(b=>b.style.display='none');const N=q.seq.items.length,ok=n===N;
+    finish(ok,`<strong>${ok?pick(OKS):n>=N-2?'Casi lo tienes.':pick(KOS)}</strong> ${n} de ${N} en su sitio.<p><b>Orden correcto:</b> ${q.seq.items.map((it,i)=>`${i+1}. ${it.t}`).join(' · ')}</p><p>${q.seq.ex}</p>`,!ok&&n>=N/2)}}
+function wireDestino(){const q=S.q;let sel=null;const tray=$('#tray');
+  const upd=()=>{$$('.tag').forEach(t=>t.classList.toggle('sel',t===sel));$$('.bin').forEach(b=>b.classList.toggle('armed',!!sel));tray.classList.toggle('empty',!tray.querySelector('.tag'));$('#chk').disabled=!!tray.querySelector('.tag')};
+  $$('.tag').forEach(t=>t.onclick=e=>{e.stopPropagation();if(S.answered)return;const bin=t.closest('.bin');if(sel&&sel!==t&&bin){bin.querySelector('.bi').appendChild(sel);sel=null;upd();return}if(sel&&sel!==t&&!bin){tray.appendChild(sel);sel=null;upd();return}sel=sel===t?null:t;upd()});
+  $$('.bin').forEach(b=>b.onclick=()=>{if(S.answered||!sel)return;b.querySelector('.bi').appendChild(sel);sel=null;upd()});
+  tray.onclick=()=>{if(S.answered||!sel)return;tray.appendChild(sel);sel=null;upd()};
+  $('#chk').onclick=()=>{let n=0;const s=q.set;$$('.bin').forEach(b=>{const bi=+b.dataset.b;b.querySelectorAll('.tag').forEach(t=>{const c=s.items[+t.dataset.k][1];t.disabled=true;if(c===bi){n++;t.classList.add('correct')}else{t.classList.add('wrong');t.insertAdjacentHTML('beforeend',`<small>→ ${s.bins[c]}</small>`)}})});
+    $$('.bin').forEach(b=>b.classList.remove('armed'));$('#chk').style.display='none';const N=s.items.length,ok=n===N;
+    finish(ok,`<strong>${ok?pick(OKS):pick(KOS)}</strong> ${n} de ${N} bien colocados.<p>${s.ex}</p>`,!ok&&n>=N/2)}}
+
+function renderResults(){const r=S.exam.res,n=r.length,ok=r.filter(x=>x.ok).length,nota=(10*ok/n).toFixed(1).replace('.',',');const by={};r.forEach(x=>{(by[x.cat]=by[x.cat]||{ok:0,n:0}).n++;if(x.ok)by[x.cat].ok++});
+  const worst=Object.entries(by).sort((a,b)=>a[1].ok/a[1].n-b[1].ok/b[1].n)[0];
+  const msg=ok===n?'Pleno. Enero no tiene nada que hacer.':ok>=n*.75?'Muy bien: ya distingues los embriones.':ok>=n*.5?'Vas bien; repasa la parte que más fallas.':'Toca practicar: pasa antes por el Atlas.';
+  $('#app').innerHTML=`<div class="topbar"><button class="ghost" id="back">← Menú</button><div class="mode-title">Resultados</div></div><div class="results"><div class="big">${nota}</div><p style="color:var(--muted);margin:6px 0 0">${ok} de ${n} preguntas perfectas · mejor racha ${S.best}</p><p style="margin:14px 0 0;font-weight:500">${msg}</p>
+  <div class="rows">${Object.entries(by).map(([c,v])=>`<div class="row"><span>${CATS[c]}</span><div class="bar"><div style="width:${100*v.ok/v.n}%;background:${v.ok/v.n>=.75?'var(--green)':v.ok/v.n>=.5?'var(--yellow)':'var(--coral)'}"></div></div><span>${v.ok}/${v.n}</span></div>`).join('')}</div>
+  <div class="btnrow"><button class="primary" id="again">Repetir examen</button>${worst&&worst[1].ok<worst[1].n?`<button class="ghost" id="weak">Practicar: ${CATS[worst[0]]}</button>`:''}</div></div>`;
+  $('#back').onclick=renderHome;$('#again').onclick=()=>start('exam');const w=$('#weak');if(w)w.onclick=()=>start(worst[0]);}
+
+const GROUPS=[['Erizo de mar (T15)',k=>D[k].org==='erizo'],['Anfibio · Xenopus (T15)',k=>D[k].org==='xenopus'],['Ave · pollo (T16)',k=>D[k].org==='pollo'],['Ratón (T16, T22)',k=>D[k].org==='raton'],['Mamífero: preimplantación (T16, T20)',k=>D[k].org==='mamifero'],['Humano: implantación y gastrulación (T21–22)',k=>D[k].org==='humano']];
+const ATLAS_ORDER=GROUPS.flatMap(([,f])=>Object.keys(D).filter(f));
+function renderAtlas(){S.mode='atlas';S.exam=null;
+  $('#app').innerHTML=topbar('Atlas')+GROUPS.map(([g,f])=>`<h3 class="atlas-grp">${g}</h3><div class="thumbs">${Object.keys(D).filter(f).map(k=>`<button class="thumb" data-k="${k}">${thumbSVG(k)}<b>${D[k].stage}</b><span>${D[k].view||'&nbsp;'}</span></button>`).join('')}</div>`).join('');
+  $('#back').onclick=renderHome;$$('.thumb').forEach(t=>t.onclick=()=>renderAtlasItem(t.dataset.k))}
+function renderAtlasItem(k){const d=D[k],i=ATLAS_ORDER.indexOf(k);
+  $('#app').innerHTML=`<div class="topbar"><button class="ghost" id="back">← Atlas</button><div class="mode-title">${d.stage}</div><button class="ghost" id="prev">←</button><button class="ghost" id="nextA">→</button></div>
+  <div class="qcard"><div class="figwrap">${figSVG(k,{show:true})}</div><div class="qside"><div class="cat">${ORG_NAME[d.org]} · Tema ${d.tema}</div><h2>${d.stage}</h2>${d.view?`<span class="pill" style="align-self:flex-start">${d.view}</span>`:''}<p style="line-height:1.55;margin:0">${d.clue}</p>
+  <div class="glabel">Estructuras</div>${legendHTML(d)}</div></div>`;
+  $('#back').onclick=renderAtlas;$('#prev').onclick=()=>renderAtlasItem(ATLAS_ORDER[(i-1+ATLAS_ORDER.length)%ATLAS_ORDER.length]);$('#nextA').onclick=()=>renderAtlasItem(ATLAS_ORDER[(i+1)%ATLAS_ORDER.length])}
+document.addEventListener('keydown',e=>{if(S.answered&&e.key==='Enter'){const n=$('#nx');if(n){e.preventDefault();n.click()}}});
+renderHome();
+</script>
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body>
+</html>

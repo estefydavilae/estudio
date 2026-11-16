@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lligament diari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: una columna de trabajo (tarjeta de pregunta) con cabecera de racha y pestañas; estética de gel/sonda FISH */
+:root{
+  --paper:#f5f6fa; --surface:#ffffff; --ink:#1b2233; --muted:#5b6478; --line:#dde1ea;
+  --probe:#bf2468; --probe-soft:#fbe7f0; --cy:#0f7487; --cy-soft:#e2f3f6;
+  --ok:#2b7a4b; --ok-soft:#e3f3ea; --bad:#b3261e; --bad-soft:#fbe9e7; --warn:#9a6a00;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11141c; --surface:#191d28; --ink:#e7eaf2; --muted:#9aa3b5; --line:#2b3142;
+    --probe:#ff5c9c; --probe-soft:#3a1a2a; --cy:#4cc3d6; --cy-soft:#14303a;
+    --ok:#5fcf8c; --ok-soft:#163222; --bad:#ff7a6e; --bad-soft:#3a1c1a; --warn:#e8b44a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11141c; --surface:#191d28; --ink:#e7eaf2; --muted:#9aa3b5; --line:#2b3142;
+  --probe:#ff5c9c; --probe-soft:#3a1a2a; --cy:#4cc3d6; --cy-soft:#14303a;
+  --ok:#5fcf8c; --ok-soft:#163222; --bad:#ff7a6e; --bad-soft:#3a1c1a; --warn:#e8b44a;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.5}
+.wrap{max-width:820px; margin:0 auto; padding:20px 16px 60px; display:flex; flex-direction:column; gap:18px}
+header{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px}
+h1{font-family:var(--display); font-weight:800; font-size:2rem; line-height:1.05; margin:0; letter-spacing:-.01em; text-wrap:balance}
+h1 small{display:block; font-family:var(--body); font-weight:500; font-size:.85rem; color:var(--muted); letter-spacing:0; margin-top:4px}
+.stats{display:flex; gap:10px; flex-wrap:wrap}
+.stat{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:6px 12px; min-width:84px}
+.stat b{display:block; font-family:var(--mono); font-size:1.15rem; font-variant-numeric:tabular-nums}
+.stat span{font-size:.75rem; color:var(--muted)}
+.goal{height:6px; border-radius:3px; background:var(--line); overflow:hidden; margin-top:4px}
+.goal i{display:block; height:100%; background:var(--probe); width:0; transition:width .3s}
+nav{display:flex; gap:4px; border-bottom:1px solid var(--line); overflow-x:auto}
+nav button{font:inherit; font-weight:600; background:none; border:0; color:var(--muted); padding:8px 12px; border-bottom:3px solid transparent; cursor:pointer; white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--probe)}
+button:focus-visible, input:focus-visible, .tag:focus-visible{outline:3px solid var(--cy); outline-offset:2px}
+.view{display:none; flex-direction:column; gap:16px}
+.view.on{display:flex}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; display:flex; flex-direction:column; gap:14px}
+.qmeta{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:.8rem; color:var(--muted)}
+.chip{display:inline-block; font-size:.75rem; font-weight:600; padding:2px 9px; border-radius:999px; background:var(--cy-soft); color:var(--cy)}
+.chip.m{background:var(--probe-soft); color:var(--probe)}
+.prompt{font-size:1.02rem; max-width:68ch}
+.prompt p{margin:0 0 8px}
+.mono, .prompt code{font-family:var(--mono); font-variant-numeric:tabular-nums}
+table.t{border-collapse:collapse; font-family:var(--mono); font-size:.9rem; margin:6px 0}
+table.t td, table.t th{border:1px solid var(--line); padding:5px 10px; text-align:center}
+table.t th{font-family:var(--body); font-weight:600; background:var(--paper)}
+.answer{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.answer label{font-weight:600}
+input[type=text]{font:inherit; font-family:var(--mono); font-size:1.05rem; padding:8px 12px; border:1.5px solid var(--line); border-radius:9px; background:var(--paper); color:var(--ink); width:150px}
+.btn{font:inherit; font-weight:600; border-radius:9px; padding:9px 16px; cursor:pointer; border:1.5px solid var(--ink); background:var(--ink); color:var(--paper)}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn:disabled{opacity:.45; cursor:default}
+.opts{display:flex; flex-direction:column; gap:8px}
+.opt{font:inherit; text-align:left; padding:10px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--cy)}
+.opt.right{border-color:var(--ok); background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft)}
+.fb{border-radius:10px; padding:12px 14px; border-left:5px solid; display:none}
+.fb.on{display:block}
+.fb.ok{background:var(--ok-soft); border-color:var(--ok)}
+.fb.ko{background:var(--bad-soft); border-color:var(--bad)}
+.fb h3{margin:0 0 6px; font-size:1rem}
+.fb .exp{font-size:.95rem; max-width:70ch}
+.fb .exp p{margin:4px 0}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.ped{overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--paper)}
+.ped svg{display:block; min-width:560px; width:100%; height:auto}
+.ped text{font-family:var(--mono); fill:var(--ink)}
+.tag{cursor:pointer}
+.legend{font-size:.82rem; color:var(--muted)}
+.skills{display:flex; flex-wrap:wrap; gap:8px}
+.skill{font:inherit; font-size:.88rem; padding:7px 12px; border-radius:999px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.skill[aria-pressed="true"]{border-color:var(--probe); background:var(--probe-soft)}
+.skill:disabled{opacity:.5; cursor:default; border-style:dashed}
+h2{font-family:var(--display); font-weight:600; font-size:1.25rem; margin:0}
+.formulas{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px}
+.f{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px}
+.f h4{margin:0 0 6px; font-size:.9rem; color:var(--muted); font-weight:600}
+.f .eq{font-family:var(--mono); font-size:.98rem}
+.f p{margin:6px 0 0; font-size:.85rem; color:var(--muted)}
+.bars{display:flex; flex-direction:column; gap:8px}
+.bar{display:grid; grid-template-columns:minmax(120px,220px) 1fr 70px; gap:10px; align-items:center; font-size:.88rem}
+.bar .track{height:10px; background:var(--line); border-radius:5px; overflow:hidden}
+.bar .track i{display:block; height:100%; border-radius:5px}
+.bar .n{font-family:var(--mono); font-size:.8rem; color:var(--muted); text-align:right}
+.days{display:grid; grid-template-columns:repeat(14,1fr); gap:4px; max-width:420px}
+.days div{aspect-ratio:1; border-radius:4px; background:var(--line)}
+.days div.p{background:color-mix(in srgb, var(--probe) 45%, var(--line))}
+.days div.d{background:var(--probe)}
+.note{font-size:.85rem; color:var(--muted); max-width:70ch}
+.summary{text-align:left}
+.big{font-family:var(--display); font-size:2.4rem; font-weight:800}
+@media (max-width:480px){ h1{font-size:1.6rem} .bar{grid-template-columns:110px 1fr 56px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lligament diari<small>Genètica mèdica · mapatge, LOD i companyia, 10 preguntas al día</small></h1>
+    <div class="stats">
+      <div class="stat"><b id="sStreak">0</b><span>días de racha</span></div>
+      <div class="stat"><b id="sToday">0/10</b><span>reto de hoy</span><div class="goal"><i id="sGoal"></i></div></div>
+      <div class="stat"><b id="sAcc">–</b><span>acierto total</span></div>
+    </div>
+  </header>
+
+  <nav role="tablist">
+    <button role="tab" id="tab-daily" aria-selected="true" data-v="daily">Reto diario</button>
+    <button role="tab" id="tab-train" aria-selected="false" data-v="train">Entreno por tipo</button>
+    <button role="tab" id="tab-form" aria-selected="false" data-v="form">Fórmulas</button>
+    <button role="tab" id="tab-prog" aria-selected="false" data-v="prog">Progreso</button>
+  </nav>
+
+  <section class="view on" id="v-daily">
+    <div id="dailyHost"></div>
+  </section>
+
+  <section class="view" id="v-train">
+    <div class="card">
+      <h2>Elige qué quieres practicar</h2>
+      <div class="note">Cada tipo genera problemas nuevos con números distintos cada vez. Los tipos de mapatge son el núcleo; el resto cubre los temas 3.1, 3.3, 4 y 5.</div>
+      <div class="skills" id="skillChips"></div>
+    </div>
+    <div id="trainHost"></div>
+  </section>
+
+  <section class="view" id="v-form">
+    <div class="formulas" id="formulas"></div>
+  </section>
+
+  <section class="view" id="v-prog">
+    <div class="card">
+      <h2>Últimos 14 días</h2>
+      <div class="days" id="days"></div>
+      <div class="legend">Rosa intenso: reto de 10 completado · rosa suave: empezado</div>
+    </div>
+    <div class="card">
+      <h2>Acierto por tipo de pregunta</h2>
+      <div class="note">El reto diario te pone más preguntas de los tipos en los que fallas más.</div>
+      <div class="bars" id="bars"></div>
+      <div class="row"><button class="btn ghost" id="resetBtn">Borrar mi progreso</button><span id="resetMsg" class="note"></span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const R = (a,b) => a + Math.random()*(b-a);
+const RI = (a,b) => Math.floor(R(a,b+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
+const fmt = (x,d=3) => (Math.round(x*10**d)/10**d).toFixed(d).replace('.',',');
+const fmtS = (x,d=3) => { let s=fmt(x,d); if(s.includes(',')) s=s.replace(/0+$/,'').replace(/,$/,''); return s; };
+const parseNum = s => { if(s==null) return NaN; s=String(s).trim().replace(/\s/g,'').replace(',','.'); if(/^-?\d*\.?\d+\/\d+$/.test(s)){const [a,b]=s.split('/'); return parseFloat(a)/parseFloat(b);} return s===''?NaN:Number(s); };
+const log10 = Math.log10;
+const todayKey = (d=new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const haldane = th => -0.5*Math.log(1-2*th);           // Morgans
+const haldaneInv = w => 0.5*(1-Math.exp(-2*w));         // w en Morgans
+const lodKnown = (th,k,n) => log10(Math.pow(th,k)*Math.pow(1-th,n-k)/Math.pow(0.5,n));
+const lodUnknown = (th,k,n) => log10(0.5*(Math.pow(th,k)*Math.pow(1-th,n-k) + Math.pow(th,n-k)*Math.pow(1-th,k))/Math.pow(0.5,n));
+const a = i => 'A'+i;
+
+/* ---------- almacenamiento ---------- */
+const LS = 'lligament-diari-v1';
+let state = { stats:{}, days:{}, total:{ok:0,n:0} };
+function loadLocal(){ try{ const s=localStorage.getItem(LS); if(s){ const o=JSON.parse(s); if(o && o.stats) state=o; } }catch(e){} }
+let dbRef=null, saveTimer=null, saving=false, pending=false;
+function save(){
+  try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){}
+  if(!dbRef) return;
+  clearTimeout(saveTimer); saveTimer=setTimeout(pushDb,1500);
+}
+async function pushDb(){
+  if(!dbRef) return;
+  if(saving){ pending=true; return; }
+  saving=true;
+  try{ await dbRef.set(JSON.parse(JSON.stringify(state))); }catch(e){}
+  saving=false;
+  if(pending){ pending=false; pushDb(); }
+}
+async function connectDb(){
+  try{
+    if(!window.claude || !window.claude.use) return;
+    const db = await window.claude.use("db"); const user = await window.claude.use("user");
+    if(!db || !user) return;
+    const id = await user.id(); if(!id) return;
+    const ref = db.collection("data/users/"+id).doc("progress");
+    const snap = await ref.get();
+    let remote = null;
+    if(snap){ remote = typeof snap.data==='function' ? snap.data() : (snap.data !== undefined ? snap.data : snap); }
+    if(remote && remote.stats && remote.total && remote.total.n > state.total.n){ state = remote; try{localStorage.setItem(LS, JSON.stringify(state));}catch(e){} refreshHeader(); }
+    dbRef = ref;
+    if(!remote || !remote.total || remote.total.n < state.total.n) pushDb();
+  }catch(e){}
+}
+function record(skill, ok){
+  const s = state.stats[skill] || (state.stats[skill]={ok:0,n:0});
+  s.n++; if(ok) s.ok++;
+  state.total.n++; if(ok) state.total.ok++;
+  save(); refreshHeader();
+}
+function recordDaily(ok){
+  const k=todayKey(); const d=state.days[k]||(state.days[k]={n:0,ok:0});
+  d.n++; if(ok) d.ok++; save(); refreshHeader();
+}
+function streak(){
+  let c=0; const d=new Date();
+  if(!(state.days[todayKey(d)] && state.days[todayKey(d)].n>=10)) d.setDate(d.getDate()-1);
+  while(state.days[todayKey(d)] && state.days[todayKey(d)].n>=10){ c++; d.setDate(d.getDate()-1); }
+  return c;
+}
+function refreshHeader(){
+  const t=state.days[todayKey()]||{n:0};
+  $('#sToday').textContent = Math.min(t.n,10)+'/10'+(t.n>10?' +'+(t.n-10):'');
+  $('#sGoal').style.width = Math.min(100,t.n*10)+'%';
+  $('#sStreak').textContent = streak();
+  $('#sAcc').textContent = state.total.n ? Math.round(100*state.total.ok/state.total.n)+'%' : '–';
+}
+
+/* ---------- banco de teoría ---------- */
+const THEORY = [
+ // 3.2 mapes físics
+ ["mapa","Resolución aproximada de la FISH sobre cromosomas en metafase:",[">1–2 Mb","100–500 kb","~5 kb","Nivel de nucleótido"],"La FISH en metafase es de baja resolución (>1–2 Mb). Interfase: 100–500 kb. Fiber-FISH: ~5 kb."],
+ ["mapa","¿Qué variante de hibridación in situ da la mayor resolución?",["Fiber-FISH (fibras de DNA/cromatina), ~5 kb","FISH en cromosomas interfásicos","FISH en metafase","Bandeo G"],"Fiber-FISH llega a ~5 kb; interfase 100–500 kb; metafase >1–2 Mb."],
+ ["mapa","¿Qué vector de clonaje admite los fragmentos más grandes?",["YAC (hasta 1–2 Mb)","BAC (100–300 kb)","PAC (70–100 kb)","Plásmido"],"YAC: hasta 1–2 Mb. BAC: 100–300 kb, los más usados en el Proyecto Genoma Humano por estables. PAC: 70–100 kb."],
+ ["mapa","El vector más usado en el Proyecto Genoma Humano para construir mapas físicos fue:",["BAC","YAC","PAC","Cósmido"],"Los BAC son estables y fáciles de mantener en E. coli; los YAC aceptan más DNA pero son menos estables."],
+ ["mapa","De estos enzimas « rare cutter », ¿cuál da fragmentos de mayor tamaño medio?",["NotI (GCGGCCGC)","BssHII (GCGCGC)","SmaI (CCCGGG)","EcoRI (GAATTC)"],"NotI reconoce 8 pb ricas en GC (~9766 kb de media), BssHII ~390 kb, SmaI ~78 kb. Cuanto más rara la diana, más grande el fragmento."],
+ ["mapa","¿Por qué los mapas de restricción a gran escala se corren en electroforesis de campo pulsante (PFGE)?",["Porque permite separar fragmentos de hasta ~2 Mb alternando la dirección del campo","Porque desnaturaliza el DNA","Porque amplifica los fragmentos","Porque separa por carga en vez de tamaño"],"El campo eléctrico discontinuo (zig-zag E1/E2) permite que fibras de DNA muy grandes avancen en agarosa. Luego Southern blot e hibridación."],
+ ["mapa","Método de marcaje de sondas que amplifica a la vez que marca:",["PCR","Nick translation","Random primed","End labeling con quinasa"],"La PCR marca y amplifica a la vez (gran ventaja), pero da sondas cortas y requiere conocer la secuencia para diseñar los primers."],
+ ["mapa","En el nick translation:",["La DNasa I corta al azar y la DNA polimerasa I resintetiza incorporando el marcaje, sin amplificar","Se usan hexámeros aleatorios como cebadores","Se marca sólo el extremo 5′ con una quinasa","Se transcribe con T7/T3/SP6"],"Nick translation: DNasa (cortes) + DNA pol I (sustituye nucleótidos); sondas de 200–500 pb. Necesita DNA purificado y no amplifica selectivamente."],
+ ["mapa","El método random primed se basa en:",["Hibridar hexámeros aleatorios al DNA desnaturalizado y sintetizar incorporando marcaje","Cortar con DNasa I","Usar primers específicos de la región","Marcar extremos con ligasa de RNA"],"Random primed: cebadores aleatorios (hexámeros), sondas muy ricas en marcaje, funciona bien con fragmentos cortos; no permite seleccionar una región concreta."],
+ ["mapa","Las sondas de RNA se sintetizan con:",["RNA polimerasas víricas T7, T3 o SP6 a partir de un vector linealizado","DNA polimerasa I","Transferasa terminal","Taq polimerasa"],"El vector lleva promotor vírico + polylinker; algunos tienen dos promotores antiparalelos para generar sondas sentido y antisentido."],
+ ["mapa","Marcaje indirecto frente a directo:",["Indirecto (hapteno: digoxigenina/biotina + anticuerpo) es más sensible pero más lento","Directo es más sensible porque amplifica la señal","Indirecto no necesita pasos adicionales","Son idénticos en sensibilidad"],"Directo = rápido y simple, menos amplificación. Indirecto = cada hapteno une varias moléculas de detección: más sensible y adaptable, pero más pasos y más fondo."],
+ ["mapa","Marcaje no radioactivo: ¿cuál de estas afirmaciones es correcta?",["Es más seguro y barato, pero no permite cuantificar salvo el fluorescente","Es más sensible y cuantificable que el radioactivo","Usa 32P o 35S","No permite análisis multicolor"],"El radioactivo es muy sensible y cuantificable. El fluorescente permite varios colores simultáneos aunque con menos precisión."],
+ ["mapa","STS (sequence tagged sites) son:",["Secuencias de copia única que sirven para ordenar clones en contigs","Secuencias repetitivas tipo Alu","Fragmentos de cDNA expresados","Dianas de restricción polimórficas"],"Los STS son de copia única; los EST (expressed sequence tags) proceden de secuencias expresadas."],
+ ["mapa","Comparando Sanger con NGS (Illumina):",["Sanger lee ~1000 pb por lectura; NGS lecturas cortas (35–400 pb) pero millones por experimento","Sanger produce más Gb por experimento","NGS no necesita mapa de referencia","Sanger usa terminadores reversibles"],"Sanger: ~1000 pb, 384 lecturas/experimento. NGS: 1–300 M lecturas, 0,4–20 Gb/experimento."],
+ ["mapa","La química Illumina se basa en:",["Amplificación en puente (clusters) y terminadores reversibles fluorescentes","ddNTPs con fluorocromos y electroforesis capilar","Pirosecuenciación","Nanoporos"],"Amplificación clonal en fase sólida → clusters de ~1000 copias; ciclos de extensión, lectura y desbloqueo del terminador."],
+ ["mapa","Limitación de la NGS Illumina según el temario:",["Exones 1 ricos en GC mal cubiertos y problemas en zonas repetidas","No sirve para RNA-Seq","Lecturas de >10 kb poco precisas","No detecta SNPs"],"También: necesita mapa físico de referencia, se equivoca más en las T y acumula más errores con más ciclos."],
+ ["mapa","Celera Genomics frente al consorcio público:",["Celera secuenció al azar todo el genoma y ensambló después; el consorcio secuenció de forma ordenada clones previamente mapeados","Celera usó sólo YACs mapeados","El consorcio usó shotgun sin mapa","Ambos usaron NGS"],"Consorcio: mapeo de clones (YAC/BAC) y luego Sanger ordenado. Celera: fragmentación aleatoria + Sanger + ensamblaje."],
+ // 3.2 mapes genètics
+ ["mapa","1 cM equivale aproximadamente a:",["1% de frecuencia de recombinación","1 recombinación por meiosis","10% de recombinación","1 kb"],"1 Morgan = 1 entrecruzamiento por meiosis de media; 1 cM ≈ 1% de recombinación. Regla general: 1 cM ≈ 1 Mb."],
+ ["mapa","¿Por qué la longitud del genoma en cM es mayor en mujeres que en hombres?",["Porque en la meiosis femenina hay más entrecruzamientos (aunque los Mb sean los mismos)","Porque tienen dos cromosomas X","Porque su genoma tiene más Mb","Por la inactivación del X"],"~4281 cM en mujeres vs ~2590 cM en hombres. 1 cM femenino ≈ 0,7 Mb, masculino ≈ 1,1 Mb."],
+ ["mapa","La frecuencia de recombinación θ está acotada entre:",["0 y 0,5","0 y 1","0,5 y 1","−1 y 1"],"θ = 0 para loci muy próximos; θ = 0,5 equivale a segregación independiente (distinto cromosoma o muy alejados)."],
+ ["mapa","¿Por qué la función de Haldane da una distancia mayor que θ×100 cuando los loci están lejos?",["Corrige las dobles recombinaciones, que no se observan y son más probables a grandes distancias","Porque las mujeres recombinan más","Porque θ se sobreestima siempre","Porque añade los puntos calientes"],"Los dobles entrecruzamientos devuelven la combinación parental: θ observada subestima la distancia. El factor de corrección actúa más cuanto mayor es la distancia."],
+ ["mapa","Una meiosis es informativa cuando:",["Permite distinguir si el descendiente recibió un cromosoma recombinante o no recombinante","El hijo está afectado","La madre es homocigota","Hay consanguinidad"],"Ejemplo de no informativa: progenitor transmisor homocigoto para el marcador, o ambos progenitores con el mismo heterocigoto e hijo heterocigoto (ambigua)."],
+ ["mapa","Los RFLP son poco informativos porque:",["Son bialélicos, así que la probabilidad de ser heterocigoto es baja","Están sólo en los telómeros","No se pueden detectar con Southern","Tienen demasiados alelos"],"RFLP: presencia/ausencia de una diana. VNTR y STR son multialélicos y muy informativos."],
+ ["mapa","Microsatélites (STR) frente a minisatélites (VNTR):",["STR: unidad de 1–6 pb, la mayoría (CA)n, distribuidos por todo el genoma","STR: unidad de 6–60 pb, cerca de los telómeros","VNTR: unidad de 1–6 pb","Los dos son bialélicos"],"VNTR: unidad 6–60 pb, bloques de hasta ~20 kb y tienden a agruparse cerca de los extremos de los cromosomas."],
+ ["mapa","El marcador más usado hoy en mapatge genético es el SNP porque:",["Tiene altísima densidad y es fácilmente automatizable (arrays), aunque sea bialélico","Es el más polimórfico por locus","Tiene muchos alelos","No necesita genotipado"],"Hándicap: dos alelos. Ventajas: >4 millones, densidad para cubrir cualquier región, arrays de hibridación."],
+ ["mapa","¿Por qué el PIC es siempre ≤ la heterocigosidad?",["Porque resta la probabilidad de que los dos progenitores sean el mismo heterocigoto (no informativo)","Porque suma los homocigotos","Porque sólo cuenta alelos raros","Porque se calcula en hombres"],"PIC = H − Σ 2·pᵢ²·pⱼ². Es una aproximación más real de la informatividad."],
+ ["mapa","Un LOD score de 3 significa que:",["El ligamiento a esa θ es 1000 veces más probable que la independencia: ligamiento aceptado","Hay 3 recombinantes","Se excluye el ligamiento","θ = 0,3"],"Z > 3 → ligamiento; Z < −2 → se excluye ligamiento a esa distancia; entre ambos, no concluyente."],
+ ["mapa","Con los mismos hijos, ¿por qué el LOD máximo con fase desconocida es menor que con fase conocida?",["Porque se promedian las dos fases posibles (½ cada una), lo que añade incertidumbre","Porque hay más recombinantes","Porque θ se fija en 0,5","Porque la madre no es informativa"],"Ejemplo del temario: 1 R de 6, Z máx 0,623 con fase conocida vs 0,323 con fase desconocida."],
+ ["mapa","¿Cómo se consigue un LOD significativo cuando una sola familia no llega?",["Sumando los LOD de varias familias (y con más hijos y más marcadores)","Multiplicando los LOD","Usando sólo los hijos afectados","Cambiando a θ = 0,5"],"Los LOD son logaritmos: se suman entre familias independientes. Lod multipunto con varios marcadores a la vez."],
+ ["mapa","¿Cómo se delimita la región candidata con haplotipos?",["Con los recombinantes que flanquean: los marcadores donde un afectado deja de compartir el haplotipo marcan los límites","Con el marcador de mayor PIC","Con el LOD más negativo","Con el marcador más cercano al centrómero"],"Los límites (p. ej. S84 y S129 en el ejemplo) se llevan al navegador del genoma para ver qué genes contiene la región."],
+ ["mapa","En familias consanguíneas con una enfermedad recesiva se busca:",["Regiones donde una serie de marcadores son homocigotos en los afectados (mapeo por homocigosidad)","Recombinantes en el padre","Marcadores heterocigotos compartidos","Disomía uniparental"],"Los loci próximos al gen mutado probablemente serán también homocigotos (idénticos por descendencia)."],
+ ["mapa","Diferencia esencial entre mapa físico y genético:",["Físico: distancia real en pb; genético: frecuencia de recombinación en cM, relativa","Físico se mide en cM","Genético es más preciso","Físico necesita familias"],"Físico: técnicas moleculares, muy preciso. Genético: herencia y recombinación en familias, basado en probabilidades."],
+ // 3.3
+ ["otros","El clonaje posicional (genética reversa) consiste en:",["Localizar primero la región cromosómica (ligamiento, translocaciones…) y buscar ahí el gen","Partir de la proteína conocida y deducir el gen","Usar sólo modelos animales","Secuenciar el exoma sin hipótesis"],"Clonaje funcional (genética directa): a partir del producto génico/función. Hoy se usa menos."],
+ ["otros","Síndrome de Sotos: gen y pista inicial para identificarlo:",["NSD1 en 5q35, a partir de una translocación t(5;8)(q35;q24.1) y microdeleciones","POMGnT1 en 1p32-p34 por ligamiento en Finlandia","FBN1 en 15q21","DMPK en 19q13"],"NSD1 es una histona metiltransferasa; ~75% de los casos tienen mutaciones o deleciones en él."],
+ ["otros","Muscle-Eye-Brain disease (MEB):",["POMGnT1, glicosiltransferasa; falla la glicosilación del α-distroglicano","NSD1, metiltransferasa de histonas","Distrofina, proteína estructural","FMR1, expansión CGG"],"Se mapeó en 1p32-p34 combinando ligamiento en familias finlandesas (efecto fundador) y homocigosidad en consanguíneas (T1); intervalo de 9 cM (~90 genes)."],
+ ["otros","Ventaja de los modelos animales para identificar genes:",["Mucha más descendencia (n) para calcular distancias genéticas y poder hacer knockouts","Son genéticamente idénticos a humanos","No tienen imprinting","No necesitan comité ético"],"Una pareja de ratones: 7–8 crías cada ~21 días. Ojo: los genes impronta pueden no coincidir con los humanos."],
+ // 3.1
+ ["otros","Penetrancia frente a expresividad:",["Penetrancia: probabilidad de que un portador exprese el fenotipo; expresividad: grado/severidad con que se expresa","Son sinónimos","Penetrancia: severidad; expresividad: probabilidad","Expresividad sólo se aplica a recesivas"],"Ej. penetrancia incompleta: retinoblastoma (RB1) 80–90%, BRCA1 70–80%. Expresividad variable: Marfan, NF1, Huntington (edad de debut)."],
+ ["otros","Síndrome X-frágil: penetrancia según sexo en el temario:",["≈80% en hombres vs ≈30% en mujeres","100% en ambos","30% en hombres vs 80% en mujeres","Sólo afecta a mujeres"],"La inactivación aleatoria del X genera mosaicismo en mujeres y reduce su penetrancia."],
+ ["otros","Pubertad precoz masculina por mutaciones en LHCGR es un ejemplo de:",["Fenotipo limitado por el sexo","Fenotipo influido por el sexo","Imprinting","Herencia mitocondrial"],"Limitado: sólo se expresa en un sexo aunque ambos lo transmiten. Influido: se expresa en ambos pero con diferente frecuencia/gravedad (p. ej. hemocromatosis)."],
+ ["otros","Prader-Willi se debe a:",["Falta de expresión de genes de origen paterno en 15q11-q13","Falta de expresión materna de UBE3A","Expansión de CTG","Mosaicismo germinal"],"Angelman = falta de expresión materna (UBE3A). El diagnóstico requiere FISH/metilación porque no se ve en cariotipo."],
+ ["otros","Distrofia miotónica de Steinert: rango de repeticiones CTG en premutados según el temario:",["38–180","5–37","200–2000",">2000"],"Normal 5–37; premutado 38–180; afectado 200–2000; forma neonatal >2000. Gen DMPK, 19p13, AD, con anticipación."],
+ ["otros","Genoma mitocondrial humano:",["16 569 pb, 37 genes: 13 proteínas, 22 tRNA y 2 rRNA","16 569 pb, 13 genes","Lineal con histonas","Codifica todas las proteínas mitocondriales"],"Herencia materna, tasa de mutación alta, segregación replicativa, heteroplasmia y efecto umbral."],
+ ["otros","Isodisomía frente a heterodisomía uniparental:",["Isodisomía: dos copias idénticas de un mismo homólogo; heterodisomía: los dos homólogos distintos del mismo progenitor","Isodisomía: un cromosoma de cada progenitor","Son lo mismo","Heterodisomía sólo en tumores"],"Mecanismos: rescate de trisomía/monosomía, recombinación mitótica, duplicación segmentaria."],
+ ["otros","Mosaicismo germinal en un progenitor explica:",["Que un progenitor sano tenga varios hijos con la misma mutación «de novo»","Penetrancia completa","Imprinting materno","Anticipación"],"Es muy difícil distinguir mosaicismo germinal de mutación de novo y descartarlo en los padres."],
+ // 4
+ ["otros","Una fenocopia es:",["Un fenotipo de causa ambiental que imita al de un genotipo concreto","Un genotipo distinto que causa el mismo fenotipo","La pérdida de penetrancia","Una copia génica duplicada"],"Lo contrario a penetrancia incompleta. Genocopia = heterogeneidad genética."],
+ ["otros","Estenosis pilórica (modelo umbral, más frecuente en hombres): ¿quién tiene mayor riesgo de descendencia afectada?",["Los hijos de una mujer afectada","Los hijos de un hombre afectado","Igual en ambos casos","Sólo las hijas"],"El sexo menos afectado tiene el umbral más alto: una mujer afectada acumula más factores de riesgo y su descendencia tiene mayor riesgo."],
+ ["otros","Heredabilidad en sentido estricto:",["h² = V_A / V_P (sólo la varianza aditiva, sobre la que actúa la selección)","H² = V_G / V_P","h² = V_E / V_P","h² = V_D / V_G"],"H² (sentido amplio) = V_G/V_P incluye dominancia e interacción. Sólo los alelos se transmiten a la descendencia."],
+ ["otros","¿Cuál es una limitación de la heredabilidad?",["Es específica de una población en un ambiente; no se aplica a un individuo","Es universal para cada carácter","Si es alta, el ambiente no influye","Explica diferencias entre poblaciones"],"Además asume que los ambientes de los emparentados no son más parecidos que los de no emparentados."],
+ ["otros","En el modelo ACE, la C representa:",["Ambiente compartido por los hermanos","Componente codominante","Constante de corrección","Correlación genética"],"A = genético aditivo; C = ambiente común; E = ambiente individual (no compartido)."],
+ ["otros","¿Qué problema de los estudios de gemelos menciona el temario?",["Los MZ pueden tener ambientes uterinos distintos según compartan amnios y corion","Los DZ comparten el 100% de genes","Los MZ nunca tienen mutaciones somáticas","La metilación converge con la edad"],"Otros: se asumía igual similitud ambiental MZ/DZ, mutaciones somáticas postseparación, divergencia de metilación con la edad, inactivación del X."],
+ // 5
+ ["otros","En la epistasia, el gen hipostático es:",["El que queda enmascarado","El que enmascara","Un alelo dominante del mismo locus","Un gen mitocondrial"],"Epistasia = interacción entre genes distintos (no entre alelos del mismo gen, que sería dominancia)."],
+ ["otros","Niños con talento musical que buscan activamente entornos musicales: tipo de correlación gen-ambiente:",["rGE activa","rGE pasiva","rGE evocativa","Interacción GxE"],"Pasiva: los padres aportan genes y ambiente. Evocativa: el ambiente reacciona al talento. Activa: el individuo busca su ambiente."],
+ ["otros","Interacción biológica frente a estadística:",["Biológica: ambos factores forman parte del mismo mecanismo causal conocido; estadística: desviación de un modelo (aditivo/multiplicativo) sin mecanismo conocido","Son lo mismo","Biológica se detecta sólo con GWAS","Estadística requiere conocer el mecanismo"],"Por eso para estudiar GxE se elige un gen candidato implicado en el fenotipo: si no, sólo se habla de interacción estadística."],
+ ["otros","¿Qué es más fácil de estudiar con precisión, una variante génica o un factor ambiental?",["La variante génica: medida exacta, sin variación en el tiempo ni sesgo de recuerdo","El factor ambiental","Igual de fáciles","Depende sólo del tamaño muestral"],"El ambiente varía mucho a lo largo del tiempo y tiene recall bias."],
+ ["otros","Para detectar interacciones con poco tamaño muestral conviene que:",["El OR del efecto sea grande y la frecuencia del alelo no sea muy baja","El alelo sea muy raro","El OR sea cercano a 1","El fenotipo sea poco definido"],"Con OR ≈ 5 el poder es muy alto; con alelos raros se necesitan muchísimos más casos."],
+];
+
+/* ---------- generadores ---------- */
+const SKILLS = {};
+function skill(id, name, group, gen){ SKILLS[id]={id,name,group,gen}; }
+
+skill('ped','Pedigrí: contar recombinantes','mapa', genPed);
+skill('theta','θ a partir de recuentos','mapa', () => {
+  const n = RI(6,12), ni = RI(0,3), k = RI(0,Math.floor((n-ni)/3)+1);
+  const inf = n-ni, nr = inf-k;
+  const th = k/inf;
+  return {type:'num', html:`<p>En una familia con fase conocida hay <b>${n} hijos</b>: <b>${k}</b> recombinantes, <b>${nr}</b> no recombinantes y <b>${ni}</b> no informativos.</p><p>¿Cuál es la frecuencia de recombinación θ? (decimal o fracción)</p>`,
+    answer:th, tol:0.006, label:'θ =',
+    explain:`<p>θ = recombinantes / meiosis <b>informativas</b> = ${k}/${inf} = <b>${fmt(th)}</b>.</p><p>Los no informativos no entran en el denominador. En Haldane serían ${th<0.5?fmt(haldane(th)*100,1)+' cM':'— (θ ≥ 0,5: no ligados)'}.</p>`};
+});
+skill('hal','Haldane: θ → cM','mapa', () => {
+  const th = pick([0.05,0.08,0.1,0.12,0.15,0.18,0.2,0.22,0.25,0.28,0.3,0.33,0.35,0.38,0.4,0.42,0.45]);
+  const cm = haldane(th)*100;
+  return {type:'num', html:`<p>Dos loci tienen θ = <b>${fmtS(th,2)}</b>. Aplica la función de mapa de Haldane.</p><p>¿A qué distancia genética están, en <b>cM</b>?</p>`,
+    answer:cm, tol:Math.max(0.3,cm*0.02), label:'w =', unit:'cM',
+    explain:`<p>w = −½ ln(1 − 2θ) = −½ ln(1 − ${fmtS(2*th,2)}) = −½ ln(${fmtS(1-2*th,2)}) = <b>${fmt(cm/100,3)} M = ${fmt(cm,1)} cM</b>.</p><p>Fíjate: θ×100 daría ${fmtS(th*100,0)} cM; Haldane da más porque corrige los dobles entrecruzamientos${th>=0.3?' (a esta distancia la corrección pesa mucho)':''}.</p>`};
+});
+skill('halinv','Haldane inversa: cM → θ','mapa', () => {
+  const cm = RI(4,120);
+  const th = haldaneInv(cm/100);
+  return {type:'num', html:`<p>Dos loci están a <b>${cm} cM</b> según el mapa de Haldane.</p><p>¿Qué frecuencia de recombinación θ esperarías observar?</p>`,
+    answer:th, tol:0.004, label:'θ =',
+    explain:`<p>Despejando: θ = ½ (1 − e<sup>−2w</sup>), con w en Morgans = ${fmtS(cm/100,2)}.</p><p>θ = ½ (1 − e<sup>−${fmtS(2*cm/100,2)}</sup>) = <b>${fmt(th)}</b>. ${cm>50?'Aunque estén a más de 50 cM, θ nunca supera 0,5.':''}</p>`};
+});
+skill('lod','LOD score, fase conocida','mapa', () => {
+  const n=RI(5,10), k=RI(0,Math.min(2,Math.floor(n/3))), th=pick([0.05,0.1,0.2,0.3,0.4]);
+  const z=lodKnown(th,k,n);
+  return {type:'num', html:`<p>Fase conocida: <b>${k}</b> recombinantes de <b>${n}</b> meiosis informativas.</p><p>Calcula Z(θ = ${fmtS(th,2)}).</p>`,
+    answer:z, tol:0.015, label:'Z =',
+    explain:`<p>Z(θ) = log₁₀ [θ<sup>k</sup>(1−θ)<sup>n−k</sup> / 0,5<sup>n</sup>]</p><p>= log₁₀ [${fmtS(th,2)}<sup>${k}</sup> · ${fmtS(1-th,2)}<sup>${n-k}</sup> / 0,5<sup>${n}</sup>] = log₁₀ [${fmtS(Math.pow(th,k)*Math.pow(1-th,n-k),6)} / ${fmtS(Math.pow(0.5,n),6)}] = <b>${fmt(z)}</b>.</p><p>El máximo estaría en θ̂ = k/n = ${fmt(k/n)}${k===0?' (θ → 0)':''}.</p>`};
+});
+skill('lodu','LOD score, fase desconocida','mapa', () => {
+  const n=RI(5,9), k=RI(1,Math.min(2,Math.floor(n/3))), th=pick([0.1,0.2,0.3,0.4]);
+  const z=lodUnknown(th,k,n);
+  const o1=Math.pow(th,k)*Math.pow(1-th,n-k), o2=Math.pow(th,n-k)*Math.pow(1-th,k);
+  return {type:'num', html:`<p>Fase <b>desconocida</b> (abuelos no genotipados). Con una fase hay ${k} recombinantes de ${n}; con la otra, ${n-k} de ${n}.</p><p>Calcula Z(θ = ${fmtS(th,2)}).</p>`,
+    answer:z, tol:0.015, label:'Z =',
+    explain:`<p>Cada fase tiene probabilidad ½:</p><p>Z = log₁₀ { ½ [θ<sup>${k}</sup>(1−θ)<sup>${n-k}</sup> + θ<sup>${n-k}</sup>(1−θ)<sup>${k}</sup>] / 0,5<sup>${n}</sup> }</p><p>= log₁₀ { ½ [${fmtS(o1,6)} + ${fmtS(o2,6)}] / ${fmtS(Math.pow(0.5,n),6)} } = <b>${fmt(z)}</b>.</p><p>Con fase conocida (${k} R) habría salido ${fmt(lodKnown(th,k,n))}: la incertidumbre de fase siempre resta.</p>`};
+});
+skill('lodint','Interpretar LOD (varias familias)','mapa', () => {
+  const nf=RI(2,4); const target=pick(['link','excl','nc']);
+  let zs;
+  for(let t=0;t<200;t++){
+    zs=[...Array(nf)].map(()=> target==='excl'? R(-1.6,0.2) : target==='link'? R(0.6,1.9) : R(-0.6,1.2));
+    const s=zs.reduce((x,y)=>x+y,0);
+    if((target==='link'&&s>=3.05)||(target==='excl'&&s<=-2.05)||(target==='nc'&&s>-1.9&&s<2.9)) break;
+  }
+  zs=zs.map(z=>Math.round(z*100)/100);
+  const s=zs.reduce((x,y)=>x+y,0);
+  const ci = s>=3?0 : s<=-2?1 : 2;
+  const th=pick([0.05,0.1,0.15,0.2]);
+  return {type:'mc', html:`<p>Para un marcador y un gen de enfermedad se obtienen, a θ = ${fmtS(th,2)}, estos LOD en ${nf} familias independientes:</p><p class="mono">${zs.map((z,i)=>'F'+(i+1)+': '+fmtS(z,2)).join(' &nbsp; ')}</p><p>¿Qué concluyes?</p>`,
+    options:['Ligamiento significativo a esa θ','Se excluye ligamiento a esa θ','No concluyente: hacen falta más familias o marcadores'], correct:ci, keep:true,
+    explain:`<p>Los LOD de familias independientes se <b>suman</b>: Z total = ${fmtS(s,2)}.</p><p>Z ≥ 3 → ligamiento (odds 1000:1). Z ≤ −2 → exclusión. Entre −2 y 3 → no concluyente.</p>`};
+});
+skill('inf','¿Meiosis informativa?','mapa', () => {
+  const al = shuffle([1,2,3,4,5,6]);
+  const kind = pick(['homo','amb','inf','inf']);
+  let fa, mo, ch;
+  if(kind==='homo'){ fa=[al[0],al[0]]; mo=[al[1],al[2]]; ch=[al[0],pick(mo)]; }
+  else if(kind==='amb'){ fa=[al[0],al[1]]; mo=[al[0],al[1]]; ch=[al[0],al[1]]; }
+  else { const sh=Math.random()<.5; fa=[al[0],al[1]]; mo= sh?[al[0],al[1]]:[al[2],al[3]]; if(sh){ const h=pick([al[0],al[1]]); ch=[h,h]; } else ch=[pick(fa),pick(mo)]; }
+  const g = x=> a(x[0])+' '+a(x[1]);
+  const correct = kind==='homo'?1 : kind==='amb'?2 : 0;
+  return {type:'mc', html:`<p>Padre afectado <b>Mm</b> (enfermedad dominante), madre sana <b>mm</b>. Marcador A cercano:</p><table class="t"><tr><th>Padre</th><th>Madre</th><th>Hijo</th></tr><tr><td>${g(fa)}</td><td>${g(mo)}</td><td>${g(ch)}</td></tr></table><p>¿La meiosis paterna que dio este hijo es informativa para el ligamiento M–A?</p>`,
+    options:['Sí, informativa: se sabe qué alelo del marcador transmitió el padre','No informativa: el padre es homocigoto para el marcador','No informativa (ambigua): ambos padres tienen el mismo heterocigoto y el hijo es heterocigoto'], correct, keep:true,
+    explain: correct===1?`<p>El padre siempre transmite ${a(fa[0])}, haya o no recombinación: no se puede distinguir recombinante de no recombinante.</p>`
+      : correct===2?`<p>El hijo ${g(ch)} pudo recibir cualquiera de los dos alelos de cualquiera de los padres: no sabemos qué alelo vino del padre.</p>`
+      :`<p>${mo[0]===fa[0]&&mo[1]===fa[1]?'Aunque los padres tengan el mismo genotipo, el hijo es homocigoto: ambos aportaron '+a(ch[0])+', así que se sabe qué transmitió el padre.':'El padre es heterocigoto y la madre no comparte ningún alelo con él: el alelo paterno del hijo ('+a(ch.find(x=>fa.includes(x)))+') se identifica sin ambigüedad.'}</p><p>Si además se conoce la fase, se puede clasificar como R o NR.</p>`};
+});
+skill('pic','Heterocigosidad y PIC','mapa', () => {
+  let n=RI(2,5), ps;
+  for(;;){ const raw=[...Array(n)].map(()=>R(0.1,1)); const s=raw.reduce((x,y)=>x+y,0); ps=raw.map(x=>Math.round(x/s*20)/20); const d=Math.round((1-ps.reduce((x,y)=>x+y,0))*20)/20; ps[0]=Math.round((ps[0]+d)*100)/100; if(ps.every(p=>p>=0.05)) break; }
+  const H=1-ps.reduce((s,p)=>s+p*p,0);
+  let sub=0; for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) sub+=2*ps[i]*ps[i]*ps[j]*ps[j];
+  const PIC=H-sub; const askPIC=Math.random()<.55;
+  const list=ps.map((p,i)=>`p${i+1} = ${fmtS(p,2)}`).join(', ');
+  return {type:'num', html:`<p>Un marcador tiene ${n} alelos con frecuencias: <span class="mono">${list}</span>.</p><p>Calcula ${askPIC?'el <b>PIC</b>':'la <b>heterocigosidad H</b>'}.</p>`,
+    answer: askPIC?PIC:H, tol:0.004, label: askPIC?'PIC =':'H =',
+    explain:`<p>H = 1 − Σpᵢ² = 1 − (${ps.map(p=>fmtS(p,2)+'²').join(' + ')}) = <b>${fmt(H,4)}</b>.</p><p>PIC = H − Σ<sub>i&lt;j</sub> 2pᵢ²pⱼ² = ${fmt(H,4)} − ${fmt(sub,4)} = <b>${fmt(PIC,4)}</b>${n>2?' (hay '+(n*(n-1)/2)+' parejas de heterocigotos posibles)':''}.</p>`};
+});
+skill('mb','cM → Mb (por sexo)','mapa', () => {
+  const cm=RI(2,40), who=pick(['fem','masc','gen']);
+  const f={fem:0.7,masc:1.1,gen:1}[who];
+  const name={fem:'en el mapa <b>femenino</b>',masc:'en el mapa <b>masculino</b>',gen:'con la regla general'}[who];
+  return {type:'num', html:`<p>Dos loci están a <b>${cm} cM</b> ${name}. ¿Cuántas Mb los separan aproximadamente?</p>`,
+    answer:cm*f, tol:Math.max(0.1,cm*f*0.02), label:'≈', unit:'Mb',
+    explain:`<p>1 cM ≈ ${fmtS(f,1)} Mb ${who==='fem'?'en mujeres (recombinan más: ~4281 cM totales)':who==='masc'?'en hombres (~2590 cM totales)':'(3000 cM ≈ 3000 Mb)'}. ${cm} × ${fmtS(f,1)} = <b>${fmtS(cm*f,1)} Mb</b>.</p><p>Recuerda que la relación no es constante: hay ~50 000 puntos calientes de recombinación.</p>`};
+});
+skill('teo_mapa','Teoría: mapes físics i genètics','mapa', () => theoryItem('mapa'));
+skill('gxe','Interacción GxE: escala aditiva/multiplicativa','otros', genGxE);
+skill('twins','Gemelos y riesgo familiar (λ)','otros', () => {
+  if(Math.random()<.6){
+    let cmz,cdz; do{ cmz=RI(25,95)/100; cdz=RI(5,60)/100; }while(cdz>=cmz || cmz-cdz>0.5);
+    const H=2*(cmz-cdz);
+    return {type:'num', html:`<p>Para un carácter dicotómico, la concordancia en gemelos MZ es <b>${fmtS(cmz*100,0)}%</b> y en DZ <b>${fmtS(cdz*100,0)}%</b>.</p><p>Estima la heredabilidad H con la fórmula del temario.</p>`,
+      answer:H, tol:0.011, label:'H =',
+      explain:`<p>H = 2 × (C<sub>MZ</sub> − C<sub>DZ</sub>) = 2 × (${fmtS(cmz,2)} − ${fmtS(cdz,2)}) = <b>${fmt(H,2)}</b>.</p><p>Lógica: los MZ comparten el 100% de genes y los DZ el 50%; si ambos comparten ambiente, la diferencia refleja la mitad del componente genético. ${cmz<1?'Que C<sub>MZ</sub> < 100% indica que también pesa el ambiente.':''}</p>`};
+  }
+  const prev = pick([0.001,0.002,0.005,0.01,0.0004]), lam=pick([3,5,8,10,15,20,40]);
+  const rs = prev*lam;
+  return {type:'num', html:`<p>Una enfermedad compleja tiene una prevalencia poblacional de <b>${fmtS(prev*100,2)}%</b>. Entre los hermanos de afectados, el <b>${fmtS(rs*100,2)}%</b> la desarrolla.</p><p>Calcula λ<sub>s</sub> (aumento de riesgo en hermanos).</p>`,
+    answer:lam, tol:0.05*lam, label:'λs =',
+    explain:`<p>λ<sub>R</sub> = riesgo en familiares del paciente / riesgo en población = ${fmtS(rs*100,2)}% / ${fmtS(prev*100,2)}% = <b>${lam}</b>.</p><p>λ disminuye al bajar el grado de parentesco, y lo hace de forma irregular.</p>`};
+});
+skill('h2','Heredabilidad H² y h²','otros', () => {
+  const VA=RI(10,60), VD=RI(0,20), VI=RI(0,8), VE=RI(10,60);
+  const VG=VA+VD+VI, VP=VG+VE, strict=Math.random()<.5;
+  return {type:'num', html:`<p>Para un carácter cuantitativo en una población: V<sub>A</sub> = ${VA}, V<sub>D</sub> = ${VD}, V<sub>I</sub> = ${VI}, V<sub>E</sub> = ${VE}.</p><p>Calcula la heredabilidad en sentido <b>${strict?'estricto (h²)':'amplio (H²)'}</b>.</p>`,
+    answer: strict?VA/VP:VG/VP, tol:0.006, label: strict?'h² =':'H² =',
+    explain:`<p>V<sub>G</sub> = V<sub>A</sub> + V<sub>D</sub> + V<sub>I</sub> = ${VG}; V<sub>P</sub> = V<sub>G</sub> + V<sub>E</sub> = ${VP}.</p><p>${strict?`h² = V<sub>A</sub>/V<sub>P</sub> = ${VA}/${VP} = <b>${fmt(VA/VP)}</b>. Sólo lo aditivo se transmite y sobre ello actúa la selección.`:`H² = V<sub>G</sub>/V<sub>P</sub> = ${VG}/${VP} = <b>${fmt(VG/VP)}</b> (coeficiente de determinación genética).`}</p>`};
+});
+skill('epi','Epistasia: identifica la proporción','otros', () => {
+  const types=[
+    {r:[9,3,3,1], name:'9:3:3:1 — sin epistasia (segregación independiente)'},
+    {r:[9,3,4], name:'9:3:4 — epistasia recesiva (p. ej. cc albino enmascara B/b)'},
+    {r:[12,3,1], name:'12:3:1 — epistasia dominante (W_ blanco enmascara G/g)'},
+    {r:[9,7], name:'9:7 — genes complementarios (hacen falta C_ y P_)'},
+    {r:[15,1], name:'15:1 — genes duplicados (basta un dominante en cualquiera)'},
+    {r:[13,3], name:'13:3 — epistasia dominante-recesiva (inhibidora)'},
+  ];
+  const t=pick(types); const n=RI(16,30)*10;
+  const counts=t.r.map(x=>Math.max(1,Math.round(n*x/16*(1+R(-0.06,0.06)))));
+  const tot=counts.reduce((x,y)=>x+y,0);
+  const idx=shuffle([...Array(counts.length).keys()]);
+  const labels=['Fenotipo A','Fenotipo B','Fenotipo C','Fenotipo D'];
+  const rows=idx.map((i,j)=>`<tr><td>${labels[j]}</td><td>${counts[i]}</td></tr>`).join('');
+  const opts=types.map(x=>x.name);
+  return {type:'mc', html:`<p>Se cruzan dos dihíbridos AaBb × AaBb y en la F2 (${tot} individuos) se observa:</p><table class="t"><tr><th>Fenotipo</th><th>Nº</th></tr>${rows}</table><p>¿Qué tipo de interacción explica mejor estos datos?</p>`,
+    options:opts, correct:types.indexOf(t), keep:true,
+    explain:`<p>Divide cada clase por ${tot}/16 = ${fmtS(tot/16,1)}: ${t.r.map((x,i)=>fmtS(counts[i]/(tot/16),1)).join(' : ')} ≈ <b>${t.r.join(':')}</b>.</p><p>${t.name}. Recuerda: la epistasia es entre genes distintos; el epistático enmascara al hipostático.</p>`};
+});
+skill('steinert','Anticipación: Steinert (CTG)','otros', () => {
+  const cls=pick([[5,37,0],[38,180,1],[200,2000,2],[2100,3500,3]]);
+  const v=RI(cls[0],cls[1]);
+  return {type:'mc', html:`<p>Un individuo tiene <b>${v}</b> repeticiones CTG en la 3′ UTR de DMPK. Según el temario, se clasifica como:</p>`,
+    options:['Normal (5–37)','Premutado (38–180)','Afectado (200–2000)','Forma neonatal (>2000)'], correct:cls[2], keep:true,
+    explain:`<p>Normal 5–37 · premutado 38–180 · afectado 200–2000 · neonatal >2000. La expansión crece de generación en generación (anticipación): más repeticiones, debut más temprano y más grave, también dentro de los afectados.</p>`};
+});
+skill('teo_otros','Teoría: temas 3.1, 3.3, 4 y 5','otros', () => theoryItem('otros'));
+
+function theoryItem(group){
+  const pool=THEORY.filter(t=>t[0]===group); const t=pick(pool);
+  return {type:'mc', html:`<p>${t[1]}</p>`, options:t[2], correct:0, explain:`<p>${t[3]}</p>`};
+}
+
+function genGxE(){
+  let p00,p10,p01,p11,scale,cls;
+  for(let tries=0;tries<500;tries++){
+    p00=RI(5,30)/10000; const r10=R(2,10), r01=R(2,10);
+    p10=Math.round(p00*r10*10000)/10000; p01=Math.round(p00*r01*10000)/10000;
+    scale=pick(['add','mult']); const want=pick(['supra','sub','none']);
+    const addE = p10+p01-p00, mulE = p10*p01/p00;
+    let base = scale==='add'?addE:mulE;
+    if(want==='none') p11=base; else if(want==='supra') p11=base*R(1.25,2.5); else p11=Math.max(Math.max(p10,p01)*1.02, base*R(0.4,0.8));
+    p11=Math.round(p11*10000)/10000;
+    if(p11>0.5||p11<=Math.max(p10,p01)) continue;
+    const lhs = scale==='add' ? (p10-p00)+(p01-p00) : (p10/p00)*(p01/p00);
+    const rhs = scale==='add' ? (p11-p00) : p11/p00;
+    const rel=(rhs-lhs)/lhs;
+    if(Math.abs(rel)<0.03) cls='none'; else if(Math.abs(rel)<0.12) continue; else cls= rel>0?'supra':'sub';
+    break;
+  }
+  const add=scale==='add';
+  const L = add ? (p10-p00)+(p01-p00) : (p10/p00)*(p01/p00), Rr = add ? (p11-p00) : p11/p00;
+  const ci = cls==='supra'?0: cls==='sub'?1:2;
+  const nm = add?'aditiva':'multiplicativa';
+  const ex = add
+   ? `<p>Escala aditiva (diferencias de riesgo):</p><p>RR10 = p10 − p00 = ${fmtS(p10,4)} − ${fmtS(p00,4)} = ${fmtS(p10-p00,4)}<br>RR01 = p01 − p00 = ${fmtS(p01-p00,4)}<br>RR11 = p11 − p00 = ${fmtS(p11-p00,4)}</p><p>RR10 + RR01 = ${fmtS(L,4)} ${cls==='supra'?'&lt;':cls==='sub'?'&gt;':'≈'} RR11 = ${fmtS(Rr,4)} → <b>${['supra-aditiva','sub-aditiva','sin interacción (aditivo)'][ci]}</b>.</p>`
+   : `<p>Escala multiplicativa (cocientes de riesgo / OR):</p><p>RR10 = p10/p00 = ${fmtS(p10/p00,2)}<br>RR01 = p01/p00 = ${fmtS(p01/p00,2)}<br>RR11 = p11/p00 = ${fmtS(Rr,2)}</p><p>RR10 × RR01 = ${fmtS(L,2)} ${cls==='supra'?'&lt;':cls==='sub'?'&gt;':'≈'} RR11 = ${fmtS(Rr,2)} → <b>${['supra-multiplicativa','sub-multiplicativa','sin interacción (multiplicativo)'][ci]}</b>.</p>`;
+  return {type:'mc', html:`<p>Riesgo de enfermedad según genotipo (G) y exposición ambiental (E):</p><table class="t"><tr><th></th><th>E = 0</th><th>E = 1</th></tr><tr><th>G = 0</th><td>${fmtS(p00,4)}</td><td>${fmtS(p01,4)}</td></tr><tr><th>G = 1</th><td>${fmtS(p10,4)}</td><td>${fmtS(p11,4)}</td></tr></table><p>Si estas dos variables siguen un <b>modelo ${nm}</b>, ¿qué tipo de interacción hay?</p>`,
+    options: add?['Interacción supra-aditiva','Interacción sub-aditiva','No hay interacción (efectos aditivos)']:['Interacción supra-multiplicativa','Interacción sub-multiplicativa','No hay interacción (efectos multiplicativos)'],
+    correct:ci, keep:true, explain:ex+`<p>p00 es el riesgo de fondo (ni variante ni exposición). Una misma tabla puede ser supra-aditiva y a la vez sub-multiplicativa: por eso hay que saber el modelo antes del estudio.</p>`};
+}
+
+/* ---------- pedigrí ---------- */
+function genPed(){
+  for(let attempt=0; attempt<300; attempt++){
+    const al=shuffle([1,2,3,4,5,6]);
+    const X=al[0], Y=al[1];
+    const gf=[X, al[2]], gm = Math.random()<.3?[Y,Y]:[Y,al[3]];
+    const father=[X,Y];
+    const share=Math.random()<.3;
+    const mother= share?[X,Y] : (Math.random()<.25?[al[4],al[4]]:[al[4],al[5]]);
+    const n=RI(5,8), thTrue=R(0.05,0.35);
+    const kids=[];
+    for(let i=0;i<n;i++){
+      const M=Math.random()<.5, rec=Math.random()<thTrue;
+      const pat = M ? (rec?Y:X) : (rec?X:Y);
+      const mat = pick(mother);
+      const g=[pat,mat].sort((p,q)=>p-q);
+      // ¿se puede saber el alelo paterno?
+      const cand=new Set();
+      if(father.includes(g[0]) && mother.includes(g[1])) cand.add(g[0]);
+      if(father.includes(g[1]) && mother.includes(g[0])) cand.add(g[1]);
+      let cls;
+      if(cand.size!==1) cls='NI';
+      else { const p=[...cand][0]; cls = ((M&&p===X)||(!M&&p===Y)) ? 'NR':'R'; }
+      kids.push({sex:Math.random()<.5?'m':'f', M, g, cls});
+    }
+    const inf=kids.filter(k=>k.cls!=='NI').length, r=kids.filter(k=>k.cls==='R').length;
+    if(inf<4) continue;
+    if(r===0 && Math.random()<.8) continue;
+    if(share && kids.every(k=>k.cls!=='NI')) continue;
+    return {type:'ped', ped:{gf,gm,father,mother,kids,X,Y}, answer:r/inf, tol:0.006,
+      html:`<p>Enfermedad autosómica <b>dominante</b> (afectados en rosa). Debajo de cada persona, su genotipo para un marcador A cercano. Los abuelos paternos están genotipados.</p><p>1) Toca cada hijo de la generación III para marcarlo como <b>NR</b> (no recombinante), <b>R</b> (recombinante) o <b>NI</b> (no informativo). 2) Escribe θ.</p>`,
+      explain: pedExplain(gf,gm,father,mother,kids,X,Y,r,inf)};
+  }
+}
+function pedExplain(gf,gm,father,mother,kids,X,Y,r,inf){
+  const share = mother[0]===father[0]&&mother[1]===father[1];
+  const lines=kids.map((k,i)=>`III-${i+1} ${a(k.g[0])}${a(k.g[1])} ${k.M?'afectado':'sano'} → <b>${k.cls}</b>`).join('<br>');
+  const th=r/inf;
+  return `<p><b>Fase:</b> el padre (II-1) es afectado y heredó M de su padre afectado (I-1). De él sólo pudo recibir ${a(X)} (I-1 es ${a(gf[0])}${a(gf[1])}; ${a(Y)} viene de la abuela). Por tanto la fase es <b>M–${a(X)} / m–${a(Y)}</b>.</p>
+  <p>Hijo afectado con ${a(X)} paterno o sano con ${a(Y)} paterno = NR; al revés = R.${share?' Como la madre tiene el mismo genotipo que el padre, los hijos heterocigotos '+a(X)+a(Y)+' son no informativos.':''}</p>
+  <p class="mono" style="font-size:.88rem">${lines}</p>
+  <p>θ = ${r}/${inf} = <b>${fmt(th)}</b>${th>0&&th<0.5?` → Haldane: −½ ln(1 − ${fmtS(2*th,3)}) = ${fmt(haldane(th)*100,1)} cM`:th===0?' (sin recombinantes: loci muy próximos)':''}. LOD máximo (fase conocida, en θ = θ̂) = ${th>0?fmt(lodKnown(th,r,inf)):fmt(lodKnown(0.0001,0,inf))}.</p>`;
+}
+function pedSVG(p, labels, onTag){
+  const NS='http://www.w3.org/2000/svg';
+  const n=p.kids.length, W=640, H=370, s=30;
+  const svg=document.createElementNS(NS,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('role','img'); svg.setAttribute('aria-label','Pedigrí de tres generaciones');
+  const el=(t,at,txt)=>{const e=document.createElementNS(NS,t); for(const k in at) e.setAttribute(k,at[k]); if(txt!=null) e.textContent=txt; svg.appendChild(e); return e;};
+  const line=(x1,y1,x2,y2)=>el('line',{x1,y1,x2,y2,stroke:'var(--ink)','stroke-width':1.5});
+  const person=(x,y,sex,aff,geno)=>{
+    const fill=aff?'var(--probe)':'var(--surface)';
+    if(sex==='m') el('rect',{x:x-s/2,y:y-s/2,width:s,height:s,fill,stroke:'var(--ink)','stroke-width':1.6});
+    else el('circle',{cx:x,cy:y,r:s/2,fill,stroke:'var(--ink)','stroke-width':1.6});
+    el('text',{x,y:y+s/2+17,'text-anchor':'middle','font-size':13},geno);
+  };
+  const g=x=>a(x[0])+a(x[1]);
+  // generaciones
+  [['I',45],['II',150],['III',265]].forEach(([t,y])=>el('text',{x:14,y:y+5,'font-size':13,fill:'var(--muted)'},t));
+  const gfx=150, gmx=250, fx=200, mx=380, y1=45, y2=150, y3=265;
+  line(gfx+s/2,y1,gmx-s/2,y1); line((gfx+gmx)/2,y1,(gfx+gmx)/2,y1+40); line((gfx+gmx)/2,y1+40,fx,y1+40); line(fx,y1+40,fx,y2-s/2);
+  person(gfx,y1,'m',true,g(p.gf)); person(gmx,y1,'f',false,g(p.gm));
+  line(fx+s/2,y2,mx-s/2,y2);
+  person(fx,y2,'m',true,g(p.father)); person(mx,y2,'f',false,g(p.mother));
+  const cx=(fx+mx)/2, gap=Math.min(76,(W-80)/n), x0=Math.max(55, cx-(n-1)*gap/2);
+  line(cx,y2,cx,y3-48);
+  const xs=p.kids.map((_,i)=>x0+i*gap);
+  line(xs[0],y3-48,xs[n-1],y3-48);
+  p.kids.forEach((k,i)=>{
+    line(xs[i],y3-48,xs[i],y3-s/2);
+    person(xs[i],y3,k.sex,k.M,g(k.g));
+    el('text',{x:xs[i],y:y3-s/2-8,'text-anchor':'middle','font-size':10,fill:'var(--muted)'},(i+1));
+    const lab=labels[i]||'?';
+    const base = lab.split(/[ →]/)[0]; const col = lab.includes('→')?'var(--bad)': base==='?'?'var(--muted)': base==='R'?'var(--probe)': base==='NR'?'var(--cy)':'var(--warn)';
+    const gr=document.createElementNS(NS,'g'); gr.setAttribute('class','tag'); gr.setAttribute('tabindex','0'); gr.setAttribute('role','button'); gr.setAttribute('aria-label','Hijo '+(i+1)+': '+lab);
+    const r=document.createElementNS(NS,'rect'); const wd=lab.length>3?62:44; r.setAttribute('x',xs[i]-wd/2); r.setAttribute('y',y3+38); r.setAttribute('width',wd); r.setAttribute('height',24); r.setAttribute('rx',12); r.setAttribute('fill','var(--surface)'); r.setAttribute('stroke',col); r.setAttribute('stroke-width',2);
+    const t=document.createElementNS(NS,'text'); t.setAttribute('x',xs[i]); t.setAttribute('y',y3+55); t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',13); t.setAttribute('font-weight',600); t.setAttribute('fill',col); t.textContent=lab;
+    gr.appendChild(r); gr.appendChild(t); svg.appendChild(gr);
+    if(onTag){ gr.addEventListener('click',()=>onTag(i)); gr.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault(); onTag(i);} }); }
+  });
+  return svg;
+}
+
+/* ---------- motor de preguntas ---------- */
+function weightedSkill(groupBias){
+  const ids=Object.keys(SKILLS);
+  const w=ids.map(id=>{ const s=state.stats[id]||{ok:0,n:0}; const acc=(s.ok+1)/(s.n+2); const base = SKILLS[id].group==='mapa'?groupBias:(1-groupBias); const per = base/ids.filter(j=>SKILLS[j].group===SKILLS[id].group).length; return per*(0.6+2*(1-acc)) * (id==='ped'?1.6:1); });
+  let r=Math.random()*w.reduce((x,y)=>x+y,0);
+  for(let i=0;i<ids.length;i++){ r-=w[i]; if(r<=0) return ids[i]; }
+  return ids[0];
+}
+function makeItem(id){ const it=SKILLS[id].gen(); it.skill=id; if(it.type==='mc' && !it.keep){ const order=shuffle(it.options.map((_,i)=>i)); it.options=order.map(i=>it.options[i]); it.correct=order.indexOf(it.correct); } else if(it.type==='mc' && it.keep && it.options.length>3 && id!=='steinert'){ const order=shuffle(it.options.map((_,i)=>i)); it.options=order.map(i=>it.options[i]); it.correct=order.indexOf(it.correct); } return it; }
+
+function renderItem(host, it, opts){
+  host.innerHTML='';
+  const card=document.createElement('div'); card.className='card';
+  const sk=SKILLS[it.skill];
+  card.innerHTML=`<div class="qmeta"><span><span class="chip ${sk.group==='mapa'?'m':''}">${sk.name}</span></span><span>${opts.meta||''}</span></div><div class="prompt">${it.html}</div>`;
+  const fb=document.createElement('div'); fb.className='fb';
+  let answered=false;
+  const finish=(ok, extra)=>{
+    if(answered) return; answered=true;
+    record(it.skill, ok); if(opts.daily) recordDaily(ok);
+    fb.className='fb on '+(ok?'ok':'ko');
+    fb.innerHTML=`<h3>${ok?'Correcto':'No exactamente'}</h3>${extra||''}<div class="exp">${it.explain}</div>`;
+    const nx=document.createElement('button'); nx.className='btn'; nx.textContent=opts.nextLabel||'Siguiente'; nx.style.marginTop='10px';
+    nx.addEventListener('click',opts.onNext); fb.appendChild(nx); nx.focus({preventScroll:true});
+    fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+  if(it.type==='num' || it.type==='ped'){
+    let labels=[], svgHost=null;
+    if(it.type==='ped'){
+      labels=it.ped.kids.map(()=> '?');
+      svgHost=document.createElement('div'); svgHost.className='ped';
+      const cycle=['?','NR','R','NI'];
+      const draw=()=>{ svgHost.innerHTML=''; svgHost.appendChild(pedSVG(it.ped, labels, answered?null:(i)=>{ labels[i]=cycle[(cycle.indexOf(labels[i])+1)%4]; draw(); svgHost.querySelectorAll('.tag')[i].focus(); })); };
+      draw(); card.appendChild(svgHost);
+      const lg=document.createElement('div'); lg.className='legend'; lg.textContent='Cuadrado = hombre, círculo = mujer, rosa = afectado. Cada toque cambia la etiqueta: ? → NR → R → NI.'; card.appendChild(lg);
+      it._labels=labels; it._redraw=()=>{ svgHost.innerHTML=''; svgHost.appendChild(pedSVG(it.ped, labels.map((l,i)=>{ const c=it.ped.kids[i].cls; return l===c? l+' ✓' : (l==='?'?c:l+'→'+c); }), null)); };
+    }
+    const row=document.createElement('div'); row.className='answer';
+    const iid='ans-'+Math.random().toString(36).slice(2,8);
+    row.innerHTML=`<label for="${iid}">${it.label||'θ ='}</label><input type="text" id="${iid}" inputmode="decimal" autocomplete="off"><span>${it.unit||''}</span>`;
+    const b=document.createElement('button'); b.className='btn'; b.textContent='Comprobar'; row.appendChild(b);
+    const msg=document.createElement('span'); msg.className='note'; row.appendChild(msg);
+    card.appendChild(row);
+    const go=()=>{
+      const v=parseNum(row.querySelector('input').value);
+      if(isNaN(v)){ msg.textContent='Escribe un número (vale coma o punto, o una fracción como 2/7).'; return; }
+      if(it.type==='ped' && labels.includes('?')){ msg.textContent='Te falta etiquetar algún hijo.'; return; }
+      msg.textContent='';
+      const numOk=Math.abs(v-it.answer)<=it.tol;
+      let ok=numOk, extra='';
+      if(it.type==='ped'){
+        const nBad=labels.filter((l,i)=>l!==it.ped.kids[i].cls).length;
+        ok = numOk && nBad===0;
+        extra=`<p>${nBad===0?'Todas las etiquetas bien.':nBad+' etiqueta(s) mal (en el pedigrí ves la correcta).'} ${numOk?'θ correcta.':'θ correcta: '+fmt(it.answer)+'.'}</p>`;
+        it._redraw();
+      } else if(!numOk){ extra=`<p>Tu respuesta: ${fmtS(v,4)} · correcta: <b>${fmt(it.answer, it.answer>10?1:3)}</b>${it.unit?' '+it.unit:''}</p>`; }
+      b.disabled=true; row.querySelector('input').disabled=true;
+      finish(ok, extra);
+    };
+    b.addEventListener('click',go);
+    row.querySelector('input').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+  } else {
+    const box=document.createElement('div'); box.className='opts';
+    it.options.forEach((o,i)=>{
+      const bt=document.createElement('button'); bt.className='opt'; bt.textContent=o;
+      bt.addEventListener('click',()=>{
+        box.querySelectorAll('.opt').forEach((x,j)=>{ x.disabled=true; if(j===it.correct) x.classList.add('right'); });
+        if(i!==it.correct) bt.classList.add('wrong');
+        finish(i===it.correct);
+      });
+      box.appendChild(bt);
+    });
+    card.appendChild(box);
+  }
+  card.appendChild(fb);
+  host.appendChild(card);
+}
+
+/* ---------- reto diario ---------- */
+function dailyNext(){
+  const host=$('#dailyHost'); const t=state.days[todayKey()]||{n:0,ok:0};
+  if(t.n>=10 && !dailyBonus){
+    host.innerHTML=`<div class="card summary"><h2>Reto de hoy completado</h2><div class="big">${t.ok}/${t.n}</div><p class="note">Racha: ${streak()} día(s). Puedes seguir sumando preguntas extra o entrenar un tipo concreto.</p><div class="row"><button class="btn" id="moreBtn">Seguir con preguntas extra</button><button class="btn ghost" id="toTrain">Entrenar un tipo</button></div></div>`;
+    $('#moreBtn').addEventListener('click',()=>{ dailyBonus=true; dailyNext(); });
+    $('#toTrain').addEventListener('click',()=>showView('train'));
+    return;
+  }
+  const id=weightedSkill(0.72);
+  renderItem(host, makeItem(id), {daily:true, meta: t.n<10?`Pregunta ${t.n+1} de 10`:`Extra ${t.n-9}`, onNext:dailyNext});
+}
+let dailyBonus=false;
+
+/* ---------- entreno ---------- */
+let trainSkill=null;
+function buildChips(){
+  const host=$('#skillChips'); host.innerHTML='';
+  const groups=[['mapa','Mapatge (3.2)'],['otros','Resto del temario']];
+  groups.forEach(([g,title])=>{
+    const h=document.createElement('div'); h.style.width='100%'; h.style.fontWeight='600'; h.style.fontSize='.85rem'; h.style.color='var(--muted)'; h.textContent=title; host.appendChild(h);
+    Object.values(SKILLS).filter(s=>s.group===g).forEach(s=>{
+      const b=document.createElement('button'); b.className='skill'; b.textContent=s.name; b.setAttribute('aria-pressed', String(trainSkill===s.id));
+      b.addEventListener('click',()=>{ trainSkill=s.id; buildChips(); trainNext(); });
+      host.appendChild(b);
+    });
+  });
+  const b=document.createElement('button'); b.className='skill'; b.disabled=true; b.textContent='Genètica de poblacions (pendiente de temario)'; host.appendChild(b);
+}
+function trainNext(){
+  const host=$('#trainHost');
+  if(!trainSkill){ host.innerHTML=''; return; }
+  renderItem(host, makeItem(trainSkill), {meta:'Entreno libre', onNext:trainNext});
+}
+
+/* ---------- fórmulas ---------- */
+const FORMULAS=[
+ ['Frecuencia de recombinación','θ = R / meiosis informativas','Los no informativos no cuentan. 0 ≤ θ ≤ 0,5.'],
+ ['Haldane (hay que sabérsela)','w = −½ ln(1 − 2θ)','w en Morgans; ×100 para cM. Corrige dobles entrecruzamientos.'],
+ ['Haldane inversa','θ = ½ (1 − e^(−2w))','Útil para pasar de cM a θ esperada.'],
+ ['cM → Mb','1 cM ≈ 1 Mb (general) · ♂ 1,1 Mb · ♀ 0,7 Mb','Genoma ≈ 3000 cM; ♂ 2590 cM, ♀ 4281 cM.'],
+ ['LOD, fase conocida','Z(θ) = log₁₀ [θ^k (1−θ)^(n−k) / 0,5^n]','θ̂ = k/n maximiza Z. Z > 3 ligamiento, Z < −2 exclusión.'],
+ ['LOD, fase desconocida','Z = log₁₀ {½[θ^k(1−θ)^(n−k) + θ^(n−k)(1−θ)^k] / 0,5^n}','Siempre da menos que con fase conocida. Los LOD de familias se suman.'],
+ ['Heterocigosidad','H = 1 − Σ pᵢ²','Probabilidad de que un individuo al azar sea heterocigoto.'],
+ ['PIC','PIC = 1 − Σ pᵢ² − Σ_(i<j) 2 pᵢ² pⱼ²','Resta los cruces con el mismo heterocigoto (no informativos).'],
+ ['GxE escala aditiva','(p10−p00) + (p01−p00) vs (p11−p00)','= aditivo · &lt; supra-aditiva · &gt; sub-aditiva.'],
+ ['GxE escala multiplicativa','(p10/p00)·(p01/p00) vs p11/p00','= multiplicativo · &lt; supra · &gt; sub-multiplicativa.'],
+ ['Heredabilidad','H² = V_G / V_P · h² = V_A / V_P','V_P = V_A + V_D + V_I + V_E.'],
+ ['Gemelos y familias','H = 2 (C_MZ − C_DZ) · λ_R = riesgo familiar / riesgo poblacional','MZ comparten 100% de genes, DZ 50%.'],
+];
+function buildFormulas(){ $('#formulas').innerHTML=FORMULAS.map(f=>`<div class="f"><h4>${f[0]}</h4><div class="eq">${f[1]}</div><p>${f[2]}</p></div>`).join(''); }
+
+/* ---------- progreso ---------- */
+function buildProgress(){
+  const d=new Date(); d.setDate(d.getDate()-13); let h='';
+  for(let i=0;i<14;i++){ const k=todayKey(d); const x=state.days[k]; h+=`<div class="${x?(x.n>=10?'d':'p'):''}" title="${k}${x?': '+x.ok+'/'+x.n:''}"></div>`; d.setDate(d.getDate()+1); }
+  $('#days').innerHTML=h;
+  $('#bars').innerHTML=Object.values(SKILLS).map(s=>{ const st=state.stats[s.id]||{ok:0,n:0}; const p=st.n?st.ok/st.n:0; const col = !st.n?'var(--line)': p>=.8?'var(--ok)': p>=.5?'var(--warn)':'var(--bad)'; return `<div class="bar"><span>${s.name}</span><div class="track"><i style="width:${st.n?Math.max(4,p*100):0}%;background:${col}"></i></div><span class="n">${st.n?Math.round(p*100)+'% · '+st.n:'sin datos'}</span></div>`; }).join('');
+}
+let resetArmed=false;
+$('#resetBtn').addEventListener('click',()=>{
+  if(!resetArmed){ resetArmed=true; $('#resetMsg').textContent='Pulsa otra vez para confirmar.'; setTimeout(()=>{resetArmed=false; $('#resetMsg').textContent='';},4000); return; }
+  state={stats:{},days:{},total:{ok:0,n:0}}; save(); refreshHeader(); buildProgress(); $('#resetMsg').textContent='Progreso borrado.'; resetArmed=false; dailyNext();
+});
+
+/* ---------- navegación ---------- */
+function showView(v){
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.v===v)));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on', s.id==='v-'+v));
+  if(v==='prog') buildProgress();
+  if(v==='train' && !trainSkill){ trainSkill='ped'; buildChips(); trainNext(); }
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.v)));
+
+loadLocal(); refreshHeader(); buildChips(); buildFormulas(); dailyNext(); connectDb();
+</script>
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body>
+</html>

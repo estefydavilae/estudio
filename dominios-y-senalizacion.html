@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dominios y señalización</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Arcade de laboratorio: fondo tinta, piezas de color por tipo de dominio. Layout: menú de 4 juegos → pantalla de juego con HUD fijo arriba. */
+  --bg:#eef1f6; --surface:#ffffff; --ink:#141c2a; --muted:#5d6878; --line:#d6dce6; --accent:#2a4fd6; --accent-soft:#e3e9fc;
+  --good:#16955a; --good-soft:#dff4e8; --bad:#d23b33; --bad-soft:#fbe3e1; --off:#c9cfd9;
+  --d-ptyr:#0f8f7e; --d-pro:#3f9a3f; --d-lip:#c98a0e; --d-cat:#d4483f; --d-dna:#2f63cf; --d-lig:#7c4fe0; --d-tm:#6f7680; --d-reg:#b8477f; --d-oth:#8c96a3;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e141e; --surface:#182131; --ink:#e8edf5; --muted:#9aa6b8; --line:#2b3648; --accent:#86a0ff; --accent-soft:#222d48;
+    --good:#45c987; --good-soft:#15352a; --bad:#ff7b72; --bad-soft:#3e1d1c; --off:#3a4558;
+    --d-ptyr:#1aa894; --d-pro:#4fae4f; --d-lip:#d39a1c; --d-cat:#e0574f; --d-dna:#4a7be0; --d-lig:#9168ee; --d-tm:#7d8591; --d-reg:#cc5a8f; --d-oth:#7a8594;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e141e; --surface:#182131; --ink:#e8edf5; --muted:#9aa6b8; --line:#2b3648; --accent:#86a0ff; --accent-soft:#222d48;
+  --good:#45c987; --good-soft:#15352a; --bad:#ff7b72; --bad-soft:#3e1d1c; --off:#3a4558;
+  --d-ptyr:#1aa894; --d-pro:#4fae4f; --d-lip:#d39a1c; --d-cat:#e0574f; --d-dna:#4a7be0; --d-lig:#9168ee; --d-tm:#7d8591; --d-reg:#cc5a8f; --d-oth:#7a8594;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding:18px 16px 40px;display:flex;flex-direction:column;gap:16px;min-height:100%}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,6vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0}
+.hidden{display:none!important}
+
+/* menú */
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:460px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:150px;transition:transform .12s}
+.tile:hover{transform:translateY(-2px);border-color:var(--accent)}
+.tile h2{font-family:var(--f-display);font-weight:800;font-size:22px;margin:0}
+.tile p{margin:0;color:var(--muted);font-size:14.5px}
+.tile .best{margin-top:auto;font-size:13px;font-weight:600;color:var(--accent)}
+.mini{display:flex;gap:4px}
+.mini i{height:18px;border-radius:5px;flex:1}
+.decks{display:flex;flex-wrap:wrap;gap:8px}
+.deck{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;text-align:left;flex:1 1 200px}
+.deck small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.deck.weak{border-color:var(--d-lip)}
+
+/* HUD */
+.hud{display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.back{font-size:22px;width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center}
+.hud .t{font-family:var(--f-display);font-weight:800;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pts{font-family:var(--f-display);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+.combo{font-weight:700;font-size:14px;color:var(--d-lip);min-width:38px;text-align:right}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--accent);transition:width .2s linear}
+.bar.low i{background:var(--bad)}
+.toast{text-align:center;font-weight:600;min-height:24px;font-size:15px}
+.toast.ok{color:var(--good)} .toast.ko{color:var(--bad)}
+
+/* piezas */
+.blk{border-radius:10px;color:#fff;font-weight:700;font-size:15px;padding:12px 10px;min-width:54px;text-align:center;line-height:1.1}
+.c-ptyr{background:var(--d-ptyr)} .c-pro{background:var(--d-pro)} .c-lip{background:var(--d-lip)} .c-cat{background:var(--d-cat)} .c-dna{background:var(--d-dna)} .c-lig{background:var(--d-lig)} .c-tm{background:var(--d-tm)} .c-reg{background:var(--d-reg)} .c-oth{background:var(--d-oth)}
+.c-tm{background-image:repeating-linear-gradient(90deg,transparent 0 5px,rgba(255,255,255,.18) 5px 7px)}
+
+/* conecta */
+.pairs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px 10px;font-weight:600;font-size:16px;min-height:62px;display:flex;align-items:center;justify-content:center;text-align:center;transition:transform .12s,background .2s,border-color .2s}
+.card.L{border-left:6px solid var(--accent)}
+.card.sel{border-color:var(--accent);background:var(--accent-soft);transform:scale(1.03)}
+.card.ok{border-color:var(--good);background:var(--good-soft)}
+.card.ko{border-color:var(--bad);background:var(--bad-soft);animation:shake .3s}
+.card.pop{animation:pop .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(.85);opacity:.2}100%{transform:scale(1);opacity:1}}
+
+/* construye */
+.target{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,8vw,46px);text-align:center;line-height:1}
+.where{text-align:center;color:var(--muted);font-size:14px}
+.chain{display:flex;align-items:center;gap:4px;min-height:62px;padding:8px;border-radius:14px;background:var(--surface);border:2px dashed var(--line);overflow-x:auto}
+.chain .term{font-weight:700;color:var(--muted);padding:0 4px;flex:none}
+.chain .blk{flex:none}
+.chain.ok{border-color:var(--good);border-style:solid;background:var(--good-soft)}
+.chain.ko{border-color:var(--bad);border-style:solid;background:var(--bad-soft)}
+.palette{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.palette .blk{font-size:16px;padding:14px 12px;transition:transform .1s}
+.palette .blk:active{transform:scale(.93)}
+.sol{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.sol .blk{padding:8px;font-size:13px}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:700}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* corta la vía */
+.pert{background:var(--surface);border:2px solid var(--bad);border-radius:16px;padding:12px 14px;text-align:center}
+.pert .lab{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--bad)}
+.pert .txt{font-family:var(--f-display);font-weight:800;font-size:22px;line-height:1.15}
+.ask{text-align:center;font-weight:700;color:var(--muted)}
+.path{display:flex;flex-direction:column;align-items:center;gap:0}
+.node{background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:9px 18px;font-weight:600;min-width:180px;text-align:center;transition:background .25s,border-color .25s,color .25s}
+.node:hover:not(:disabled){border-color:var(--accent)}
+.node:disabled{cursor:default}
+.node.on{background:var(--good);border-color:var(--good);color:#fff}
+.node.dead{background:var(--off);border-color:var(--off);color:var(--muted)}
+.node.pick{outline:3px solid var(--bad);outline-offset:2px}
+.node.ans{outline:3px solid var(--ink);outline-offset:2px}
+.arrow{width:2px;height:14px;background:var(--line)}
+.none{margin-top:6px;border:2px dashed var(--line);border-radius:999px;padding:8px 16px;font-weight:600}
+.none.ans{outline:3px solid var(--ink);outline-offset:2px}
+.none.pick{outline:3px solid var(--bad)}
+
+/* rápido */
+.flash{background:var(--surface);border:2px solid var(--line);border-radius:22px;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-family:var(--f-display);font-weight:800;font-size:clamp(24px,6vw,36px);line-height:1.1;transition:border-color .15s,background .15s}
+.flash.ok{border-color:var(--good);background:var(--good-soft)}
+.flash.ko{border-color:var(--bad);background:var(--bad-soft)}
+.bins{display:grid;gap:10px}
+.bin{border-radius:16px;padding:18px 10px;font-weight:800;font-size:18px;color:#fff;text-align:center;line-height:1.15}
+.bin small{display:block;font-weight:500;font-size:12px;opacity:.85;margin-top:2px}
+.b0{background:var(--d-dna)} .b1{background:var(--d-reg)} .b2{background:var(--d-ptyr)}
+.keys{text-align:center;font-size:12px;color:var(--muted)}
+
+/* final */
+.end{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;text-align:center}
+.end .big{font-family:var(--f-display);font-weight:800;font-size:54px;line-height:1}
+.miss{text-align:left;font-size:14.5px;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.miss div{background:var(--bad-soft);border-radius:10px;padding:7px 10px}
+.miss b{color:var(--bad)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- MENÚ -->
+<section id="home">
+  <h1>Dominios y señalización</h1>
+  <p class="sub">Cuatro minijuegos de 1 minuto para el parcial. Toca, no leas.</p>
+  <div class="tiles" style="margin-top:16px">
+    <button class="tile" data-game="conecta">
+      <div class="mini"><i class="c-ptyr"></i><i class="c-pro"></i><i class="c-lip"></i></div>
+      <h2>Conecta</h2><p>Une cada dominio con lo que reconoce. Pares a toda velocidad.</p><span class="best" id="best-conecta"></span>
+    </button>
+    <button class="tile" data-game="construye">
+      <div class="mini"><i class="c-pro"></i><i class="c-ptyr"></i><i class="c-cat"></i><i class="c-dna"></i></div>
+      <h2>Constrúyela</h2><p>Monta la proteína bloque a bloque, de N‑t a C‑t.</p><span class="best" id="best-construye"></span>
+    </button>
+    <button class="tile" data-game="corta">
+      <div class="mini"><i class="c-dna"></i><i class="c-dna"></i><i class="c-oth"></i><i class="c-oth"></i></div>
+      <h2>Corta la vía</h2><p>Una mutación. ¿Dónde se apaga la señal?</p><span class="best" id="best-corta"></span>
+    </button>
+    <button class="tile" data-game="rapido">
+      <div class="mini"><i class="c-dna"></i><i class="c-reg"></i></div>
+      <h2>Clasifica</h2><p>Sale una tarjeta: mándala a su caja antes de que acabe el tiempo.</p><span class="best" id="best-rapido"></span>
+    </button>
+  </div>
+</section>
+
+<!-- ELECCIÓN DE MAZO -->
+<section id="pick" class="hidden">
+  <div class="hud"><button class="back" data-back aria-label="Volver al menú">←</button><span class="t" id="pick-title"></span></div>
+  <div class="decks" id="pick-decks"></div>
+</section>
+
+<!-- JUEGO -->
+<section id="game" class="hidden" style="display:flex;flex-direction:column;gap:14px">
+  <div class="hud"><button class="back" data-back aria-label="Volver al menú">←</button><span class="t" id="g-title"></span><span class="combo" id="g-combo"></span><span class="pts" id="g-pts">0</span></div>
+  <div class="bar" id="g-bar"><i></i></div>
+  <div id="stage" style="display:flex;flex-direction:column;gap:14px"></div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+</section>
+
+<!-- FINAL -->
+<section id="end" class="hidden">
+  <div class="end">
+    <div class="muted" id="end-title"></div>
+    <div class="big" id="end-pts"></div>
+    <div id="end-best" class="muted"></div>
+    <div class="miss" id="end-miss"></div>
+    <div class="row"><button class="btn primary" id="end-again">Otra vez</button><button class="btn" data-back>Menú</button></div>
+  </div>
+</section>
+
+</div>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+
+/* ============ DATOS ============ */
+// CONECTA: [izquierda, derecha]
+const PAIRS = {
+ modulos:{name:"Módulo → qué reconoce", sub:"SH2, PTB, PH, C1…", p:[
+  ["SH2","pTyr (lado C-t)"],["PTB","NPXpY (lado N-t)"],["SH3","PXXP (prolinas)"],["WW","PPXY"],["14-3-3","pSer"],["Bromo","Lys acetilada"],
+  ["UIM / UBA","Ubiquitina"],["PH","PIP3"],["PX","PI-3-P"],["C1","DAG"],["C2","Ca²⁺ + fosfolípidos"],["CNB","AMPc / GMPc"],["Death domain","Otro DD (apoptosis)"],["MH1","DNA (AGAC) + NLS"],["Dedos de Zn","HRE en el DNA"]]},
+ motivos:{name:"Motivo → quién lo lee o lo pone", sub:"pY-X-X-M, LXXLL, TEY…", p:[
+  ["pY-X-X-M","p85 (PI3K)"],["pY…Pro","PLCγ"],["NPXpY","Shc"],["LXXLL","Hélice 12 (AF-2)"],["SSXS de Smad2/3","Lo fosforila RI"],["Región GS de RI","La fosforila RII"],
+  ["TEY de ERK","Lo fosforila MEK"],["Thr308 de Akt","PDK1"],["Ser473 de Akt","mTORC2"],["Ser133 de CREB","PKA"],["K48 ×4 Ub","Proteasoma"],["Cola Pro de Sos","SH3 de Grb2"]]},
+ dna:{name:"Elemento del DNA → factor", sub:"CRE, GAS, SRE, DR-1…", p:[
+  ["CRE (TGACGTCA)","CREB"],["GAS","Dímero de STAT"],["SRE","SRF + TCF"],["AGAC","Smad"],["AGAACA","GR / PR / AR / MR"],["AGGTCA palindrómico","ER"],
+  ["DR-1","PPAR–RXR"],["Repetición invertida","FXR–RXR"],["AP-1","Fos / Jun"],["TCACNCCAC","SREBP"],["UAS","GAL4"],["RARE","RAR"]]},
+ ligandos:{name:"Mensajero o ligando → diana", sub:"AMPc, NO, 9-cis RA…", p:[
+  ["AMPc","PKA y EPAC"],["GMPc","PKG"],["DAG","C1 de la PKC"],["IP3","IP3R del RE"],["Ca²⁺–CaM","Calcineurina"],["NO","GC soluble (hemo)"],["ANP / BNP","GC de membrana"],
+  ["PIP3","PH de Akt"],["9-cis RA","RXR"],["Oxiesteroles","LXR"],["Ácidos biliares","FXR"],["Ácidos grasos","PPAR"],["All-trans RA","RAR"]]},
+ gprot:{name:"Proteínas G y toxinas", sub:"Gαs, Gαq, colérica…", p:[
+  ["Gαs","↑ Adenilato ciclasa"],["Gαi","↓ Adenilato ciclasa"],["Gαq","PLCβ"],["Gαt","PDE (↓ GMPc)"],["Gβγ","Canal K⁺ cardíaco"],["Toxina colérica","Gαs siempre con GTP"],
+  ["Toxina pertussis","Gαi desacoplada"],["RGS","GAP de Gα"],["GRK","Fosforila el C-t del GPCR"],["β-arrestina","Internaliza el receptor"],["Gα (anclaje)","Acilación N-t"],["Gγ (anclaje)","Isoprenilación C-t"]]},
+ farmacos:{name:"Fármaco o toxina → diana", sub:"Tamoxifeno, Viagra…", p:[
+  ["Tamoxifeno","ER (pliega hélice 12)"],["RU486","Receptor de progesterona"],["Sildenafilo","PDE5"],["Ciclosporina A","Calcineurina"],["Fibratos","PPARα"],["Tiazolidinedionas","PPARγ"],
+  ["Cafeína","Receptor de rianodina"],["Actinomicina D","Transcripción"],["Cicloheximida","Traducción"],["Isoproterenol","Receptor β-adrenérgico"]]},
+ apagan:{name:"Quién apaga qué", sub:"PTEN, MKP, SOCS…", p:[
+  ["PTEN","PIP3 → PIP2"],["MKP","ERK"],["SHP1","pTyr del RTK"],["SOCS","JAK-STAT"],["Cbl","Endocitosis del RTK"],["Smad7","RI y R-Smad"],["SMURF","Degrada R-Smad"],
+  ["PP1","pSer133 de CREB"],["PDE","AMPc / GMPc"],["DAG quinasa","DAG → ácido fosfatídico"],["ICER","Ocupa el CRE"],["Inhibina","Bloquea activina"]]}
+};
+
+// CONSTRUYE: bloques [etiqueta, color]
+const B={SH2:"ptyr",PTB:"ptyr",TKB:"ptyr",SH3:"pro",PH:"lip",C1:"lip",C2:"lip",Miristoilo:"lip",Prenilo:"lip","Tyr-K":"cat","Ser/Thr-K":"cat","Pseudo-K":"reg",PTP:"cat",RING:"cat",X:"cat",Y:"cat",HAT:"cat",Ciclasa:"cat","C1 cat":"cat","C2 cat":"cat","Catalítico Zn":"cat",
+ DBD:"dna",bZIP:"dna","bHLH-zip":"dna",MH1:"dna",TAD:"dna","Coiled-coil":"oth",Linker:"oth",MH2:"oth",FERM:"oth",CH1:"oth","SOCS box":"cat",
+ LBD:"lig","A/B":"oth",Bisagra:"reg",F:"oth",Ecto:"lig","Ricos Cys":"lig",TM:"tm","6 TM":"tm","Cola pY":"reg",GS:"reg",SSXS:"reg",Y527:"reg",pY:"reg",S473:"reg",
+ Pseudosustrato:"reg",C3:"cat",C4:"cat",LZ:"reg",AD:"reg",CNB:"reg",EF:"reg",Q1:"reg","P-box":"reg",Q2:"reg",Dimer:"oth",Regulador:"reg",Reg:"reg"};
+const PROT=[
+ {n:"Grb2",w:"Adaptadora",d:["SH3","SH2","SH3"]},
+ {n:"Shc",w:"Adaptadora",d:["PTB","CH1","SH2"]},
+ {n:"c-Src",w:"Tyr quinasa citosólica",d:["Miristoilo","SH3","SH2","Tyr-K","Y527"]},
+ {n:"STAT",w:"FT citosólico",d:["Coiled-coil","DBD","SH2","pY","TAD"]},
+ {n:"PLCγ",w:"La recluta un RTK",d:["PH","EF","X","SH2","SH2","SH3","Y","C2"]},
+ {n:"PLCβ",w:"La activa Gαq",d:["PH","EF","X","Y","C2"]},
+ {n:"cPKC",w:"Clásica",d:["Pseudosustrato","C1","C2","C3","C4"]},
+ {n:"nPKC",w:"Nueva",d:["Pseudosustrato","C1","C3","C4"]},
+ {n:"PKG",w:"Monómero",d:["LZ","AD","CNB","CNB","Ser/Thr-K"]},
+ {n:"Akt",w:"Ser/Thr quinasa",d:["PH","Ser/Thr-K","S473"]},
+ {n:"SHP2",w:"Tyr fosfatasa",d:["SH2","SH2","PTP"]},
+ {n:"SOCS",w:"Freno de JAK-STAT",d:["SH2","SOCS box"]},
+ {n:"Cbl",w:"E3 ligasa",d:["TKB","RING"]},
+ {n:"JAK",w:"Tyr quinasa asociada",d:["FERM","SH2","Pseudo-K","Tyr-K"]},
+ {n:"R-Smad",w:"Smad2/3",d:["MH1","Linker","MH2","SSXS"]},
+ {n:"Smad4",w:"Co-Smad",d:["MH1","Linker","MH2"]},
+ {n:"CREB",w:"FT bZIP",d:["Q1","P-box","Q2","bZIP"]},
+ {n:"ICER",w:"Represor",d:["bZIP"]},
+ {n:"c-Jun",w:"AP-1 con c-Fos",d:["TAD","bZIP"]},
+ {n:"Receptor nuclear",w:"GR, ER…",d:["A/B","DBD","Bisagra","LBD","F"]},
+ {n:"RTK",w:"EGFR",d:["Ricos Cys","TM","Tyr-K","Cola pY"]},
+ {n:"TGFβ-RI",w:"Receptor tipo I",d:["Ecto","TM","GS","Ser/Thr-K"]},
+ {n:"TGFβ-RII",w:"Receptor tipo II",d:["Ecto","TM","Ser/Thr-K"]},
+ {n:"GC de membrana",w:"Receptor de ANP",d:["Ecto","TM","Pseudo-K","Dimer","Ciclasa"]},
+ {n:"Adenilato ciclasa",w:"Una cadena",d:["6 TM","C1 cat","6 TM","C2 cat"]},
+ {n:"SREBP",w:"En el RE",d:["bHLH-zip","TM","TM","Reg"]},
+ {n:"PDE",w:"Fosfodiesterasa",d:["Regulador","Catalítico Zn","Prenilo"]},
+ {n:"Calmodulina",w:"Sensor de Ca²⁺",d:["EF","EF","EF","EF"]}
+];
+
+// CORTA LA VÍA: ans = índice del primer nodo que NO se enciende; -1 = no se corta. type "on" = sin señal, ¿qué nodo se enciende solo?
+const PATHS={
+ mapk:["EGF","EGFR (pTyr)","Grb2","Sos","Ras-GTP","Raf","MEK","ERK","c-Fos"],
+ akt:["Factor","RTK (pY-X-X-M)","PI3K","PIP3","Akt en membrana","Akt-T308","Akt-S473"],
+ jak:["EPO","Receptor","JAK","pTyr del receptor","STAT se ancla","pSTAT","Dímero STAT","GAS"],
+ tgf:["TGFβ libre","RII","RI (GS)","Smad2/3 (SSXS)","Trímero + Smad4","Núcleo (AGAC)"],
+ gs:["Glucagón","GPCR","Gαs-GTP","Adenilato ciclasa","AMPc","PKA libre","CREB pSer133","CBP en CRE"],
+ gq:["Hormona","GPCR","Gαq","PLCβ","IP3 + DAG","IP3R → Ca²⁺","cPKC activa"],
+ no:["ACh","Ca²⁺ endotelio","Ca²⁺–CaM","NO sintasa","NO","GC soluble","GMPc","PKG","Relajación"],
+ nr:["Cortisol","GR + HSP90","GR libre","Dímero (D-box)","Une GRE","Coactivador (AF-2)","Transcripción"]
+};
+const CUTS=[
+ {p:"mapk",t:"Grb2 sin sus SH3",a:3,e:"Grb2 se ancla, pero sin SH3 no agarra la cola de Pro de Sos."},
+ {p:"mapk",t:"Grb2 sin su SH2",a:2,e:"Sin SH2 no reconoce la pTyr del receptor."},
+ {p:"mapk",t:"Tyr de la cola del EGFR → Phe",a:2,e:"Sin pTyr no hay sitio para el SH2 de Grb2."},
+ {p:"mapk",t:"Inhibidor de MEK",a:7,e:"Raf fosforila MEK, pero MEK no puede fosforilar el TEY de ERK."},
+ {p:"mapk",t:"ERK con TEY → AEF",a:7,e:"Sin Thr ni Tyr en el activation loop, MEK no la activa."},
+ {p:"mapk",t:"KO de PLCγ",a:-1,e:"PLCγ es otra rama. La vía Ras-MAPK sigue."},
+ {p:"mapk",t:"Ras sin GTPasa, sin EGF",a:4,on:true,e:"Ras queda siempre con GTP: oncogén."},
+ {p:"akt",t:"Met del pY-X-X-M → Ala",a:2,e:"La SH2 de p85 necesita la Met."},
+ {p:"akt",t:"Akt sin dominio PH",a:4,e:"PIP3 se forma, pero Akt no llega a la membrana."},
+ {p:"akt",t:"Inhibidor de mTORC2",a:6,e:"Akt solo con T308: parcialmente activa."},
+ {p:"akt",t:"KO de PDK1",a:5,e:"Akt llega a la membrana, pero nadie le pone la T308."},
+ {p:"akt",t:"PTEN inactiva, sin factor",a:3,on:true,e:"Nadie quita el fosfato 3: PIP3 se acumula."},
+ {p:"jak",t:"KO de JAK2",a:2,e:"El receptor de EPO no tiene quinasa propia."},
+ {p:"jak",t:"STAT sin SH2",a:4,e:"No se ancla al receptor (y tampoco podría dimerizar)."},
+ {p:"jak",t:"Tyr de STAT → Phe",a:5,e:"STAT se ancla, pero JAK no puede fosforilarla."},
+ {p:"jak",t:"KO de SOCS",a:-1,e:"Al contrario: la señal dura más."},
+ {p:"tgf",t:"Furina inhibida",a:0,e:"Sin el corte no se forma el TGFβ maduro."},
+ {p:"tgf",t:"RII sin actividad quinasa",a:2,e:"RII une TGFβ, pero no fosforila la GS de RI."},
+ {p:"tgf",t:"Ser de la región GS → Ala",a:2,e:"RII no puede activar a RI."},
+ {p:"tgf",t:"SSXS de Smad2 mutado",a:3,e:"Sin fosforilar, MH2 sigue tapando la NLS."},
+ {p:"tgf",t:"KO de Smad4",a:4,e:"Las R-Smad se fosforilan, pero no hay trímero."},
+ {p:"tgf",t:"Exceso de Smad7",a:3,e:"Compite por RI y secuestra R-Smad."},
+ {p:"gs",t:"Gαs sin acilación N-t",a:2,e:"Gα no se ancla a la membrana."},
+ {p:"gs",t:"Subunidad R de PKA que no une AMPc",a:5,e:"Hay AMPc, pero las C nunca se sueltan."},
+ {p:"gs",t:"CREB S133A",a:6,e:"PKA entra al núcleo, pero no hay Ser que fosforilar."},
+ {p:"gs",t:"Toxina colérica, sin hormona",a:2,on:true,e:"Gαs ADP-ribosilada: GTP permanente."},
+ {p:"gs",t:"Toxina pertussis",a:-1,e:"Actúa sobre Gαi, no sobre Gαs."},
+ {p:"gq",t:"IP3 sin el fosfato 5",a:5,e:"El IP3R necesita los fosfatos 4 y 5."},
+ {p:"gq",t:"KO de PLCγ",a:-1,e:"Esta vía usa PLCβ."},
+ {p:"gq",t:"cPKC sin dominio C2",a:6,e:"Sin unión a Ca²⁺ no se abre ni va a la membrana."},
+ {p:"no",t:"Calmodulina sin EF-hand",a:2,e:"No une Ca²⁺, no activa la NO sintasa."},
+ {p:"no",t:"GC soluble sin hemo",a:5,e:"El NO se une al hemo."},
+ {p:"no",t:"Sildenafilo (inhibe PDE5)",a:-1,e:"Al revés: más GMPc, más relajación."},
+ {p:"no",t:"Ciclosporina A",a:-1,e:"Inhibe la calcineurina (NFAT), otra rama."},
+ {p:"nr",t:"Una Cys del dedo de Zn → Ser",a:4,e:"Sin Zn el DBD no une DNA."},
+ {p:"nr",t:"D-box mutada",a:3,e:"El GR es homodímero clase I: dimeriza por la D-box."},
+ {p:"nr",t:"Pro en la hélice 12",a:5,e:"Se rompe la hélice α: no hay superficie para LXXLL."},
+ {p:"nr",t:"Coactivador sin LXXLL",a:5,e:"No reconoce AF-2."}
+];
+
+// CLASIFICA
+const SORTS={
+ genes:{name:"Gen temprano o tardío", sub:"Tu flashcard difícil", weak:true, bins:["Temprano","Tardío"], hints:["early","late"], it:[
+  ["c-fos",0],["c-jun",0],["Ciclina D1",1],["MAPK fosfatasa",1],["Se transcribe con cicloheximida",0],["Lo activa AP-1 (Fos/Jun)",1],["Primera ola tras el factor",0],
+  ["Necesita un FT recién sintetizado",1],["~50 genes, casi todos FT",0],["Apaga ERK (feedback)",1],["Proteína de vida media muy corta",0],["Activa el ciclo celular",1]]},
+ quinasas:{name:"Tyr, Ser/Thr o dual", sub:"EGFR, Raf, MEK…", bins:["Tyr","Ser/Thr","Dual"], it:[
+  ["EGFR",0],["JAK",0],["c-Src",0],["Receptor de insulina",0],["Raf",1],["ERK",1],["Akt",1],["PDK1",1],["PKA",1],["PKG",1],["PKC",1],["CaMKII",1],["p90RSK",1],["TGFβ-RI",1],["TGFβ-RII",1],["mTORC2",1],["GRK",1],["MEK",2]]},
+ nr:{name:"Clase de receptor nuclear", sub:"Homodímero, con RXR, monómero", bins:["Clase I","Clase II","III / IV"], hints:["homodímero","con RXR","RXR-RXR / monómero"], it:[
+  ["GR",0],["MR",0],["PR",0],["AR",0],["ER",0],["TR",1],["RAR",1],["VDR",1],["PPAR",1],["LXR",1],["FXR",1],["RXR–RXR",2],["Nur77",2],["Une DNA sin ligando con correpresor",1],["Sale de HSP90 al unir ligando",0],["Repetición directa con una sola copia",2]]},
+ gsgi:{name:"Gs o Gi", sub:"¿Sube o baja el AMPc?", bins:["Gs ↑AMPc","Gi ↓AMPc"], it:[
+  ["Glucagón",0],["Vasopresina",0],["LH",0],["FSH",0],["Isoproterenol (β)",0],["Somatostatina",1],["Opioides",1],["Angiotensina",1],["Adrenalina en α2",1],["Pertussis la bloquea",1],["La colérica la deja activa",0]]},
+ pkc:{name:"cPKC, nPKC o aPKC", sub:"Ca²⁺ y DAG", bins:["cPKC","nPKC","aPKC"], it:[
+  ["Necesita Ca²⁺ y DAG",0],["Solo DAG",1],["Ni Ca²⁺ ni DAG",2],["Tiene C2 que une Ca²⁺",0],["C1 incompleto",2],["C1 completo, sin unión a Ca²⁺",1],["Se activa con DAG + ionóforo de Ca²⁺",0],["Un análogo de DAG basta",1]]},
+ activa:{name:"La activa AMPc, GMPc o Ca²⁺-CaM", sub:"Segundos mensajeros", bins:["AMPc","GMPc","Ca²⁺–CaM"], it:[
+  ["PKA",0],["EPAC",0],["PKG",1],["PDE2",1],["PDE5",1],["CaMKII",2],["Calcineurina",2],["NO sintasa",2],["PDE1",2],["MLCK",2],["Canales de la visión",1]]},
+ lector:{name:"Lo lee SH2, PTB o SH3", sub:"pY-X-X-M, NPXpY…", bins:["SH2","PTB","SH3"], it:[
+  ["pY-X-X-M",0],["NPXpY",1],["PXXP",2],["Cola de Sos",2],["pY + Pro C-t",0],["IRS1 → receptor de insulina",1],["STAT → receptor",0],["Shc → receptor",1],["SOCS → receptor",0],["STAT ↔ STAT",0],["Grb2 → Sos",2]]},
+ onoff:{name:"¿Enciende o apaga?", sub:"Activadores y frenos", bins:["Enciende","Apaga"], it:[
+  ["PTEN",1],["MKP",1],["SOCS",1],["Smad7",1],["SHP1",1],["RGS",1],["Cbl",1],["ICER",1],["DAG quinasa",1],["PDK1",0],["Sos",0],["EPAC",0],["mTORC2",0],["CBP",0],["GEF",0],["GAP",1]]}
+};
+
+/* ============ NAVEGACIÓN ============ */
+const screens=["home","pick","game","end"];
+function show(s){screens.forEach(x=>$("#"+x).classList.toggle("hidden",x!==s));window.scrollTo(0,0);}
+let G=null; // juego activo
+document.querySelectorAll("[data-back]").forEach(b=>b.addEventListener("click",()=>{stop();show("home");refreshBest();}));
+document.querySelectorAll(".tile").forEach(t=>t.addEventListener("click",()=>openGame(t.dataset.game)));
+$("#end-again").addEventListener("click",()=>{ if(G) start(G.kind,G.deck); });
+
+function refreshBest(){
+  ["conecta","construye","corta","rapido"].forEach(k=>{
+    const b=store.get("v2-best-"+k,null);
+    $("#best-"+k).textContent = b ? "Récord: "+b : "";
+  });
+}
+function openGame(k){
+  if(k==="conecta"||k==="rapido"){
+    const src = k==="conecta"?PAIRS:SORTS;
+    $("#pick-title").textContent = k==="conecta"?"Conecta · elige mazo":"Clasifica · elige mazo";
+    const box=$("#pick-decks"); box.innerHTML="";
+    const all=document.createElement("button"); all.className="deck"; all.innerHTML="Todo mezclado<small>Un poco de cada</small>";
+    all.addEventListener("click",()=>start(k,"all")); box.appendChild(all);
+    Object.entries(src).forEach(([id,d])=>{
+      const b=document.createElement("button"); b.className="deck"+(d.weak?" weak":"");
+      b.innerHTML=esc(d.name)+"<small>"+esc(d.sub)+"</small>";
+      b.addEventListener("click",()=>start(k,id)); box.appendChild(b);
+    });
+    show("pick");
+  } else start(k,"all");
+}
+
+/* ============ MOTOR COMÚN ============ */
+let tick=null;
+function stop(){ if(tick){clearInterval(tick);tick=null;} }
+function hud(title){
+  $("#g-title").textContent=title; $("#g-pts").textContent="0"; $("#g-combo").textContent=""; $("#toast").textContent=""; $("#toast").className="toast";
+}
+function startClock(secs,onEnd){
+  G.left=secs; G.total=secs; const bar=$("#g-bar"); bar.classList.remove("hidden");
+  const paint=()=>{bar.querySelector("i").style.width=Math.max(0,G.left/G.total*100)+"%";bar.classList.toggle("low",G.left<=10);};
+  paint(); stop();
+  tick=setInterval(()=>{G.left-=0.25;paint();if(G.left<=0){stop();onEnd();}},250);
+}
+function penalty(s){ if(G.total){G.left=Math.max(0,G.left-s);} }
+function scoreHit(base){
+  G.combo++; const mult=Math.min(4,1+Math.floor(G.combo/3)); G.pts+=base*mult;
+  $("#g-pts").textContent=G.pts; $("#g-combo").textContent = mult>1 ? "×"+mult : "";
+}
+function scoreMiss(txt){
+  G.combo=0; $("#g-combo").textContent=""; if(txt) G.miss.push(txt);
+}
+function toast(msg,ok){ const t=$("#toast"); t.textContent=msg; t.className="toast "+(ok?"ok":"ko"); }
+function finish(){
+  stop();
+  const k="v2-best-"+G.kind; const best=store.get(k,0);
+  const rec = G.pts>best; if(rec) store.set(k,G.pts);
+  $("#end-title").textContent=G.title;
+  $("#end-pts").textContent=G.pts;
+  $("#end-best").textContent = rec ? "¡Nuevo récord!" : "Récord: "+Math.max(best,G.pts);
+  const m=$("#end-miss");
+  const uniq=[...new Set(G.miss)];
+  m.innerHTML = uniq.length ? "<div style=\"background:none;padding:0\" class=\"muted\">Para repasar:</div>"+uniq.map(x=>"<div>"+x+"</div>").join("") : "<div style=\"background:var(--good-soft)\">Sin fallos.</div>";
+  show("end");
+}
+function start(kind,deck){
+  stop(); G={kind,deck,pts:0,combo:0,miss:[]};
+  show("game");
+  ({conecta:startConecta,construye:startConstruye,corta:startCorta,rapido:startRapido})[kind](deck);
+}
+
+/* ============ CONECTA ============ */
+function startConecta(deck){
+  const pool = deck==="all" ? Object.values(PAIRS).flatMap(d=>d.p) : PAIRS[deck].p;
+  G.title = "Conecta · "+(deck==="all"?"Todo":PAIRS[deck].name);
+  hud(G.title);
+  G.queue=shuffle(pool); G.pool=pool; G.onL=[]; G.onR=[]; G.sel=null;
+  const st=$("#stage"); st.innerHTML='<div class="pairs"><div class="col" id="cl"></div><div class="col" id="cr"></div></div>';
+  for(let i=0;i<4;i++){ const p=nextPair(); G.onL.push(p); }
+  G.onR = shuffle(G.onL.slice());
+  drawPairs();
+  startClock(60,finish);
+}
+function nextPair(){
+  for(let tries=0;tries<200;tries++){
+    if(!G.queue.length) G.queue=shuffle(G.pool);
+    const p=G.queue.pop();
+    const clash = G.onL.some(q=>q && (q[0]===p[0]||q[1]===p[1]));
+    if(!clash) return p;
+  }
+  return G.queue.pop();
+}
+function drawPairs(popL,popR){
+  const L=$("#cl"), R=$("#cr"); L.innerHTML=""; R.innerHTML="";
+  G.onL.forEach((p,i)=>{ const b=document.createElement("button"); b.className="card L"+(G.sel&&G.sel.side==="L"&&G.sel.i===i?" sel":"")+(popL===i?" pop":""); b.textContent=p[0]; b.addEventListener("click",()=>pickCard("L",i,b)); L.appendChild(b); });
+  G.onR.forEach((p,i)=>{ const b=document.createElement("button"); b.className="card"+(G.sel&&G.sel.side==="R"&&G.sel.i===i?" sel":"")+(popR===i?" pop":""); b.textContent=p[1]; b.addEventListener("click",()=>pickCard("R",i,b)); R.appendChild(b); });
+}
+function pickCard(side,i,el){
+  if(!G.sel || G.sel.side===side){ G.sel = (G.sel&&G.sel.side===side&&G.sel.i===i)?null:{side,i}; drawPairs(); return; }
+  const li = side==="L"?i:G.sel.i, ri = side==="R"?i:G.sel.i;
+  const pl=G.onL[li], pr=G.onR[ri];
+  G.sel=null;
+  if(pl===pr){
+    scoreHit(10); toast(pl[0]+" → "+pl[1],true);
+    const np=nextPair(); G.onL[li]=np;
+    // colocar la nueva derecha en el hueco liberado
+    G.onR[ri]=np;
+    // barajar derechas ligeramente para que no queden alineadas
+    if(Math.random()<.6){ const j=Math.floor(Math.random()*4); [G.onR[ri],G.onR[j]]=[G.onR[j],G.onR[ri]]; drawPairs(li,j); }
+    else drawPairs(li,ri);
+  } else {
+    scoreMiss("<b>"+esc(pl[0])+"</b> → "+esc(pl[1])); penalty(3);
+    toast("No. "+pl[0]+" → "+pl[1]+"  (−3 s)",false);
+    drawPairs();
+    const cards=document.querySelectorAll("#cl .card, #cr .card");
+    cards[li].classList.add("ko"); cards[4+ri].classList.add("ko");
+  }
+}
+
+/* ============ CONSTRUYE ============ */
+function startConstruye(){
+  G.title="Constrúyela"; hud(G.title); $("#g-bar").classList.add("hidden"); G.total=0;
+  G.list=shuffle(PROT).slice(0,8); G.k=0; G.round=null;
+  nextProt();
+}
+function blkHTML(lab){ return '<span class="blk c-'+(B[lab]||"oth")+'">'+esc(lab)+'</span>'; }
+function nextProt(){
+  if(G.k>=G.list.length){ finish(); return; }
+  const p=G.list[G.k]; G.built=[]; G.locked=false; G.tries=0;
+  const uniq=[...new Set(p.d)];
+  const others=shuffle(Object.keys(B).filter(x=>!uniq.includes(x)));
+  // distractores: prioriza mismo color
+  const sameCol=others.filter(x=>uniq.some(u=>B[u]===B[x])).slice(0,2);
+  const rest=others.filter(x=>!sameCol.includes(x)).slice(0,Math.max(1,5-uniq.length));
+  G.pal=shuffle(uniq.concat(sameCol,rest));
+  drawBuild();
+}
+function drawBuild(state){
+  const p=G.list[G.k];
+  const st=$("#stage");
+  st.innerHTML =
+   '<div class="where">'+(G.k+1)+' de '+G.list.length+' · '+esc(p.w)+' · '+p.d.length+' bloques</div>'+
+   '<div class="target">'+esc(p.n)+'</div>'+
+   '<div class="chain'+(state?" "+state:"")+'" id="chain"><span class="term">N</span>'+G.built.map((x,i)=>'<button class="blk c-'+(B[x]||"oth")+'" data-i="'+i+'" aria-label="Quitar '+esc(x)+'">'+esc(x)+'</button>').join("")+'<span class="term">C</span></div>'+
+   '<div class="palette" id="pal">'+G.pal.map(x=>'<button class="blk c-'+(B[x]||"oth")+'" data-b="'+esc(x)+'">'+esc(x)+'</button>').join("")+'</div>'+
+   '<div class="row"><button class="btn" id="undo">Borrar último</button></div>'+
+   '<div id="solbox"></div>';
+  st.querySelectorAll("#pal .blk").forEach(b=>b.addEventListener("click",()=>addBlk(b.dataset.b)));
+  st.querySelectorAll("#chain .blk").forEach(b=>b.addEventListener("click",()=>{ if(G.locked)return; G.built.splice(+b.dataset.i,1); drawBuild(); }));
+  $("#undo").addEventListener("click",()=>{ if(G.locked)return; G.built.pop(); drawBuild(); });
+}
+function addBlk(x){
+  if(G.locked) return;
+  const p=G.list[G.k];
+  G.built.push(x);
+  if(G.built.length<p.d.length){ drawBuild(); return; }
+  const ok = G.built.join("|")===p.d.join("|");
+  if(ok){
+    G.locked=true; scoreHit(G.tries?5:10); drawBuild("ok"); toast(G.tries?"¡Bien! (al segundo intento)":"¡Perfecta!",true);
+    setTimeout(()=>{G.k++; $("#toast").textContent=""; nextProt();},900);
+  } else {
+    G.tries++;
+    if(G.tries===1){
+      scoreMiss(null); drawBuild("ko"); toast("Casi. Revisa el orden y vuelve a intentarlo.",false);
+      setTimeout(()=>{ G.built=[]; drawBuild(); },900);
+    } else {
+      G.locked=true; scoreMiss("<b>"+esc(p.n)+"</b>: "+p.d.map(esc).join(" · "));
+      drawBuild("ko"); toast("Así es:",false);
+      $("#solbox").innerHTML='<div class="sol">'+p.d.map(blkHTML).join("")+'</div><div class="row" style="margin-top:10px"><button class="btn primary" id="nx">Siguiente →</button></div>';
+      $("#nx").addEventListener("click",()=>{G.k++; $("#toast").textContent=""; nextProt();});
+    }
+  }
+}
+
+/* ============ CORTA LA VÍA ============ */
+function startCorta(){
+  G.title="Corta la vía"; hud(G.title); $("#g-bar").classList.add("hidden"); G.total=0;
+  G.list=shuffle(CUTS).slice(0,10); G.k=0;
+  nextCut();
+}
+function nextCut(){
+  if(G.k>=G.list.length){ finish(); return; }
+  const c=G.list[G.k], nodes=PATHS[c.p]; G.locked=false;
+  const st=$("#stage");
+  st.innerHTML =
+   '<div class="where">'+(G.k+1)+' de '+G.list.length+'</div>'+
+   '<div class="pert"><div class="lab">'+(c.on?"Sin señal":"Mutación")+'</div><div class="txt">'+esc(c.t)+'</div></div>'+
+   '<div class="ask">'+(c.on?"¿Qué nodo se enciende solo?":"¿Cuál es el primer nodo que se queda apagado?")+'</div>'+
+   '<div class="path" id="path">'+nodes.map((n,i)=>(i?'<div class="arrow"></div>':'')+'<button class="node" data-i="'+i+'">'+esc(n)+'</button>').join("")+
+   (c.on?'':'<button class="none" data-i="-1">No se corta</button>')+'</div>'+
+   '<div id="cutnext"></div>';
+  st.querySelectorAll("#path [data-i]").forEach(b=>b.addEventListener("click",()=>answerCut(+b.dataset.i,b)));
+}
+function answerCut(i,el){
+  if(G.locked) return; G.locked=true;
+  const c=G.list[G.k], nodes=PATHS[c.p];
+  const ok=i===c.a;
+  const btns=[...document.querySelectorAll("#path .node")];
+  btns.forEach(b=>b.disabled=true);
+  const noneB=document.querySelector("#path .none"); if(noneB) noneB.disabled=true;
+  if(!ok) el.classList.add("pick");
+  const ansEl = c.a===-1 ? noneB : btns[c.a]; if(ansEl) ansEl.classList.add("ans");
+  // animación de la señal
+  const states = nodes.map((_,k)=> c.on ? (k>=c.a) : (c.a===-1 || k<c.a));
+  btns.forEach((b,k)=>{ setTimeout(()=>b.classList.add(states[k]?"on":"dead"), 90*k); });
+  if(ok){ scoreHit(10); toast("¡Eso es! "+c.e,true); }
+  else { scoreMiss("<b>"+esc(c.t)+"</b>: "+(c.a===-1?"no se corta":(c.on?"se enciende ":"se corta en ")+esc(nodes[c.a]))+". "+esc(c.e)); toast(c.e,false); }
+  $("#cutnext").innerHTML='<div class="row"><button class="btn primary" id="nx">Siguiente →</button></div>';
+  $("#nx").addEventListener("click",()=>{G.k++; $("#toast").textContent=""; nextCut();});
+}
+
+/* ============ CLASIFICA ============ */
+function startRapido(deck){
+  let items, bins, hints, name;
+  if(deck==="all"){
+    const decks=Object.values(SORTS);
+    G.mixed=true; G.decks=decks; name="Todo";
+    G.queue=shuffle(decks.flatMap((d,di)=>d.it.map(x=>[x[0],x[1],di])));
+  } else {
+    const d=SORTS[deck]; G.mixed=false; G.decks=[d]; name=d.name;
+    G.queue=shuffle(d.it.map(x=>[x[0],x[1],0]));
+  }
+  G.title="Clasifica · "+name; hud(G.title);
+  G.src=G.queue.slice();
+  $("#stage").innerHTML='<div class="where" id="rq"></div><div class="flash" id="fl"></div><div class="bins" id="bins"></div><div class="keys">Teclado: 1, 2, 3</div>';
+  nextFlash();
+  startClock(60,finish);
+}
+function nextFlash(){
+  if(!G.queue.length) G.queue=shuffle(G.src);
+  G.cur=G.queue.pop(); G.locked=false;
+  const d=G.decks[G.cur[2]];
+  $("#rq").textContent = G.mixed ? d.name : "";
+  const fl=$("#fl"); fl.className="flash"; fl.textContent=G.cur[0];
+  const bx=$("#bins"); bx.style.gridTemplateColumns="repeat("+d.bins.length+",1fr)";
+  bx.innerHTML=d.bins.map((b,i)=>'<button class="bin b'+i+'" data-i="'+i+'">'+esc(b)+(d.hints&&d.hints[i]?'<small>'+esc(d.hints[i])+'</small>':'')+'</button>').join("");
+  bx.querySelectorAll(".bin").forEach(b=>b.addEventListener("click",()=>sortTo(+b.dataset.i)));
+}
+function sortTo(i){
+  if(G.locked||!G.cur) return;
+  const d=G.decks[G.cur[2]]; if(i>=d.bins.length) return;
+  G.locked=true;
+  const ok=i===G.cur[1]; const fl=$("#fl");
+  if(ok){ scoreHit(10); fl.classList.add("ok"); toast("✓",true); setTimeout(nextFlash,280); }
+  else { scoreMiss("<b>"+esc(G.cur[0])+"</b> → "+esc(d.bins[G.cur[1]])); penalty(3); fl.classList.add("ko"); toast("Era: "+d.bins[G.cur[1]]+"  (−3 s)",false); setTimeout(nextFlash,1100); }
+}
+document.addEventListener("keydown",e=>{
+  if($("#game").classList.contains("hidden")||!G||G.kind!=="rapido") return;
+  if(["1","2","3"].includes(e.key)) sortTo(+e.key-1);
+});
+
+refreshBest();
+})();
+</script>
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body>
+</html>

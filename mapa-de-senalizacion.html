@@ -1,0 +1,745 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mapa de Señalización</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: mapa maestro a todo ancho arriba; debajo, bloques temáticos en rejilla de 2 columnas que se apilan en móvil */
+:root{
+  --bg:#F6F7FB; --surface:#FFFFFF; --fg:#1B1E2E; --muted:#5A6078; --line:#DADDEA;
+  --hema:#3A4796; --eosin:#B3336A;
+  --nr:#B7791F; --rtk:#2F6FD0; --jak:#118A8A; --tgf:#3C8D3F; --gs:#B3336A; --gq:#D0572B; --gmp:#7B4FC4;
+  --warn:#B3261E; --ok:#2E7D32;
+  --f-display:"Space Grotesk",system-ui,sans-serif; --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141F; --surface:#1B1E2D; --fg:#E7E9F4; --muted:#A0A6C0; --line:#2E3248;
+  --hema:#8C98F0; --eosin:#F07AAE;
+  --nr:#E0A847; --rtk:#6EA3F5; --jak:#3CC3C3; --tgf:#72C175; --gs:#F07AAE; --gq:#F28B5B; --gmp:#B391F2;
+  --warn:#FF8A80; --ok:#81C784; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12141F; --surface:#1B1E2D; --fg:#E7E9F4; --muted:#A0A6C0; --line:#2E3248;
+  --hema:#8C98F0; --eosin:#F07AAE;
+  --nr:#E0A847; --rtk:#6EA3F5; --jak:#3CC3C3; --tgf:#72C175; --gs:#F07AAE; --gq:#F28B5B; --gmp:#B391F2;
+  --warn:#FF8A80; --ok:#81C784; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(28px,4.4vw,44px);line-height:1.05}
+h2{font-size:22px;display:flex;align-items:baseline;gap:10px}
+h2 .tag{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:400;letter-spacing:.04em}
+h3{font-size:16px}
+p{margin:0}
+header{display:flex;flex-direction:column;gap:12px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--eosin)}
+.lead{color:var(--muted);max-width:70ch}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-size:13px;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--surface);padding:5px 11px;border-radius:999px}
+nav a:hover,nav a:focus-visible{border-color:var(--hema);color:var(--hema);outline:none}
+section{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.mapbox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px}
+.map{width:100%;min-width:1080px;height:auto;display:block;font-family:var(--f-body)}
+.colh{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;fill:var(--muted);text-transform:uppercase}
+.band{stroke:none}
+.lanel{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;font-weight:600}
+.foot{font-size:11px;fill:var(--muted);font-style:italic}
+.n{fill:var(--surface);stroke-width:1.2}
+.n.strong{stroke-width:2}
+.t1{font-size:12px;font-weight:600;fill:var(--fg)}
+.t2{font-size:11px;fill:var(--fg);opacity:.86}
+.ar{stroke-width:1.6;fill:none}
+.ahd{fill:var(--muted)}
+.xt{stroke:var(--fg);stroke-width:1.4;stroke-dasharray:5 4;opacity:.7}
+.xt.bar{stroke-dasharray:none;stroke-width:2.4}
+.xb{fill:var(--fg)} .xbt{fill:var(--bg);font-size:11px;font-weight:700;font-family:var(--f-mono)}
+.hint{font-size:13px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card h3{display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:none}
+td b{font-weight:600}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+ol.xlist{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:10px}
+ol.xlist li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;gap:10px;font-size:14px;min-width:0}
+ol.xlist .b{flex:none;width:22px;height:22px;border-radius:50%;background:var(--fg);color:var(--bg);font:700 12px/22px var(--f-mono);text-align:center}
+ul.trap{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:8px}
+ul.trap li{font-size:14px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);min-width:0}
+ul.trap li s{color:var(--warn);text-decoration-thickness:1.5px}
+ul.trap li em{font-style:normal;color:var(--ok);font-weight:600}
+.pill{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.k{font-family:var(--f-mono);font-size:13px;background:color-mix(in srgb,var(--hema) 10%,var(--surface));padding:1px 5px;border-radius:4px}
+.formula{font-family:var(--f-mono);font-size:14px;padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--hema) 8%,var(--surface));border:1px solid var(--line)}
+.ask{border-color:var(--eosin)}
+footer{font-size:13px;color:var(--muted)}
+.c-nr{fill:var(--nr);color:var(--nr)} .c-rtk{fill:var(--rtk);color:var(--rtk)} .c-jak{fill:var(--jak);color:var(--jak)} .c-tgf{fill:var(--tgf);color:var(--tgf)} .c-gs{fill:var(--gs);color:var(--gs)} .c-gq{fill:var(--gq);color:var(--gq)} .c-gmp{fill:var(--gmp);color:var(--gmp)}
+.b-nr{fill:color-mix(in srgb,var(--nr) 9%,var(--bg))} .b-rtk{fill:color-mix(in srgb,var(--rtk) 9%,var(--bg))} .b-jak{fill:color-mix(in srgb,var(--jak) 9%,var(--bg))} .b-tgf{fill:color-mix(in srgb,var(--tgf) 9%,var(--bg))} .b-gs{fill:color-mix(in srgb,var(--gs) 9%,var(--bg))} .b-gq{fill:color-mix(in srgb,var(--gq) 9%,var(--bg))} .b-gmp{fill:color-mix(in srgb,var(--gmp) 9%,var(--bg))}
+.f-nr{stroke:var(--nr)} .f-rtk{stroke:var(--rtk)} .f-jak{stroke:var(--jak)} .f-tgf{stroke:var(--tgf)} .f-gs{stroke:var(--gs)} .f-gq{stroke:var(--gq)} .f-gmp{stroke:var(--gmp)}
+.s-nr{stroke:var(--nr)} .s-rtk{stroke:var(--rtk)} .s-jak{stroke:var(--jak)} .s-tgf{stroke:var(--tgf)} .s-gs{stroke:var(--gs)} .s-gq{stroke:var(--gq)} .s-gmp{stroke:var(--gmp)}
+.bg-nr{background:var(--nr)} .bg-rtk{background:var(--rtk)} .bg-jak{background:var(--jak)} .bg-tgf{background:var(--tgf)} .bg-gs{background:var(--gs)} .bg-gq{background:var(--gq)} .bg-gmp{background:var(--gmp)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Endocrinología Molecular · Parcial 16 nov</div>
+  <h1>Mapa de Señalización</h1>
+  <p class="lead">Todo el temario en una sola vista. Cada fila del mapa es una familia de receptores y se lee de izquierda a derecha, de la señal a la respuesta. Los números en círculo negro son conexiones entre vías y se explican justo debajo del mapa.</p>
+  <nav aria-label="Secciones">
+    <a href="#mapa">Mapa</a><a href="#cruces">Conexiones</a><a href="#base">1.1–1.3</a><a href="#familias">Receptores</a><a href="#trucos">Patrones que se repiten</a><a href="#galfa">Gα y toxinas</a><a href="#mensajeros">2º mensajeros</a><a href="#farmacos">Fármacos</a><a href="#numeros">Números</a><a href="#trampas">Trampas</a><a href="#dudas">Dudas</a>
+  </nav>
+</header>
+
+<section id="mapa">
+  <h2>El mapa <span class="tag">2.1 → 2.6</span></h2>
+  <div class="legend">
+    <span><i class="bg-nr"></i>Receptores nucleares</span><span><i class="bg-rtk"></i>Tirosina quinasa</span><span><i class="bg-jak"></i>JAK-STAT</span><span><i class="bg-tgf"></i>Ser/Thr (TGFβ)</span><span><i class="bg-gs"></i>GPCR → AMPc</span><span><i class="bg-gq"></i>GPCR → Ca²⁺/DAG</span><span><i class="bg-gmp"></i>GMPc</span>
+  </div>
+  <div class="mapbox"><svg viewBox="0 0 1240 1126" role="img" aria-label="Mapa de las vías de señalización del temario" class="map">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ahd"/></marker></defs>
+<text x="91.0" y="30" class="colh" text-anchor="middle">Señal</text>
+<text x="268.0" y="30" class="colh" text-anchor="middle">Receptor</text>
+<text x="478.0" y="30" class="colh" text-anchor="middle">Transducción</text>
+<text x="703.0" y="30" class="colh" text-anchor="middle">2º mensajero / cascada</text>
+<text x="921.0" y="30" class="colh" text-anchor="middle">Diana</text>
+<text x="1132.0" y="30" class="colh" text-anchor="middle">Núcleo / respuesta</text>
+<g class="lane l-nr"><rect x="6" y="56" width="1228" height="118" rx="12" class="band b-nr"/>
+<text x="18" y="72" class="lanel c-nr">RECEPTORES NUCLEARES (2.1)</text>
+<rect x="16" y="83.5" width="150" height="59" rx="7" class="n strong f-nr"/>
+<text x="26" y="103.5" class="t1">Esteroides · T3 · vit D</text>
+<text x="26" y="118.5" class="t2">retinoides · ácidos grasos</text>
+<text x="26" y="133.5" class="t2">(lipófilos: cruzan la MP)</text>
+<rect x="184" y="83.5" width="168" height="59" rx="7" class="n strong f-nr"/>
+<text x="194" y="103.5" class="t1">Receptor nuclear (48)</text>
+<text x="194" y="118.5" class="t2">I: citoplasma + HSP90</text>
+<text x="194" y="133.5" class="t2">II: ya en DNA + correpresor</text>
+<line x1="166" y1="113.0" x2="182" y2="113.0" class="ar s-nr" marker-end="url(#ah)"/>
+<rect x="380" y="86.5" width="196" height="59" rx="7" class="n f-nr"/>
+<text x="390" y="106.5" class="t1">Ligando → H12 se cierra</text>
+<text x="390" y="121.5" class="t2">sale correpresor (HDAC)</text>
+<text x="390" y="136.5" class="t2">entra coactivador LXXLL (HAT)</text>
+<rect x="604" y="86.5" width="198" height="59" rx="7" class="n f-nr"/>
+<text x="614" y="106.5" class="t1">Sin 2º mensajero</text>
+<text x="614" y="121.5" class="t2">el receptor ES el factor</text>
+<text x="614" y="136.5" class="t2">de transcripción</text>
+<line x1="576" y1="116" x2="602" y2="116" class="ar s-nr" marker-end="url(#ah)"/>
+<rect x="830" y="86.5" width="182" height="59" rx="7" class="n f-nr"/>
+<text x="840" y="106.5" class="t1">HRE</text>
+<text x="840" y="121.5" class="t2">I: palíndromo (homodímero)</text>
+<text x="840" y="136.5" class="t2">II: DR-n con RXR</text>
+<line x1="802" y1="116" x2="828" y2="116" class="ar s-nr" marker-end="url(#ah)"/>
+<rect x="1040" y="86.5" width="184" height="59" rx="7" class="n f-nr"/>
+<text x="1050" y="106.5" class="t1">Transcripción</text>
+<text x="1050" y="121.5" class="t2">respuesta lenta</text>
+<text x="1050" y="136.5" class="t2">(horas–días)</text>
+<line x1="1012" y1="116" x2="1038" y2="116" class="ar s-nr" marker-end="url(#ah)"/>
+<path d="M352,113.0 C366,113.0 364,116 378,116" class="ar s-nr" fill="none" marker-end="url(#ah)"/>
+<text x="18" y="165" class="foot">Apagado: correpresores (N-CoR/SMRT → HDAC) · antagonistas: tamoxifeno (ER), RU486 (PR/GR)</text></g>
+<g class="lane l-rtk"><rect x="6" y="186" width="1228" height="246" rx="12" class="band b-rtk"/>
+<text x="18" y="202" class="lanel c-rtk">RECEPTORES TIROSINA QUINASA (2.2)</text>
+<rect x="16" y="277.5" width="150" height="59" rx="7" class="n strong f-rtk"/>
+<text x="26" y="297.5" class="t1">EGF · PDGF · FGF</text>
+<text x="26" y="312.5" class="t2">VEGF · NGF</text>
+<text x="26" y="327.5" class="t2">insulina / IGF</text>
+<rect x="184" y="262.5" width="168" height="89" rx="7" class="n strong f-rtk"/>
+<text x="194" y="282.5" class="t1">RTK (1 TM)</text>
+<text x="194" y="297.5" class="t2">monómero → dímero</text>
+<text x="194" y="312.5" class="t2">transfosforilación →</text>
+<text x="194" y="327.5" class="t2">pY = sitios de anclaje</text>
+<text x="194" y="342.5" class="t2">insulina: dímero S–S</text>
+<line x1="166" y1="307.0" x2="182" y2="307.0" class="ar s-rtk" marker-end="url(#ah)"/>
+<rect x="380" y="210.5" width="196" height="59" rx="7" class="n f-rtk"/>
+<text x="390" y="230.5" class="t1">Grb2 (SH2) → Sos (GEF)</text>
+<text x="390" y="245.5" class="t2">SH3 de Grb2 ↔ Pro de Sos</text>
+<text x="390" y="260.5" class="t2">(o vía Shc: PTB)</text>
+<rect x="604" y="210.5" width="198" height="59" rx="7" class="n f-rtk"/>
+<text x="614" y="230.5" class="t1">Ras-GTP → RAF → MEK → ERK</text>
+<text x="614" y="245.5" class="t2">MAPKKK → MAPKK → MAPK</text>
+<text x="614" y="260.5" class="t2">MEK: Thr183 + Tyr185</text>
+<line x1="576" y1="240" x2="602" y2="240" class="ar s-rtk" marker-end="url(#ah)"/>
+<rect x="830" y="210.5" width="182" height="59" rx="7" class="n f-rtk"/>
+<text x="840" y="230.5" class="t1">ERK → TCF</text>
+<text x="840" y="245.5" class="t2">ERK → p90RSK → SRF</text>
+<text x="840" y="260.5" class="t2">(scaffold junta el módulo)</text>
+<line x1="802" y1="240" x2="828" y2="240" class="ar s-rtk" marker-end="url(#ah)"/>
+<rect x="1040" y="210.5" width="184" height="59" rx="7" class="n f-rtk"/>
+<text x="1050" y="230.5" class="t1">SRE → c-fos (early)</text>
+<text x="1050" y="245.5" class="t2">fos + jun = AP-1 →</text>
+<text x="1050" y="260.5" class="t2">ciclina D1 · MAPK-fosfatasa</text>
+<line x1="1012" y1="240" x2="1038" y2="240" class="ar s-rtk" marker-end="url(#ah)"/>
+<path d="M352,307.0 C366,307.0 364,240 378,240" class="ar s-rtk" fill="none" marker-end="url(#ah)"/>
+<rect x="380" y="290.0" width="196" height="44" rx="7" class="n f-rtk"/>
+<text x="390" y="310.0" class="t1">PI3K = p85 (SH2) + p110</text>
+<text x="390" y="325.0" class="t2">se une a pYxxM</text>
+<rect x="604" y="290.0" width="198" height="44" rx="7" class="n f-rtk"/>
+<text x="614" y="310.0" class="t1">PI(4,5)P₂ → PIP₃</text>
+<text x="614" y="325.0" class="t2">(⊣ PTEN, SHIP)</text>
+<line x1="576" y1="312" x2="602" y2="312" class="ar s-rtk" marker-end="url(#ah)"/>
+<rect x="830" y="282.5" width="182" height="59" rx="7" class="n f-rtk"/>
+<text x="840" y="302.5" class="t1">PDK1 → Akt T308</text>
+<text x="840" y="317.5" class="t2">mTORC2 → Akt S473</text>
+<text x="840" y="332.5" class="t2">(Akt se recluta por PH)</text>
+<line x1="802" y1="312" x2="828" y2="312" class="ar s-rtk" marker-end="url(#ah)"/>
+<rect x="1040" y="282.5" width="184" height="59" rx="7" class="n f-rtk"/>
+<text x="1050" y="302.5" class="t1">Akt: supervivencia,</text>
+<text x="1050" y="317.5" class="t2">glucosa, síntesis proteica,</text>
+<text x="1050" y="332.5" class="t2">proliferación</text>
+<line x1="1012" y1="312" x2="1038" y2="312" class="ar s-rtk" marker-end="url(#ah)"/>
+<path d="M352,307.0 C366,307.0 364,312 378,312" class="ar s-rtk" fill="none" marker-end="url(#ah)"/>
+<rect x="380" y="358.0" width="196" height="44" rx="7" class="n f-rtk"/>
+<text x="390" y="378.0" class="t1">PLCγ (2 SH2 + SH3)</text>
+<text x="390" y="393.0" class="t2">se une a pYxxP</text>
+<rect x="604" y="358.0" width="198" height="44" rx="7" class="n f-rtk"/>
+<text x="614" y="378.0" class="t1">PI(4,5)P₂ → DAG + IP₃</text>
+<text x="614" y="393.0" class="t2">→ ver fila de Ca²⁺ ①</text>
+<line x1="576" y1="380" x2="602" y2="380" class="ar s-rtk" marker-end="url(#ah)"/>
+<path d="M352,307.0 C366,307.0 364,380 378,380" class="ar s-rtk" fill="none" marker-end="url(#ah)"/>
+<text x="18" y="423" class="foot">Apagado: PTP (SHP1: 2 SH2 + fosfatasa) · Cbl (E3 RING, TKB) → endocitosis · PKC · MAPK-fosfatasa · PTEN</text></g>
+<g class="lane l-jak"><rect x="6" y="444" width="1228" height="112" rx="12" class="band b-jak"/>
+<text x="18" y="460" class="lanel c-jak">RECEPTORES ASOCIADOS A JAK (2.2)</text>
+<rect x="16" y="468.5" width="150" height="59" rx="7" class="n strong f-jak"/>
+<text x="26" y="488.5" class="t1">GH · PRL · EPO</text>
+<text x="26" y="503.5" class="t2">leptina</text>
+<text x="26" y="518.5" class="t2">interleuquinas · IFN</text>
+<rect x="184" y="468.5" width="168" height="59" rx="7" class="n strong f-jak"/>
+<text x="194" y="488.5" class="t1">Receptor de citoquina</text>
+<text x="194" y="503.5" class="t2">sin actividad propia</text>
+<text x="194" y="518.5" class="t2">1 GH : 2 GHR</text>
+<line x1="166" y1="498.0" x2="182" y2="498.0" class="ar s-jak" marker-end="url(#ah)"/>
+<rect x="380" y="470.5" width="196" height="59" rx="7" class="n f-jak"/>
+<text x="390" y="490.5" class="t1">JAK (ya unida, inactiva)</text>
+<text x="390" y="505.5" class="t2">se transfosforila →</text>
+<text x="390" y="520.5" class="t2">fosforila al receptor</text>
+<rect x="604" y="470.5" width="198" height="59" rx="7" class="n f-jak"/>
+<text x="614" y="490.5" class="t1">STAT se une por SH2</text>
+<text x="614" y="505.5" class="t2">JAK la fosforila → se suelta</text>
+<text x="614" y="520.5" class="t2">dímero recíproco SH2–pY</text>
+<line x1="576" y1="500" x2="602" y2="500" class="ar s-jak" marker-end="url(#ah)"/>
+<rect x="830" y="470.5" width="182" height="59" rx="7" class="n f-jak"/>
+<text x="840" y="490.5" class="t1">GAS</text>
+<text x="840" y="505.5" class="t2">TT(C/A)CNNNAA</text>
+<text x="840" y="520.5" class="t2">STAT recluta p300</text>
+<line x1="802" y1="500" x2="828" y2="500" class="ar s-jak" marker-end="url(#ah)"/>
+<rect x="1040" y="470.5" width="184" height="59" rx="7" class="n f-jak"/>
+<text x="1050" y="490.5" class="t1">Transcripción</text>
+<text x="1050" y="505.5" class="t2">+ SOCS (freno)</text>
+<text x="1050" y="520.5" class="t2">LeptinR → STAT3</text>
+<line x1="1012" y1="500" x2="1038" y2="500" class="ar s-jak" marker-end="url(#ah)"/>
+<path d="M352,498.0 C366,498.0 364,500 378,500" class="ar s-jak" fill="none" marker-end="url(#ah)"/>
+<text x="18" y="547" class="foot">Apagado: fosfatasas · SOCS (SH2 compite con STAT, KIR ⊣ JAK, recluta E3) · fosfatasas nucleares</text></g>
+<g class="lane l-tgf"><rect x="6" y="568" width="1228" height="112" rx="12" class="band b-tgf"/>
+<text x="18" y="584" class="lanel c-tgf">RECEPTORES SER/THR QUINASA (2.3)</text>
+<rect x="16" y="592.5" width="150" height="59" rx="7" class="n strong f-tgf"/>
+<text x="26" y="612.5" class="t1">TGFβ · activina · BMP</text>
+<text x="26" y="627.5" class="t2">(dímeros, nudo de Cys)</text>
+<text x="26" y="642.5" class="t2">latente: LAP + LTBP</text>
+<rect x="184" y="592.5" width="168" height="59" rx="7" class="n strong f-tgf"/>
+<text x="194" y="612.5" class="t1">RII + RI (Ser/Thr)</text>
+<text x="194" y="627.5" class="t2">RIII = betaglicano</text>
+<text x="194" y="642.5" class="t2">(presenta; no señaliza)</text>
+<line x1="166" y1="622.0" x2="182" y2="622.0" class="ar s-tgf" marker-end="url(#ah)"/>
+<rect x="380" y="594.5" width="196" height="59" rx="7" class="n f-tgf"/>
+<text x="390" y="614.5" class="t1">RII (constitutivo) fosforila</text>
+<text x="390" y="629.5" class="t2">el dominio GS del RI (ALK5)</text>
+<text x="390" y="644.5" class="t2">SARA presenta la R-Smad</text>
+<rect x="604" y="594.5" width="198" height="59" rx="7" class="n f-tgf"/>
+<text x="614" y="614.5" class="t1">RI fosforila SSXS de Smad2/3</text>
+<text x="614" y="629.5" class="t2">MH2 deja libre la NLS</text>
+<text x="614" y="644.5" class="t2">2 R-Smad-P + Smad4</text>
+<line x1="576" y1="624" x2="602" y2="624" class="ar s-tgf" marker-end="url(#ah)"/>
+<rect x="830" y="594.5" width="182" height="59" rx="7" class="n f-tgf"/>
+<text x="840" y="614.5" class="t1">Importina β → núcleo</text>
+<text x="840" y="629.5" class="t2">SBE (AGAC) + cofactor</text>
+<text x="840" y="644.5" class="t2">(TFE3, Fast1, Jun; Oaz en BMP)</text>
+<line x1="802" y1="624" x2="828" y2="624" class="ar s-tgf" marker-end="url(#ah)"/>
+<rect x="1040" y="594.5" width="184" height="59" rx="7" class="n f-tgf"/>
+<text x="1050" y="614.5" class="t1">PAI-1 (MEC estable)</text>
+<text x="1050" y="629.5" class="t2">p15 · p27 (⊣ ciclo)</text>
+<text x="1050" y="644.5" class="t2">sin vía → metástasis</text>
+<line x1="1012" y1="624" x2="1038" y2="624" class="ar s-tgf" marker-end="url(#ah)"/>
+<path d="M352,622.0 C366,622.0 364,624 378,624" class="ar s-tgf" fill="none" marker-end="url(#ah)"/>
+<text x="18" y="671" class="foot">Apagado: PPM1A/PP2A (R-Smad), PP1 (RI) · Smad6/7 · Ski/SnoN → HDAC · SMURF2 (HECT) · inhibina</text></g>
+<g class="lane l-gs"><rect x="6" y="692" width="1228" height="132" rx="12" class="band b-gs"/>
+<text x="18" y="708" class="lanel c-gs">GPCR → AMPC (2.4–2.5)</text>
+<rect x="16" y="719.0" width="150" height="74" rx="7" class="n strong f-gs"/>
+<text x="26" y="739.0" class="t1">Gs: glucagón · LH · FSH</text>
+<text x="26" y="754.0" class="t2">TSH · ACTH · vasopresina</text>
+<text x="26" y="769.0" class="t2">adrenalina β · ⊣Gi: α₂,</text>
+<text x="26" y="784.0" class="t2">somatostatina, opioides</text>
+<rect x="184" y="726.5" width="168" height="59" rx="7" class="n strong f-gs"/>
+<text x="194" y="746.5" class="t1">GPCR (7 TM)</text>
+<text x="194" y="761.5" class="t2">activado = GEF de Gα</text>
+<text x="194" y="776.5" class="t2">(sale GDP, entra GTP)</text>
+<line x1="166" y1="756.0" x2="182" y2="756.0" class="ar s-gs" marker-end="url(#ah)"/>
+<rect x="380" y="726.5" width="196" height="59" rx="7" class="n f-gs"/>
+<text x="390" y="746.5" class="t1">Gαs → ↑ adenilil ciclasa</text>
+<text x="390" y="761.5" class="t2">Gαi ⊣ adenilil ciclasa</text>
+<text x="390" y="776.5" class="t2">(AC: 12 TM, monomérica)</text>
+<rect x="604" y="726.5" width="198" height="59" rx="7" class="n f-gs"/>
+<text x="614" y="746.5" class="t1">ATP → AMPc</text>
+<text x="614" y="761.5" class="t2">AMPc → PKA (R₂C₂, 4 AMPc)</text>
+<text x="614" y="776.5" class="t2">AMPc → Epac → Rap ②</text>
+<line x1="576" y1="756" x2="602" y2="756" class="ar s-gs" marker-end="url(#ah)"/>
+<rect x="830" y="726.5" width="182" height="59" rx="7" class="n f-gs"/>
+<text x="840" y="746.5" class="t1">PKA-C libre</text>
+<text x="840" y="761.5" class="t2">→ citosol (glucógeno)</text>
+<text x="840" y="776.5" class="t2">→ núcleo (AKAP ancla)</text>
+<line x1="802" y1="756" x2="828" y2="756" class="ar s-gs" marker-end="url(#ah)"/>
+<rect x="1040" y="726.5" width="184" height="59" rx="7" class="n f-gs"/>
+<text x="1050" y="746.5" class="t1">CREB-P Ser133 + CBP</text>
+<text x="1050" y="761.5" class="t2">CRE (TGACGTCA) →</text>
+<text x="1050" y="776.5" class="t2">PEPCK, G6Pasa · ICER (freno)</text>
+<line x1="1012" y1="756" x2="1038" y2="756" class="ar s-gs" marker-end="url(#ah)"/>
+<path d="M352,756.0 C366,756.0 364,756 378,756" class="ar s-gs" fill="none" marker-end="url(#ah)"/>
+<text x="18" y="815" class="foot">Apagado: GTPasa de Gα (+ RGS = GAP) · PDE · GRK + β-arrestina (desensibilización) · PP-1 (CREB) · ICER</text></g>
+<g class="lane l-gq"><rect x="6" y="836" width="1228" height="150" rx="12" class="band b-gq"/>
+<text x="18" y="852" class="lanel c-gq">GPCR → FOSFOLÍPIDOS Y CA²⁺ (2.6)</text>
+<rect x="16" y="872.0" width="150" height="74" rx="7" class="n strong f-gq"/>
+<text x="26" y="892.0" class="t1">Adrenalina α₁</text>
+<text x="26" y="907.0" class="t2">ACh muscarínico</text>
+<text x="26" y="922.0" class="t2">GnRH · TRH · ADH</text>
+<text x="26" y="937.0" class="t2">angiotensina II</text>
+<rect x="184" y="879.5" width="168" height="59" rx="7" class="n strong f-gq"/>
+<text x="194" y="899.5" class="t1">GPCR</text>
+<text x="194" y="914.5" class="t2">Gαq (no sensible</text>
+<text x="194" y="929.5" class="t2">a pertussis)</text>
+<line x1="166" y1="909.0" x2="182" y2="909.0" class="ar s-gq" marker-end="url(#ah)"/>
+<rect x="380" y="868.0" width="196" height="44" rx="7" class="n f-gq"/>
+<text x="390" y="888.0" class="t1">Gαq → PLCβ</text>
+<text x="390" y="903.0" class="t2">(βγ también activa PLCβ)</text>
+<rect x="604" y="860.5" width="198" height="59" rx="7" class="n f-gq"/>
+<text x="614" y="880.5" class="t1">PI(4,5)P₂ → IP₃ + DAG</text>
+<text x="614" y="895.5" class="t2">IP₃ → IP₃R del RE →</text>
+<text x="614" y="910.5" class="t2">Ca²⁺ (0,1 → ~2 µM)</text>
+<line x1="576" y1="890" x2="602" y2="890" class="ar s-gq" marker-end="url(#ah)"/>
+<rect x="830" y="860.5" width="182" height="59" rx="7" class="n f-gq"/>
+<text x="840" y="880.5" class="t1">Ca²⁺ + 4 CaM →</text>
+<text x="840" y="895.5" class="t2">CaMK · calcineurina</text>
+<text x="840" y="910.5" class="t2">NO sintasa ③ · PDE1 ④</text>
+<line x1="802" y1="890" x2="828" y2="890" class="ar s-gq" marker-end="url(#ah)"/>
+<rect x="1040" y="860.5" width="184" height="59" rx="7" class="n f-gq"/>
+<text x="1050" y="880.5" class="t1">CaMKIV → CREB ⑤</text>
+<text x="1050" y="895.5" class="t2">calcineurina → NF-AT</text>
+<text x="1050" y="910.5" class="t2">(IL-2: inmunidad)</text>
+<line x1="1012" y1="890" x2="1038" y2="890" class="ar s-gq" marker-end="url(#ah)"/>
+<path d="M352,909.0 C366,909.0 364,890 378,890" class="ar s-gq" fill="none" marker-end="url(#ah)"/>
+<rect x="604" y="936.0" width="198" height="44" rx="7" class="n f-gq"/>
+<text x="614" y="956.0" class="t1">DAG (se queda en la MP)</text>
+<text x="614" y="971.0" class="t2">+ Ca²⁺</text>
+<rect x="830" y="928.5" width="182" height="59" rx="7" class="n f-gq"/>
+<text x="840" y="948.5" class="t1">PKC clásica (α, β, γ)</text>
+<text x="840" y="963.5" class="t2">DAG + Ca²⁺ · PDK1 previa</text>
+<text x="840" y="978.5" class="t2">PKC → Raf/MAPK ⑥</text>
+<line x1="802" y1="958" x2="828" y2="958" class="ar s-gq" marker-end="url(#ah)"/>
+<rect x="1040" y="936.0" width="184" height="44" rx="7" class="n f-gq"/>
+<text x="1050" y="956.0" class="t1">Secreción, vesículas,</text>
+<text x="1050" y="971.0" class="t2">proliferación</text>
+<line x1="1012" y1="958" x2="1038" y2="958" class="ar s-gq" marker-end="url(#ah)"/>
+<text x="18" y="977" class="foot">Apagado: DAG quinasa (DAG → PA) · SERCA (al RE) · PMCA (fuera; la activa CaM) · Ca²⁺ alto cierra el IP₃R</text></g>
+<g class="lane l-gmp"><rect x="6" y="998" width="1228" height="112" rx="12" class="band b-gmp"/>
+<text x="18" y="1014" class="lanel c-gmp">GMPC (2.5)</text>
+<rect x="16" y="1022.5" width="150" height="59" rx="7" class="n strong f-gmp"/>
+<text x="26" y="1042.5" class="t1">NO (gas, difunde)</text>
+<text x="26" y="1057.5" class="t2">ANP / BNP</text>
+<text x="26" y="1072.5" class="t2">(Gαt-rodopsina → PDE6)</text>
+<rect x="184" y="1022.5" width="168" height="59" rx="7" class="n strong f-gmp"/>
+<text x="194" y="1042.5" class="t1">GC soluble (α/β, hemo)</text>
+<text x="194" y="1057.5" class="t2">GC de membrana:</text>
+<text x="194" y="1072.5" class="t2">receptor + enzima</text>
+<line x1="166" y1="1052.0" x2="182" y2="1052.0" class="ar s-gmp" marker-end="url(#ah)"/>
+<rect x="380" y="1024.5" width="196" height="59" rx="7" class="n f-gmp"/>
+<text x="390" y="1044.5" class="t1">Sin proteína G</text>
+<text x="390" y="1059.5" class="t2">NO → hemo (Fe²⁺)</text>
+<text x="390" y="1074.5" class="t2">ANP → dominio externo</text>
+<rect x="604" y="1024.5" width="198" height="59" rx="7" class="n f-gmp"/>
+<text x="614" y="1044.5" class="t1">GTP → GMPc</text>
+<text x="614" y="1059.5" class="t2">GMPc → PKG</text>
+<text x="614" y="1074.5" class="t2">(R y C en una cadena)</text>
+<line x1="576" y1="1054" x2="602" y2="1054" class="ar s-gmp" marker-end="url(#ah)"/>
+<rect x="830" y="1024.5" width="182" height="59" rx="7" class="n f-gmp"/>
+<text x="840" y="1044.5" class="t1">PKG: ↑ canal K⁺</text>
+<text x="840" y="1059.5" class="t2">⊣ IP₃R ⑦ · ↑ MLC-fosfatasa</text>
+<text x="840" y="1074.5" class="t2">GMPc → PDE2 / ⊣ PDE3 ⑧</text>
+<line x1="802" y1="1054" x2="828" y2="1054" class="ar s-gmp" marker-end="url(#ah)"/>
+<rect x="1040" y="1024.5" width="184" height="59" rx="7" class="n f-gmp"/>
+<text x="1050" y="1044.5" class="t1">↓ Ca²⁺ → relajación</text>
+<text x="1050" y="1059.5" class="t2">del músculo liso</text>
+<text x="1050" y="1074.5" class="t2">(vasodilatación)</text>
+<line x1="1012" y1="1054" x2="1038" y2="1054" class="ar s-gmp" marker-end="url(#ah)"/>
+<path d="M352,1052.0 C366,1052.0 364,1054 378,1054" class="ar s-gmp" fill="none" marker-end="url(#ah)"/>
+<text x="18" y="1101" class="foot">Apagado: PDE5 (⊣ Viagra/sildenafilo) · PDE6 en los bastones</text></g>
+<path d="M802,380 H811 V854.5 H703.0 V860.5" class="xt" fill="none" marker-end="url(#ah)"/>
+<circle cx="811" cy="620.25" r="9" class="xb"/><text x="811" y="624.25" class="xbt" text-anchor="middle">1</text>
+<path d="M1224,890 H1232 V756 H1226" class="xt" fill="none" marker-end="url(#ah)"/>
+<circle cx="1232" cy="823.0" r="9" class="xb"/><text x="1232" y="827.0" class="xbt" text-anchor="middle">5</text>
+<path d="M830,1062 H817 V766 H804" class="xt" fill="none" marker-end="url(#ah)"/>
+<circle cx="817" cy="965.0" r="9" class="xb"/><text x="817" y="969.0" class="xbt" text-anchor="middle">8</text>
+<path d="M830,1046 H825 V898 H804" class="xt inh" fill="none"/>
+<line x1="804" y1="892" x2="804" y2="904" class="xt bar"/>
+</svg></div>
+  <p class="hint">En el móvil, desliza el mapa de lado. La línea punteada que acaba en barra (⊣) indica inhibición.</p>
+</section>
+
+<section id="cruces">
+  <h2>Conexiones entre vías <span class="tag">crosstalk</span></h2>
+  <ol class="xlist">
+    <li><span class="b">1</span><span><b>RTK → Ca²⁺.</b> La PLCγ, unida por SH2 al receptor, corta el PIP₂ igual que la PLCβ de Gq. Un factor de crecimiento también sube el Ca²⁺ y activa la PKC.</span></li>
+    <li><span class="b">2</span><span><b>AMPc → Ca²⁺.</b> Epac (GEF) activa Rap, que activa la PLCε. La PLCε la activan también Ras (RTK) y Rho/βγ (GPCR): es la PLC "integradora".</span></li>
+    <li><span class="b">3</span><span><b>Ca²⁺ → GMPc.</b> En el endotelio, ACh → Gq → IP₃ → Ca²⁺/CaM → NO sintasa (arginina → citrulina + NO). El NO difunde al músculo liso y activa la GC soluble.</span></li>
+    <li><span class="b">4</span><span><b>Ca²⁺ ⊣ nucleótidos cíclicos.</b> Ca²⁺/CaM activa la PDE1, que degrada AMPc y GMPc.</span></li>
+    <li><span class="b">5</span><span><b>Ca²⁺ y AMPc convergen en CREB.</b> PKA y CaMKIV (con CaMKK) fosforilan la misma Ser-133. RSK (vía MAPK) también puede.</span></li>
+    <li><span class="b">6</span><span><b>DAG → MAPK.</b> La PKC puede activar Raf y encender la cascada MAPK, y algunas isoformas con NLS van al núcleo.</span></li>
+    <li><span class="b">7</span><span><b>GMPc ⊣ Ca²⁺.</b> La PKG inhibe el IP₃R, abre canales de K⁺ (hiperpolariza y cierra el canal L) y activa la MLC-fosfatasa. Resultado: relajación.</span></li>
+    <li><span class="b">8</span><span><b>GMPc regula el AMPc.</b> GMPc activa la PDE2 (↓ AMPc) e inhibe la PDE3 (↑ AMPc). El efecto final depende de qué PDE tenga la célula.</span></li>
+    <li><span class="b">+</span><span><b>JAK → otras vías.</b> JAK también activa Src, PI3K y Shc (→ MAPK). El EGFR también activa STAT directamente.</span></li>
+    <li><span class="b">+</span><span><b>β-arrestina como plataforma.</b> Apaga la proteína G, pero recluta c-Src (→ ERK) y ASK1/MKK4/JNK3 (→ JNK). Es una señal nueva, no solo un freno.</span></li>
+    <li><span class="b">+</span><span><b>MAPK sobre Smad.</b> ERK/p38/JNK y GSK3 fosforilan el linker de las R-Smad y las marcan para SMURF (fin de la señal). CDK8/9 en el linker potencian la transcripción.</span></li>
+    <li><span class="b">+</span><span><b>Gβγ trabaja por su cuenta.</b> Abre canales de K⁺ (muscarínico, corazón), activa PLCβ y AC II/IV y recluta la GRK para desensibilizar.</span></li>
+    <li><span class="b">+</span><span><b>Mismo ligando, efectos opuestos.</b> Adrenalina: β → Gs (↑AMPc), α₂ → Gi (↓AMPc), α₁ → Gq (Ca²⁺). Adenosina: A2 → Gs, A1 → Gi.</span></li>
+    <li><span class="b">+</span><span><b>Insulina frente a glucagón.</b> Insulina: RTK → IRS → PI3K → Akt (↓ glucemia). Glucagón: GPCR → Gs → PKA → CREB → PEPCK, G6Pasa (↑ glucemia, ayuno; coactivador CRTC2).</span></li>
+    <li><span class="b">+</span><span><b>Ca²⁺ → mitocondria → ATP.</b> Mitofusina 2 (RE) + 1 (mitocondria) forman un microdominio. El Ca²⁺ entra por el MCU y activa PDP1 (PDH), IDH y αKGDH: más ATP para las bombas.</span></li>
+    <li><span class="b">+</span><span><b>Jun en dos temas.</b> c-Jun forma AP-1 con fos (MAPK, 2.2) y es cofactor de las Smad (TGFβ, 2.3). JNK fosforila su N-terminal.</span></li>
+  </ol>
+</section>
+
+<section id="base">
+  <h2>Bases del bloque 1 <span class="tag">1.1 · 1.2 · 1.3</span></h2>
+  <div class="grid3">
+    <div class="card"><h3>1.1 · Tipos de señal</h3>
+      <div class="tbl"><table>
+        <tr><th>Hormona</th><th>Receptor</th></tr>
+        <tr><td>Péptidos y proteínas (insulina, glucagón, GH, LH…)</td><td>membrana</td></tr>
+        <tr><td>Catecolaminas (adrenalina: Tyr → L-DOPA → dopamina → NA → A)</td><td>membrana (GPCR)</td></tr>
+        <tr><td>Esteroides, hormonas tiroideas, retinoides, vit D</td><td>nuclear</td></tr>
+        <tr><td>Eicosanoides (de ácido araquidónico, PLA₂)</td><td>membrana (GPCR)</td></tr>
+        <tr><td>NO (gas)</td><td>GC soluble (intracelular)</td></tr>
+      </table></div>
+      <p>Por distancia: <b>endocrina</b> (sangre), <b>paracrina</b> (vecinas: TGFβ, NO, HB-EGF), <b>autocrina</b> (la propia célula), <b>yuxtacrina</b> (contacto). La GH es de la <b>adenohipófisis</b>.</p>
+    </div>
+    <div class="card"><h3>1.2 · Hormona-receptor</h3>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li><b>KD</b> = [H] libre que ocupa el 50 % de los receptores. <b>KA = 1/KD</b>, en M⁻¹ (10⁸–10¹⁰).</li>
+        <li><b>Unión específica = total − inespecífica</b>. La inespecífica se mide con exceso de hormona fría.</li>
+        <li><b>Scatchard</b> (B/F frente a B): pendiente = −1/KD; corte con X = Bmax.</li>
+        <li><b>Receptores de reserva</b>: respuesta máxima con un ~20 % ocupado, así que EC50 &lt; KD.</li>
+        <li><b>Agonista</b> (isoproterenol en β), antagonista, parcial, inverso.</li>
+        <li>Hill nH &gt; 1: cooperatividad positiva (sigmoide); &lt; 1: negativa.</li>
+      </ul>
+    </div>
+    <div class="card"><h3>1.3 · Regulación</h3>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+        <li><b>Km</b> = [S] a Vmax/2. Km baja = más afinidad.</li>
+        <li><b>Competitivo</b>: Km↑, Vmax igual. <b>No competitivo</b>: Vmax↓.</li>
+        <li><b>Alostérica</b>: oligómero (a menudo tetrámero), sigmoide; los moduladores (sistema K) cambian K₀,₅, no la Vmax.</li>
+        <li><b>Covalente reversible</b>: fosforilación, acetilación. <b>Irreversible</b>: proteólisis (SREBP, zimógenos, furina).</li>
+        <li><b>Ubiquitina</b>: E1 → E2 → E3. Poli-K48 → proteasoma; mono/multimono → endocitosis.</li>
+        <li>Ayuno: CRTC2 (coactivador de CREB); SIRT1 lo desacetila y lo apaga.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="familias">
+  <h2>Las familias de receptores, cara a cara</h2>
+  <div class="card tbl"><table>
+    <tr><th>Familia</th><th>Dónde</th><th>Actividad propia</th><th>Primer paso</th><th>Lleva al núcleo</th><th>Freno típico</th></tr>
+    <tr><td><span class="pill c-nr">Nuclear</span></td><td>citoplasma (I) o DNA (II)</td><td>factor de transcripción</td><td>ligando en el LBD → H12</td><td>él mismo</td><td>correpresor · antagonista</td></tr>
+    <tr><td><span class="pill c-rtk">RTK</span></td><td>MP, 1 TM</td><td><b>tirosina quinasa</b></td><td>dimerización + transfosforilación</td><td>ERK, Akt</td><td>PTP · Cbl · MAPK-fosfatasa · PTEN</td></tr>
+    <tr><td><span class="pill c-jak">Citoquina</span></td><td>MP, 1 TM</td><td><b>ninguna</b> (JAK prestada)</td><td>JAK se transfosforila</td><td>STAT</td><td>SOCS</td></tr>
+    <tr><td><span class="pill c-tgf">TGFβ</span></td><td>MP, 1 TM</td><td><b>Ser/Thr quinasa</b></td><td>RII fosforila GS de RI</td><td>Smad</td><td>Smad7 · Ski · SMURF2</td></tr>
+    <tr><td><span class="pill c-gs">GPCR</span></td><td>MP, 7 TM</td><td>GEF de Gα</td><td>GDP → GTP en Gα</td><td>PKA → CREB · CaMK</td><td>GTPasa/RGS · GRK + arrestina</td></tr>
+    <tr><td><span class="pill c-gmp">GC membrana</span></td><td>MP, 1 TM</td><td><b>guanilil ciclasa</b></td><td>ANP → GMPc</td><td>PKG</td><td>PDE</td></tr>
+  </table></div>
+  <div class="grid3">
+    <div class="card"><h3><span class="dot bg-nr"></span>Receptores nucleares en 6 líneas</h3>
+      <p>Dominios <b>A/B</b> (AF-1) · <b>C</b> (DBD: 2 dedos de Zn, P-box elige la secuencia, D-box el espaciado) · <b>D</b> (bisagra) · <b>E</b> (LBD, AF-2, H12) · <b>F</b>.</p>
+      <p><b>Clase I</b> (esteroides): HSP90 en el citoplasma → homodímero → palíndromo. ER: AGGTCA; GR/MR/PR/AR: AGAACA.</p>
+      <p><b>Clase II</b> (RAR, TR, VDR, PPAR, LXR, FXR): heterodímero con RXR en un DR-n. Regla 1-2-3-4-5: RXR, -, VDR, TR, RAR.</p>
+      <p>PPAR: α/δ oxidan (fibratos) · γ acumula (tiazolidinedionas). LXR activa CYP7A1; FXR lo frena (FGF19 en el intestino, SHP en el hígado).</p>
+    </div>
+    <div class="card"><h3><span class="dot bg-rtk"></span>RTK: quién se une a qué</h3>
+      <div class="tbl"><table>
+        <tr><th>Dominio</th><th>Reconoce</th><th>Ejemplo</th></tr>
+        <tr><td>SH2</td><td>pY + lado C-terminal</td><td>pYxxM → PI3K · pYxxP → PLCγ</td></tr>
+        <tr><td>PTB</td><td>pY + lado N-terminal</td><td>NPxpY → Shc · IRS1</td></tr>
+        <tr><td>SH3</td><td>regiones ricas en Pro</td><td>Grb2 ↔ Sos</td></tr>
+        <tr><td>PH</td><td>PI(3,4)P₂, PIP₃</td><td>Akt, PDK1, PLC</td></tr>
+        <tr><td>RBD</td><td>Ras-GTP</td><td>RAF (sin SH2)</td></tr>
+      </table></div>
+    </div>
+    <div class="card"><h3><span class="dot bg-tgf"></span>Smad en 4 líneas</h3>
+      <p><b>R-Smad</b> 1/5/8 (BMP) y 2/3 (TGFβ, activina): MH1–linker–MH2 + SSXS.</p>
+      <p><b>Co-Smad</b> 4: sin SSXS, no se fosforila. <b>I-Smad</b> 6/7: sin MH1, solo compiten.</p>
+      <p>MH1: DNA + FT. MH2: receptor, oligomerización, CBP/p300.</p>
+      <p>Activina (ββ) ↑ FSH. Inhibina (αβ) bloquea la entrada del RI. KO de inhibina → tumores gonadales.</p>
+    </div>
+  </div>
+</section>
+
+<section id="trucos">
+  <h2>Patrones que se repiten en todo el temario</h2>
+  <p class="lead">Si entiendes estos seis trucos, la mitad del temario se vuelve el mismo mecanismo con distinto nombre.</p>
+  <div class="grid">
+    <div class="card"><h3>1 · Algo tapa el centro activo y la señal lo destapa</h3>
+      <div class="tbl"><table>
+        <tr><th>Proteína</th><th>Qué la bloquea</th><th>Qué la libera</th></tr>
+        <tr><td>TKR · ERK</td><td>lazada de activación</td><td>fosforilación (transfosforilación · MEK)</td></tr>
+        <tr><td>PKA</td><td>subunidades R (R₂C₂)</td><td>4 AMPc: las C se separan</td></tr>
+        <tr><td>PKG</td><td>se pliega sobre sí misma</td><td>4 GMPc + autofosforilación</td></tr>
+        <tr><td>PKC</td><td>pseudosustrato</td><td>DAG + Ca²⁺ (con PDK1 previa)</td></tr>
+        <tr><td>CaMKII</td><td>dominio inhibidor</td><td>Ca²⁺/CaM + autofosforilación (queda 50–80 % activa)</td></tr>
+        <tr><td>JAK</td><td>KIR de SOCS (falso sustrato)</td><td>— (es el freno)</td></tr>
+        <tr><td>R-Smad</td><td>MH2 tapa la NLS de MH1</td><td>fosforilación del SSXS por RI</td></tr>
+        <tr><td>c-Src</td><td>pTyr527 sobre su propio SH2</td><td>desfosforilación</td></tr>
+        <tr><td>TGFβ</td><td>LAP + LTBP (latente en la MEC)</td><td>daño tisular</td></tr>
+      </table></div>
+    </div>
+    <div class="card"><h3>2 · Interruptores de GTP</h3>
+      <div class="tbl"><table>
+        <tr><th>Proteína G</th><th>GEF (enciende)</th><th>Apagado</th></tr>
+        <tr><td>Ras (monomérica)</td><td>Sos</td><td>RasGAP · GTPasa intrínseca</td></tr>
+        <tr><td>Gα (heterotrimérica)</td><td>el GPCR activado</td><td>GTPasa intrínseca + RGS (GAP)</td></tr>
+        <tr><td>Rap (monomérica)</td><td>Epac (AMPc) · PLCε</td><td>GAP</td></tr>
+        <tr><td>Ran (monomérica)</td><td>—</td><td>Ran-GTP suelta la importina en el núcleo</td></tr>
+      </table></div>
+      <p>La GTPasa es un <b>temporizador</b>: la proteína G está activa mientras tiene GTP. Si no puede hidrolizarlo (toxina colérica, Ras mutado), la señal queda siempre encendida.</p>
+    </div>
+    <div class="card"><h3>3 · Ubiquitina: endocitosis o proteasoma</h3>
+      <div class="tbl"><table>
+        <tr><th>E3</th><th>Tipo</th><th>Sustrato → destino</th></tr>
+        <tr><td>Cbl</td><td>RING (TKB)</td><td>EGFR → endocitosis</td></tr>
+        <tr><td>NEDD4</td><td>HECT</td><td>adaptadores EPS15/EPSIN · GPCR</td></tr>
+        <tr><td>SMURF2</td><td>HECT (C2, WW)</td><td>RI de TGFβ vía Smad7 → endocitosis · R-Smad → proteasoma</td></tr>
+        <tr><td>ITCH</td><td>HECT (C2, WW)</td><td>CXCR4 (P-Ser) → degradación</td></tr>
+        <tr><td>SOCS box</td><td>recluta E3</td><td>receptor + JAK</td></tr>
+      </table></div>
+      <p>Proteína de <b>membrana</b> ubiquitinada → <b>endocitosis</b> → el endosoma decide: reciclaje (si una DUB como USP20 quita la Ub) o ESCRT → MVB → lisosoma. <b>Poli-K48</b> en una proteína soluble → <b>proteasoma</b>.</p>
+    </div>
+    <div class="card"><h3>4 · La señal fabrica su propio freno</h3>
+      <div class="tbl"><table>
+        <tr><th>Vía</th><th>Induce o activa</th><th>Que apaga</th></tr>
+        <tr><td>MAPK → AP-1</td><td>MAPK-fosfatasa</td><td>ERK</td></tr>
+        <tr><td>STAT</td><td>SOCS</td><td>JAK y receptor</td></tr>
+        <tr><td>TGFβ</td><td>Smad7, Ski/SnoN</td><td>receptor · transcripción</td></tr>
+        <tr><td>BMP</td><td>Smad6</td><td>R-Smad</td></tr>
+        <tr><td>AMPc (P2 de CREM)</td><td>ICER</td><td>CRE</td></tr>
+        <tr><td>PKA en mAKAP</td><td>PDE (fosforilada, activa)</td><td>AMPc local</td></tr>
+        <tr><td>Ca²⁺/CaM</td><td>PMCA</td><td>Ca²⁺</td></tr>
+        <tr><td>PKA/AMPc</td><td>fosforila el GPCR</td><td>desensibilización heteróloga</td></tr>
+        <tr><td>PLC → DAG</td><td>DAG quinasa (DAG → PA)</td><td>PKC (y regenera el PIP₂)</td></tr>
+        <tr><td>Ca²⁺ alto</td><td>cierra IP₃R / RyR</td><td>salida del RE</td></tr>
+      </table></div>
+    </div>
+    <div class="card"><h3>5 · Cada fosfatasa borra el producto de su quinasa</h3>
+      <div class="tbl"><table>
+        <tr><th>Fosfatasa</th><th>Quita el fosfato de</th></tr>
+        <tr><td>PTEN (3-fosfatasa)</td><td>PIP₃ → PI(4,5)P₂ · supresor tumoral</td></tr>
+        <tr><td>SHIP1/2 (5-fosfatasa)</td><td>PIP₃ → PI(3,4)P₂</td></tr>
+        <tr><td>SHP1 / Shp2 (PTP)</td><td>pY del receptor</td></tr>
+        <tr><td>MAPK-fosfatasa</td><td>ERK</td></tr>
+        <tr><td>PPM1A, PP2A · PP1</td><td>R-Smad · RI</td></tr>
+        <tr><td>PP-1</td><td>CREB Ser-133</td></tr>
+        <tr><td>MLC-fosfatasa</td><td>MLC (relaja; la activa la PKG)</td></tr>
+        <tr><td>Calcineurina (Ca²⁺/CaM)</td><td>NF-AT → <b>lo activa</b></td></tr>
+        <tr><td>PDP1 (Ca²⁺)</td><td>PDH → <b>la activa</b></td></tr>
+      </table></div>
+      <p>Fosforilar no siempre es activar: CREB, STAT y Smad se activan al fosforilarse; NF-AT y la PDH, al desfosforilarse.</p>
+    </div>
+    <div class="card"><h3>6 · Dominios: el idioma común</h3>
+      <div class="tbl"><table>
+        <tr><th>Dominio</th><th>Une</th><th>Lo tienen</th></tr>
+        <tr><td>SH2 · PTB</td><td>fosfotirosina</td><td>Grb2, PLCγ, PI3K-p85, STAT, SOCS, Shp2 · Shc, IRS</td></tr>
+        <tr><td>SH3</td><td>prolinas</td><td>Grb2, Src, PLCγ</td></tr>
+        <tr><td>PH · PX</td><td>PIP₂/PIP₃ · PI3P</td><td>Akt, PDK1, PLC · PLD</td></tr>
+        <tr><td>C1 · C2</td><td>DAG · Ca²⁺ + fosfolípidos</td><td>PKC · PKC, PLC, SMURF2, ITCH, cPLA₂</td></tr>
+        <tr><td>EF-hand</td><td>Ca²⁺</td><td>calmodulina (4), PLC</td></tr>
+        <tr><td>WW</td><td>motivo PY · P-Ser</td><td>SMURF2 (Smad7), ITCH (CXCR4)</td></tr>
+        <tr><td>RA · RBD</td><td>Ras / Rap</td><td>PLCε · RAF</td></tr>
+        <tr><td>GAF · CNB</td><td>GMPc · AMPc/GMPc</td><td>PDE · PKA, PKG</td></tr>
+        <tr><td>bZIP</td><td>DNA + dimerización</td><td>CREB/CREM/ATF1/ICER, fos, jun</td></tr>
+        <tr><td>Dedos de Zn</td><td>DNA</td><td>receptores nucleares</td></tr>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section id="galfa">
+  <h2>Proteínas G y toxinas</h2>
+  <div class="grid">
+    <div class="card tbl"><table>
+      <tr><th>Gα</th><th>Efector</th><th>2º mensajero</th><th>Receptores</th></tr>
+      <tr><td><b>s</b></td><td>AC ↑</td><td>↑ AMPc</td><td>β-adrenérgico, glucagón, LH, FSH, TSH, ACTH, ADH</td></tr>
+      <tr><td><b>i</b></td><td>AC ⊣ · K⁺ (βγ)</td><td>↓ AMPc</td><td>α₂-adrenérgico, muscarínico, somatostatina, opioides</td></tr>
+      <tr><td><b>olf</b></td><td>AC ↑</td><td>↑ AMPc</td><td>olfativos</td></tr>
+      <tr><td><b>q</b></td><td>PLCβ</td><td>IP₃ + DAG</td><td>α₁-adrenérgico, GnRH, TRH, angiotensina II</td></tr>
+      <tr><td><b>o</b></td><td>PLC</td><td>IP₃ + DAG</td><td>ACh endotelial</td></tr>
+      <tr><td><b>t</b></td><td>PDE6</td><td>↓ GMPc</td><td>rodopsina (bastones)</td></tr>
+    </table>
+    <p>Regla de los adrenérgicos: <b>α₁ → q · α₂ → i · β → s</b>. Hay ~1300 GPCR para 15 α, 6 β y 12 γ, así que las G se comparten.</p></div>
+    <div class="card"><h3>Toxinas: las dos suben el AMPc</h3>
+      <div class="tbl"><table>
+        <tr><th></th><th>Colérica</th><th>Pertussis</th></tr>
+        <tr><td>Diana</td><td>Gαs (Arg)</td><td>Gαi (Cys C-terminal)</td></tr>
+        <tr><td>Efecto</td><td>sin GTPasa → siempre activa</td><td>el receptor no la activa → siempre inactiva</td></tr>
+        <tr><td>Analogía</td><td>acelerador bloqueado</td><td>freno cortado</td></tr>
+        <tr><td>AMPc</td><td>↑↑</td><td>↑</td></tr>
+      </table></div>
+      <p>Las dos <b>ADP-ribosilan</b> (NAD⁺ → ADP-ribosa + nicotinamida) y sirven para saber qué G usa una vía.</p>
+    </div>
+    <div class="card"><h3>Desensibilización de los GPCR</h3>
+      <p><b>Homóloga</b>: la GRK (βARK, reclutada por βγ) fosforila solo el receptor ocupado → β-arrestina → desacopla la G → AP2 + clatrina → endosoma → reciclaje (resensibilización) o lisosoma.</p>
+      <p><b>Heteróloga</b>: PKA/PKC fosforilan cualquier receptor, aunque no esté ocupado.</p>
+      <p>Isoproterenol preincubado 0 / 10 / 160 min → AC máxima 100 / 80 / 60 %; la basal no cambia.</p>
+    </div>
+    <div class="card"><h3>Dos Nobel</h3>
+      <p><b>1994</b> Gilman y Rodbell: proteínas G. <b>2012</b> Kobilka y Lefkowitz: GPCR. <b>1971</b> Sutherland: AMPc (descubierto en 1957, en el hígado, con adrenalina).</p>
+    </div>
+  </div>
+</section>
+
+<section id="mensajeros">
+  <h2>Los cuatro segundos mensajeros</h2>
+  <div class="card tbl"><table>
+    <tr><th>Mensajero</th><th>Se fabrica</th><th>Se destruye</th><th>Dianas</th><th>Detalles</th></tr>
+    <tr><td><span class="pill c-gs">AMPc</span></td><td>ATP, adenilil ciclasa</td><td>PDE → AMP</td><td>PKA · Epac · canales (HCN)</td><td>basal casi 0; picos rápidos; ICER, CREB</td></tr>
+    <tr><td><span class="pill c-gmp">GMPc</span></td><td>GTP, GC soluble (NO) o de membrana (ANP)</td><td>PDE → GMP</td><td>PKG · canales (bastones) · PDE (GAF)</td><td>1963, orina; menos que el AMPc</td></tr>
+    <tr><td><span class="pill c-gq">IP₃</span></td><td>PIP₂, PLC</td><td>fosfatasas · quinasas</td><td>IP₃R del RE (fosfatos 4 y 5)</td><td>IP₃R: tetrámero, µM Ca²⁺ ↑ sensibilidad, mM ↓</td></tr>
+    <tr><td><span class="pill c-gq">DAG</span></td><td>PIP₂, PLC</td><td>DAG quinasa → PA</td><td>PKC (clásicas + nuevas)</td><td>no sale de la membrana</td></tr>
+    <tr><td><span class="pill c-gq">Ca²⁺</span></td><td>IP₃R, RyR, canales (voltaje, receptor, SOC)</td><td>SERCA, PMCA, Na⁺/Ca²⁺, mitocondria</td><td>CaM (4 Ca²⁺) · PKC · PLC</td><td>se mide con Quin-2/FURA (citosol) o aequorina (orgánulos)</td></tr>
+  </table></div>
+  <div class="grid3">
+    <div class="card"><h3>PKC: tres familias</h3>
+      <p><b>Clásicas</b> α, βI, βII, γ: DAG + Ca²⁺. <b>Nuevas</b> δ, ε, η, θ: solo DAG. <b>Atípicas</b> ζ, λ/ι: ninguno.</p>
+      <p>Preactivación: PDK1 (lazada) + autofosforilación del C-terminal. Activación: Ca²⁺ → membrana → DAG.</p>
+    </div>
+    <div class="card"><h3>Las PLC</h3>
+      <p>Todas: PH + EF-hand + X/Y (catalítico) + C2. Mismo sustrato (PIP₂) y mismos productos.</p>
+      <p><b>β</b> Gq · <b>γ</b> SH2-SH2-SH3 (RTK) · <b>ε</b> GEF + RA (Ras/Rap) · <b>ζ</b> espermatozoide (onda de Ca²⁺) · <b>δ, η</b> por Ca²⁺.</p>
+      <p>Cortes: PLA₁ sn-1 · PLA₂ sn-2 · PLC → DAG + IP₃ · PLD → PA.</p>
+    </div>
+    <div class="card"><h3>Calcio: dónde está</h3>
+      <p>Fuera <span class="num">1–2 mM</span> · citosol <span class="num">0,1 µM</span> · RE <span class="num">400 µM</span>.</p>
+      <p>RE vacío → STIM pierde el Ca²⁺ → clusters → abre el SOC. Ca²⁺ alto mucho tiempo → calpaínas → muerte.</p>
+      <p>RyR: Ca²⁺ y cafeína, no IP₃; 3 tipos. IP₃R: 2 tipos según la diapositiva.</p>
+    </div>
+  </div>
+</section>
+
+<section id="farmacos">
+  <h2>Fármacos y herramientas</h2>
+  <div class="card tbl"><table>
+    <tr><th>Molécula</th><th>Qué hace</th><th>Tema</th></tr>
+    <tr><td>Tamoxifeno</td><td>antagonista de ER en mama: desplaza la H12</td><td>2.1</td></tr>
+    <tr><td>RU486 (mifepristona)</td><td>antagonista de PR/GR</td><td>2.1</td></tr>
+    <tr><td>Fibratos · tiazolidinedionas</td><td>agonistas de PPARα (β-oxidación) · PPARγ (sensibilidad a insulina)</td><td>2.1</td></tr>
+    <tr><td>Isoproterenol</td><td>agonista β</td><td>1.2 · 2.4</td></tr>
+    <tr><td>Toxina colérica · pertussis</td><td>Gαs siempre activa · Gαi bloqueada</td><td>2.4</td></tr>
+    <tr><td>Sildenafilo (Viagra)</td><td>inhibe la PDE5 → GMPc alto → relajación</td><td>2.5</td></tr>
+    <tr><td>Nitroglicerina</td><td>libera NO → vasodilatación</td><td>2.5</td></tr>
+    <tr><td>Ciclosporina A</td><td>inhibe la calcineurina → NF-AT fosforilado → inmunosupresión</td><td>2.6</td></tr>
+    <tr><td>Tapsigargina · ionomicina · TPEN</td><td>inhibe SERCA · ionóforo · quelante del RE: vacían el RE → SOC</td><td>2.6</td></tr>
+    <tr><td>Cafeína · rianodina</td><td>abren (+) · modulan (+/−) el RyR</td><td>2.6</td></tr>
+    <tr><td>Cicloheximida · actinomicina D</td><td>bloquean traducción · transcripción (para medir vidas medias)</td><td>1.3</td></tr>
+  </table></div>
+</section>
+
+<section id="numeros">
+  <h2>Números y fórmulas <span class="tag">la pregunta sin calculadora</span></h2>
+  <div class="grid">
+    <div class="card"><h3>Fórmulas (se resuelven de cabeza)</h3>
+      <div class="formula">ocupación = [H] / ([H] + KD)</div>
+      <div class="formula">v / Vmax = [S] / ([S] + Km)</div>
+      <div class="formula">Km aparente = Km · (1 + [I]/Ki)</div>
+      <div class="formula">queda = (1/2)ⁿ  · n = tiempo / vida media</div>
+      <div class="formula">receptores/célula = Bmax(fmol/mg) · 6·10⁸ / células por mg</div>
+      <div class="formula">Kd(pM) = Kd(fmol/mg) · mg proteína / mL</div>
+      <div class="formula">%B/T = Bi/T · 100 (T = media de las cuentas totales)</div>
+    </div>
+    <div class="card"><h3>Tabla de ocupación</h3>
+      <div class="tbl"><table class="num">
+        <tr><th>[H] =</th><td>KD/9</td><td>KD/3</td><td>KD</td><td>3·KD</td><td>9·KD</td><td>99·KD</td></tr>
+        <tr><th>ocupa</th><td>10 %</td><td>25 %</td><td><b>50 %</b></td><td>75 %</td><td>90 %</td><td>99 %</td></tr>
+      </table></div>
+      <h3>Cifras que conviene tener a mano</h3>
+      <div class="tbl"><table>
+        <tr><td>Adrenalina → AMPc</td><td class="num">10⁻¹⁰ → 10⁻⁶ M = ×10⁴</td></tr>
+        <tr><td>Ca²⁺ fuera / citosol / RE</td><td class="num">1 mM / 0,1 µM / 400 µM</td></tr>
+        <tr><td>Ca²⁺ citosol vs mitocondria (histamina)</td><td class="num">~2 µM vs ~80 µM → viene del RE</td></tr>
+        <tr><td>Respuesta máxima con</td><td class="num">~20 % ocupado</td></tr>
+        <tr><td>Canal de Ca²⁺ de voltaje</td><td class="num">3000 Ca²⁺/canal/ms · −90 → −30/+30 mV</td></tr>
+        <tr><td>Receptores nucleares · GPCR · PDE</td><td class="num">48 · ~1300 · 11</td></tr>
+        <tr><td>Factores de crecimiento · familia TGFβ</td><td class="num">&gt;50 · ~30</td></tr>
+        <tr><td>IRS1 · CREB · ICER</td><td class="num">18 Tyr · 341 aa (Ser133) · 108 aa</td></tr>
+        <tr><td>KA · receptores/célula</td><td class="num">10⁸–10¹⁰ M⁻¹ · 10³–10⁴</td></tr>
+        <tr><td>1 fmol</td><td class="num">6·10⁸ moléculas</td></tr>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section id="trampas">
+  <h2>Trampas más probables</h2>
+  <ul class="trap">
+    <li><s>TGFβ va por un TKR</s> → <em>Ser/Thr</em>; TGFα sí es TK (familia EGF)</li>
+    <li><s>Los TKR están dimerizados en reposo</s> → <em>monómeros</em>, salvo insulina/IGF</li>
+    <li><s>MEK es Ser/Thr quinasa</s> → <em>doble especificidad (Thr + Tyr)</em></li>
+    <li><s>Sos se une a Grb2 por SH2</s> → <em>por el SH3 de Grb2</em></li>
+    <li><s>RAF tiene SH2</s> → <em>se une a Ras-GTP por el RBD</em></li>
+    <li><s>p85 es la catalítica</s> → <em>p110</em>; p85 es reguladora</li>
+    <li><s>mTORC1 fosforila Akt S473</s> → <em>mTORC2</em>; PDK1 → T308</li>
+    <li><s>PTEN es una quinasa</s> → <em>3-fosfatasa del PIP₃</em></li>
+    <li><s>Cbl manda el EGFR al proteasoma</s> → <em>endocitosis</em></li>
+    <li><s>JAK se recluta al llegar el ligando</s> → <em>ya estaba unida</em></li>
+    <li><s>SOCS es una fosfatasa</s> → <em>SH2 + inhibe JAK + recluta E3</em></li>
+    <li><s>TGFβ se une al RI</s> → <em>se une al RII</em>, constitutivamente activo</li>
+    <li><s>Smad4 se fosforila</s> → <em>no tiene SSXS</em></li>
+    <li><s>Las I-Smad tienen MH1</s> → <em>solo MH2</em></li>
+    <li><s>β se ancla a la membrana</s> → <em>α (acilación N-t) y γ (isoprenilación C-t)</em></li>
+    <li><s>El GPCR tiene actividad GTPasa</s> → <em>es GEF; la GTPasa es de Gα</em></li>
+    <li><s>La pertussis baja el AMPc</s> → <em>lo sube</em> (quita el freno)</li>
+    <li><s>Gβγ no señaliza</s> → <em>abre K⁺, activa PLCβ, recluta GRK</em></li>
+    <li><s>Las RGS son GEF</s> → <em>son GAP</em></li>
+    <li><s>La GRK da desensibilización heteróloga</s> → <em>homóloga</em>; PKA/PKC heteróloga</li>
+    <li><s>El AMPc se une a las C de la PKA</s> → <em>a las R</em>, 4 AMPc en total</li>
+    <li><s>ICER es un activador / sale de CREB</s> → <em>represor, del promotor P2 de CREM</em></li>
+    <li><s>El NO activa la GC de membrana</s> → <em>la soluble (hemo)</em></li>
+    <li><s>La Viagra activa la PDE5</s> → <em>la inhibe</em></li>
+    <li><s>Km alta = más afinidad</s> → <em>menos afinidad</em></li>
+    <li><s>PLCγ la activa Gq</s> → <em>los RTK (SH2)</em>; Gq → PLCβ</li>
+    <li><s>PLD produce DAG</s> → <em>produce PA</em></li>
+    <li><s>Las nPKC necesitan Ca²⁺</s> → <em>solo DAG</em></li>
+    <li><s>El RyR se abre por IP₃</s> → <em>por Ca²⁺ y cafeína</em></li>
+    <li><s>SERCA saca Ca²⁺ de la célula</s> → <em>lo mete en el RE</em>; PMCA lo saca</li>
+    <li><s>NF-AT se activa al fosforilarse</s> → <em>al desfosforilarse</em> (calcineurina)</li>
+    <li><s>El Ca²⁺ mitocondrial viene del citosol</s> → <em>del RE</em> (microdominio)</li>
+  </ul>
+</section>
+
+<section id="dudas">
+  <h2>Contradicciones entre diapositivas y apuntes</h2>
+  <div class="grid3">
+    <div class="card ask"><h3>¿Smad4 tiene NLS propia?</h3><p>Los apuntes dicen que no; las diapositivas 8 y 9 del 2.3 le dibujan señal de importación y de exportación. Respuesta segura: entra al núcleo en el trímer.</p></div>
+    <div class="card ask"><h3>¿Gq es sensible a la pertussis?</h3><p>La tabla del 2.4 la marca con P; el pie de figura del 2.6 dice que Gq es insensible. La bibliografía da la razón al pie de figura.</p></div>
+    <div class="card ask"><h3>Receptor JAK: ¿dímero previo?</h3><p>La diapositiva dice "agregación al unirse la hormona"; los apuntes, que ya es dímero. Lo importante: el ligando acerca las JAK.</p></div>
+  </div>
+</section>
+
+<footer>Hecho a partir de las diapositivas 1.1–2.6, tus anotaciones y los apuntes del curso pasado. Las tarjetas y el simulacro están en la página de flashcards.</footer>
+</div>
+
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body></html>

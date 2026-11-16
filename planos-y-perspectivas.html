@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planos y perspectivas · Biología del Desarrollo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5efe6;--card:#fffaf3;--ink:#1e2733;--muted:#6b7380;--line:#e6dccd;--blue:#2f6db3;--coral:#d9654b;--green:#2e8b57;--yellow:#e8b931;--shadow:0 1px 2px rgba(60,40,20,.06),0 10px 30px rgba(60,40,20,.08)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{max-width:1080px;margin:0 auto;padding:22px 18px 60px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;letter-spacing:-.01em;margin:0}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin:10px 0 26px}
+.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.02}
+.hero h1 em{font-style:normal;color:var(--coral)}
+.hero p{color:var(--muted);margin:10px 0 0;max-width:560px;line-height:1.5}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;text-align:left;box-shadow:var(--shadow);transition:transform .15s,border-color .15s;display:flex;flex-direction:column;gap:8px;min-height:170px}
+.mcard:hover{transform:translateY(-2px);border-color:#cdbca4}
+.mcard .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:20px}
+.mcard h3{font-size:19px}
+.mcard p{margin:0;color:var(--muted);font-size:14px;line-height:1.45;flex:1}
+.mcard .acc{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.bar{height:6px;background:#eee3d3;border-radius:6px;flex:1;overflow:hidden}
+.bar div{height:100%;background:var(--green);border-radius:6px}
+.mcard.exam{background:#1e2733;color:#fdf6ea;border-color:#1e2733}
+.mcard.exam p{color:#c9c2b5}
+.section-title{margin:34px 0 12px;font-size:22px}
+.cheat{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:6px 20px 18px}
+.cheat details{border-bottom:1px solid var(--line);padding:12px 0}
+.cheat details:last-child{border-bottom:0}
+.cheat summary{cursor:pointer;font-weight:600;font-size:15.5px;list-style:none;display:flex;justify-content:space-between}
+.cheat summary::after{content:'+';color:var(--muted);font-weight:400}
+.cheat details[open] summary::after{content:'–'}
+.cheat p,.cheat li{font-size:14.5px;line-height:1.55;color:#38414d}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:10px}
+th,td{border-bottom:1px solid var(--line);padding:8px 8px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:12px;font-weight:600}
+.t-ap{background:#fbe3dc;color:#a8432f}.t-dv{background:#dfe9f6;color:#2a5a9a}.t-lr{background:#dcefe3;color:#23704a}
+/* game */
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:14px}
+.ghost:hover{background:#fff}
+.mode-title{font-family:Fraunces,serif;font-weight:700;font-size:20px;flex:1}
+.chips{display:flex;gap:8px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600}
+.chip.fire{color:var(--coral)}
+.progress{height:6px;background:#e9dfd0;border-radius:6px;margin:-4px 0 14px;overflow:hidden}
+.progress div{height:100%;background:var(--ink);transition:width .3s}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);overflow:hidden}
+.qcard.textonly{grid-template-columns:1fr;max-width:720px;margin:0 auto}
+.figwrap{background:#fbf6ee;border-right:1px solid var(--line);padding:14px;display:flex;flex-direction:column;justify-content:center;min-height:420px;position:relative}
+canvas{width:100%;height:400px;display:block;touch-action:none;cursor:grab;border-radius:14px}
+canvas:active{cursor:grabbing}
+.figtools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.figtools button{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12.5px}
+.figtools button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+svg.fig{width:100%;height:auto;max-height:440px;display:block}
+.qside{padding:24px 24px 22px;display:flex;flex-direction:column;gap:12px}
+.qside .cat{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.qside h2{font-size:23px;line-height:1.2}
+.qside .sub{margin:-4px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+.opts{display:grid;gap:9px;margin-top:4px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15.5px;font-weight:500;transition:border-color .12s,background .12s,transform .08s}
+.opt:hover:not(:disabled){border-color:#bfae96;transform:translateX(2px)}
+.opt .k{width:24px;height:24px;border-radius:7px;background:#f1e8db;display:grid;place-items:center;font-size:12.5px;font-weight:700;color:var(--muted);flex:none}
+.opt.correct,.dir.correct{border-color:var(--green);background:#e6f4ec}
+.opt.correct .k{background:var(--green);color:#fff}
+.opt.wrong,.dir.wrong{border-color:var(--coral);background:#fbe7e2}
+.opt.wrong .k{background:var(--coral);color:#fff}
+.opt:disabled{cursor:default}
+.fb{border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.55;animation:pop .25s ease}
+.fb.ok{background:#e6f4ec;border:1px solid #bfe0cc}
+.fb.ko{background:#fbeae5;border:1px solid #f1c7bb}
+.fb p{margin:6px 0 0}
+.fb .tip{background:rgba(255,255,255,.6);border-radius:10px;padding:8px 10px;margin-top:10px}
+.primary{background:var(--ink);color:#fff;border:0;border-radius:999px;padding:11px 20px;font-weight:600;font-size:15px;margin-top:12px}
+.primary:hover{background:#000}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.dirgrid{display:grid;grid-template-columns:44px 1fr 44px;grid-template-rows:44px 1fr 44px;gap:6px;align-items:center;justify-items:center}
+.dir{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:16px;color:var(--ink);display:grid;place-items:center;transition:transform .1s,border-color .1s}
+.dir:hover:not(:disabled){transform:scale(1.08);border-color:var(--ink)}
+.dir.wide{width:100%;border-radius:999px;height:40px}
+.figcell{width:100%}
+.lbl{opacity:0;transition:opacity .5s .55s}
+.lbl.show{opacity:1}
+.lt{font-family:Inter,sans-serif;font-size:13px;font-weight:600;fill:#1e2733;paint-order:stroke;stroke:#fffaf3;stroke-width:4px;stroke-linejoin:round}
+.ll{stroke:#1e2733;stroke-width:1;opacity:.55}
+.ld{fill:#1e2733}
+.axt{font-family:Inter,sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;paint-order:stroke;stroke:#fbf6ee;stroke-width:4px}
+.results{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:30px;max-width:640px;margin:0 auto;text-align:center}
+.results .big{font-family:Fraunces,serif;font-size:72px;font-weight:700;line-height:1}
+.results .rows{text-align:left;margin:22px 0 6px;display:grid;gap:10px}
+.results .row{display:grid;grid-template-columns:170px 1fr 52px;gap:12px;align-items:center;font-size:14px}
+.btnrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.btnrow .primary,.btnrow .ghost{margin-top:0}
+.lab{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.lab .ctrl{padding:22px;display:flex;flex-direction:column;gap:16px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 13px;font-size:14px}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ctrl label{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;display:block;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.desc{background:#f6efe3;border-radius:14px;padding:14px;font-size:14.5px;line-height:1.5}
+.desc b{font-family:Fraunces,serif;font-size:18px;display:block;margin-bottom:4px}
+.kbd{font-size:12px;color:var(--muted);margin-top:auto}
+@media (max-width:820px){.qcard,.lab{grid-template-columns:1fr}.figwrap{border-right:0;border-bottom:1px solid var(--line);min-height:0}canvas{height:330px}.results .row{grid-template-columns:120px 1fr 44px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ================= utilidades ================= */
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const sc=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l]};
+const hexRgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+
+const CATS={planos3d:'Planos en 3D',cortes:'Del corte al plano',vistas:'¿Desde dónde lo ves?',orienta:'Orienta la imagen',vocab:'Vocabulario'};
+let STATS={};try{STATS=JSON.parse(localStorage.getItem('pp_stats_v1')||'{}')}catch(e){}
+function record(cat,ok){const s=STATS[cat]||(STATS[cat]={ok:0,n:0});s.n++;if(ok)s.ok++;try{localStorage.setItem('pp_stats_v1',JSON.stringify(STATS))}catch(e){}}
+
+/* ================= modelos 3D ================= */
+const SKIN='#f0c4a8',CUT='#e07b62';
+function E(c,r,col,cut,small){return {c,r,col:col||SKIN,cut:cut||CUT,small:!!small}}
+function surfTop(parts,x){let b=-99;for(const p of parts){const dx=(x-p.c[0])/p.r[0];if(Math.abs(dx)>=1)continue;b=Math.max(b,p.c[1]+p.r[1]*Math.sqrt(1-dx*dx))}return b}
+function surfSide(parts,x,y){let b=-99;for(const p of parts){const dx=(x-p.c[0])/p.r[0],dy=(y-p.c[1])/p.r[1],k=1-dx*dx-dy*dy;if(k<=0)continue;b=Math.max(b,p.c[2]+p.r[2]*Math.sqrt(k))}return b}
+
+function buildEmbrion(){
+  const base=[E([0,0,0],[2.2,.75,.62]),E([2.1,.15,0],[.95,.88,.78]),E([-2.4,0,0],[1.35,.36,.26])];
+  const parts=[...base,E([.3,-.5,0],[1.25,.5,.5],'#f3d27a','#dcae35'),
+    E([2.55,.38,.66],[.24,.24,.16],'#2b2b33','#22222a',true),E([2.55,.38,-.66],[.24,.24,.16],'#2b2b33','#22222a',true)];
+  for(let x=-3.1;x<=2.31;x+=.2){const t=surfTop(base,x);parts.push(E([x,t-.05,0],[.13,.09,.13],'#5b8fd0','#2f5f9e',true))}
+  for(let x=-2.5;x<=1.25;x+=.28){const y=.3,z=surfSide(base,x,y);if(z<0)continue;const k=1-Math.max(0,(-x-1.2)/1.6)*.5;
+    parts.push(E([x,y,z-.04],[.11*k,.17*k,.07],'#e48a74','#a8432f',true));parts.push(E([x,y,-(z-.04)],[.11*k,.17*k,.07],'#e48a74','#a8432f',true))}
+  return parts;
+}
+const ORGS={
+  embrion:{name:'Embrión de vertebrado',human:false,A:[1,0,0],D:[0,1,0],L:[0,0,-1],parts:buildEmbrion(),
+    trans:[-2.8,2.6],front:[-.15,.28],para:.4,
+    lab:{A:['Anterior (craneal)','Posterior (caudal)'],D:['Dorsal','Ventral'],L:['Izquierda','Derecha']}},
+  raton:{name:'Ratón (cuadrúpedo)',human:false,A:[1,0,0],D:[0,1,0],L:[0,0,-1],
+    parts:[E([0,0,0],[1.8,.8,.75]),E([2.0,.35,0],[.78,.62,.56]),E([2.62,.22,0],[.38,.3,.3]),E([2.98,.25,0],[.1,.09,.09],'#c0606a','#8e3a42',true),
+      E([1.8,.95,.35],[.12,.32,.26],'#e9a98f'),E([1.8,.95,-.35],[.12,.32,.26],'#e9a98f'),
+      E([2.35,.55,.42],[.1,.1,.08],'#2b2b33','#22222a',true),E([2.35,.55,-.42],[.1,.1,.08],'#2b2b33','#22222a',true),
+      E([1.1,-.95,.45],[.22,.6,.22]),E([1.1,-.95,-.45],[.22,.6,.22]),E([-1.1,-.95,.45],[.22,.6,.22]),E([-1.1,-.95,-.45],[.22,.6,.22]),
+      E([-2.5,-.1,0],[1.0,.1,.1],'#e9a98f')],
+    trans:[-1.9,2.7],front:[-.2,.3],para:.42,
+    lab:{A:['Anterior (craneal)','Posterior (caudal)'],D:['Dorsal','Ventral'],L:['Izquierda','Derecha']}},
+  humano:{name:'Humano (posición anatómica)',human:true,A:[0,1,0],D:[0,0,-1],L:[1,0,0],
+    parts:[E([0,1.2,0],[.75,1.0,.4]),E([0,.2,0],[.7,.4,.38]),E([0,2.75,0],[.45,.55,.48]),
+      E([0,2.95,-.08],[.47,.4,.47],'#4a3426','#3a2a20'),E([0,2.7,.5],[.08,.12,.1],SKIN,CUT,true),
+      E([.17,2.85,.4],[.07,.05,.07],'#2b2b33','#22222a',true),E([-.17,2.85,.4],[.07,.05,.07],'#2b2b33','#22222a',true),
+      E([.95,1.0,0],[.2,1.1,.2]),E([-.95,1.0,0],[.2,1.1,.2]),
+      E([.32,-1.4,0],[.25,1.4,.27]),E([-.32,-1.4,0],[.25,1.4,.27]),
+      E([.32,-2.85,.2],[.2,.1,.38]),E([-.32,-2.85,.2],[.2,.1,.38])],
+    trans:[-2.5,3.0],front:[-.12,.12],para:.32,
+    lab:{A:['Craneal (superior)','Caudal (inferior)'],D:['Dorsal (posterior)','Ventral (anterior)'],L:['Izquierda','Derecha']}}
+};
+function meshFor(org){
+  if(org._F)return org._F;const F=[];
+  for(const p of org.parts){const NT=p.small?6:14,NP=p.small?10:24,rgb=hexRgb(p.col);
+    const P=(t,f)=>[p.c[0]+p.r[0]*Math.sin(t)*Math.cos(f),p.c[1]+p.r[1]*Math.cos(t),p.c[2]+p.r[2]*Math.sin(t)*Math.sin(f)];
+    for(let i=0;i<NT;i++)for(let j=0;j<NP;j++){const t0=Math.PI*i/NT,t1=Math.PI*(i+1)/NT,f0=2*Math.PI*j/NP,f1=2*Math.PI*(j+1)/NP;
+      const cc=P((t0+t1)/2,(f0+f1)/2);
+      F.push({pts:[P(t0,f0),P(t1,f0),P(t1,f1),P(t0,f1)],cc,rgb,n:norm([(cc[0]-p.c[0])/(p.r[0]*p.r[0]),(cc[1]-p.c[1])/(p.r[1]*p.r[1]),(cc[2]-p.c[2])/(p.r[2]*p.r[2])])})}}
+  const mn=[99,99,99],mx=[-99,-99,-99];
+  for(const p of org.parts)for(let k=0;k<3;k++){mn[k]=Math.min(mn[k],p.c[k]-p.r[k]);mx[k]=Math.max(mx[k],p.c[k]+p.r[k])}
+  org._bc=mn.map((v,k)=>(v+mx[k])/2);org._bh=mn.map((v,k)=>(mx[k]-v)/2);org._F=F;return F;
+}
+function planeNormal(org,type){return type==='transversal'?org.A:type==='frontal'?org.D:org.L}
+function makePlane(org,type,off){
+  meshFor(org);const n=planeNormal(org,type);const [e1,e2]=[org.A,org.D,org.L].filter(a=>a!==n);
+  const bc=org._bc,bh=org._bh,ab=a=>Math.abs(a[0])*bh[0]+Math.abs(a[1])*bh[1]+Math.abs(a[2])*bh[2];
+  const h1=ab(e1)+.3,h2=ab(e2)+.3;
+  const o=add(add(sc(n,off),sc(e1,dot(bc,e1))),sc(e2,dot(bc,e2)));
+  const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>add(add(o,sc(e1,a*h1)),sc(e2,b*h2)));
+  const secs=[];
+  for(const p of org.parts){const r=p.r;
+    const w=[(o[0]-p.c[0])/r[0],(o[1]-p.c[1])/r[1],(o[2]-p.c[2])/r[2]],a1=[e1[0]/r[0],e1[1]/r[1],e1[2]/r[2]],a2=[e2[0]/r[0],e2[1]/r[1],e2[2]/r[2]];
+    const A=dot(a1,a1),B=dot(a1,a2),C=dot(a2,a2),D=dot(a1,w),Ee=dot(a2,w),Fv=dot(w,w),det=A*C-B*B;
+    const u0=(-D*C+Ee*B)/det,v0=(-Ee*A+D*B)/det,Qm=A*u0*u0+2*B*u0*v0+C*v0*v0+2*D*u0+2*Ee*v0+Fv;
+    if(Qm>=1)continue;const pts=[];
+    for(let k=0;k<40;k++){const th=2*Math.PI*k/40,dc=Math.cos(th),ds=Math.sin(th),q2=A*dc*dc+2*B*dc*ds+C*ds*ds,t=Math.sqrt((1-Qm)/q2);
+      pts.push(add(add(o,sc(e1,u0+t*dc)),sc(e2,v0+t*ds)))}
+    secs.push({pts,cut:p.cut})}
+  return {n,o,e1,e2,corners,secs,type,off};
+}
+function randomCam(org,n){
+  for(let i=0;i<120;i++){const yaw=Math.random()*Math.PI*2,pitch=org.human?rnd(-.55,.8):rnd(-.3,.8);
+    const V=[Math.sin(yaw)*Math.cos(pitch),-Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch)],d=Math.abs(dot(n,V));
+    if(d>.45&&d<.93)return {yaw,pitch}}
+  return {yaw:.7,pitch:.35};
+}
+function render3D(cv,st){
+  const org=st.org,F=meshFor(org),dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;
+  if(!W||!H)return;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const bc=org._bc,bh=org._bh,s=Math.min(W,H)*.5/Math.hypot(bh[0],bh[1],bh[2])*1.12;
+  const ya=st.cam.yaw,pi=st.cam.pitch,ca=Math.cos(ya),sa=Math.sin(ya),cb=Math.cos(pi),sb=Math.sin(pi);
+  const rot=(x,y,z)=>{const x1=ca*x+sa*z,z1=-sa*x+ca*z;return [x1,cb*y-sb*z1,sb*y+cb*z1]};
+  const proj=p=>{const q=rot(p[0]-bc[0],p[1]-bc[1],p[2]-bc[2]);return [W/2+s*q[0],H/2-s*q[1],q[2]]};
+  const V=[sa*cb,-sb,-ca*cb],Lt=norm([-.45,.62,.65]),Hh=norm([Lt[0],Lt[1],Lt[2]+1]);
+  const pl=st.plane;let sg=1;if(pl){sg=Math.sign(dot(pl.n,V))||1}
+  const kept=[],ghost=[];
+  for(const f of F){const nc=rot(f.n[0],f.n[1],f.n[2]);if(nc[2]<=.01)continue;
+    const it={f,nc,z:proj(f.cc)[2],pp:f.pts.map(proj)};
+    if(pl&&sg*dot(sub(f.cc,pl.o),pl.n)<0)ghost.push(it);else kept.push(it)}
+  kept.sort((a,b)=>a.z-b.z);ghost.sort((a,b)=>a.z-b.z);
+  const path=pts=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath()};
+  const face=(it,alpha)=>{const sh=.4+.6*Math.max(0,dot(it.nc,Lt)),sp=Math.pow(Math.max(0,dot(it.nc,Hh)),22)*60,[r,g,b]=it.f.rgb;
+    const c=`rgb(${Math.min(255,r*sh+sp)|0},${Math.min(255,g*sh+sp)|0},${Math.min(255,b*sh+sp)|0})`;
+    path(it.pp);ctx.globalAlpha=alpha;ctx.fillStyle=c;ctx.fill();if(alpha===1){ctx.strokeStyle=c;ctx.lineWidth=.7;ctx.stroke()}};
+  for(const it of kept)face(it,1);
+  ctx.globalAlpha=1;
+  if(pl){const cs=pl.corners.map(proj);path(cs);ctx.fillStyle='rgba(47,109,179,0.15)';ctx.fill();
+    const secs=pl.secs.map(x=>({pp:x.pts.map(proj),cut:x.cut}));ctx.lineJoin='round';
+    for(const x of secs){path(x.pp);ctx.strokeStyle='#5a1f14';ctx.lineWidth=3;ctx.stroke()}
+    for(const x of secs){path(x.pp);ctx.fillStyle=x.cut;ctx.fill()}}
+  for(const it of ghost)face(it,.12);
+  ctx.globalAlpha=1;
+  if(pl){const cs=pl.corners.map(proj);path(cs);ctx.setLineDash([6,5]);ctx.strokeStyle='rgba(47,109,179,.9)';ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([])}
+  if(st.axes){
+    const axes=[[org.A,'#c8513a',org.lab.A],[org.D,'#2f6db3',org.lab.D],[org.L,'#23704a',org.lab.L]];
+    ctx.font='600 12.5px Inter, sans-serif';ctx.lineJoin='round';
+    for(const [ax,col,lb] of axes){const len=Math.abs(ax[0])*bh[0]+Math.abs(ax[1])*bh[1]+Math.abs(ax[2])*bh[2]+.45;
+      const p1=proj(add(bc,sc(ax,len))),p0=proj(add(bc,sc(ax,-len)));
+      ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.stroke();
+      const dx=p1[0]-p0[0],dy=p1[1]-p0[1],dl=Math.hypot(dx,dy);
+      if(dl>20){const ux=dx/dl,uy=dy/dl;ctx.beginPath();ctx.moveTo(p1[0],p1[1]);ctx.lineTo(p1[0]-11*ux-5*uy,p1[1]-11*uy+5*ux);ctx.lineTo(p1[0]-11*ux+5*uy,p1[1]-11*uy-5*ux);ctx.closePath();ctx.fill()}
+      const ux=dl>1?dx/dl:0,uy=dl>1?dy/dl:-1;
+      [[p1,lb[0],1],[p0,lb[1],-1]].forEach(([p,t,sgn])=>{const x=p[0]+sgn*ux*10,y=p[1]+sgn*uy*10+4;ctx.textAlign=(sgn*ux)>.3?'left':(sgn*ux)<-.3?'right':'center';
+        ctx.strokeStyle='#fbf6ee';ctx.lineWidth=4;ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y)})}
+  }
+}
+function attach3D(cv,st){
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)});
+  cv.addEventListener('pointermove',e=>{if(!drag)return;st.cam.yaw+=(e.clientX-drag.x)*.011;st.cam.pitch=Math.max(-1.5,Math.min(1.5,st.cam.pitch+(e.clientY-drag.y)*.011));drag={x:e.clientX,y:e.clientY};render3D(cv,st)});
+  const end=()=>{drag=null};cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  ACTIVE3D={cv,st};requestAnimationFrame(()=>render3D(cv,st));
+}
+let ACTIVE3D=null;
+window.addEventListener('resize',()=>{if(ACTIVE3D&&document.body.contains(ACTIVE3D.cv))render3D(ACTIVE3D.cv,ACTIVE3D.st)});
+if(document.fonts)document.fonts.ready.then(()=>{if(ACTIVE3D&&document.body.contains(ACTIVE3D.cv))render3D(ACTIVE3D.cv,ACTIVE3D.st)});
+
+/* ================= dibujos 2D (convención: dorsal arriba, anterior a la izquierda) ================= */
+const C={ecto:'#7eaad8',ectoD:'#3f6fa8',neu:'#5b8fd0',neuD:'#2a5a9a',mes:'#e48a74',mesD:'#a8432f',mesL:'#efb3a2',noto:'#b8433a',endo:'#f0c74e',endoD:'#a98318',lum:'#fffaf2',mch:'#f8e6dc',body:'#f6dcc9',bodyD:'#b98a74'};
+const OUT_LONG='M70 150 C55 95 95 55 150 60 C210 66 300 95 360 128 C375 136 375 152 360 158 C300 180 220 205 160 222 C105 236 78 205 70 150Z';
+const OUT_FR='M60 150 C60 95 110 80 160 92 C230 100 320 120 365 145 C372 148 372 152 365 155 C320 180 230 200 160 208 C110 220 60 205 60 150Z';
+const el=(tag,a)=>`<${tag} ${Object.entries(a).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`;
+const ell=(cx,cy,rx,ry,fill,stroke,sw,extra='')=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" ${stroke?`stroke="${stroke}" stroke-width="${sw}"`:''} ${extra}/>`;
+
+function drawTransTronco(){return `
+${ell(200,155,165,118,C.mch,C.ecto,8)}
+${ell(200,212,128,50,C.lum,C.mes,8)}
+<rect x="195" y="160" width="10" height="32" fill="${C.mes}"/>
+${ell(200,212,34,24,C.endo,C.mes,6)}${ell(200,212,13,7,C.lum)}
+<rect x="110" y="64" width="54" height="58" rx="18" fill="${C.mes}" stroke="${C.mesD}" stroke-width="2"/>
+<rect x="236" y="64" width="54" height="58" rx="18" fill="${C.mes}" stroke="${C.mesD}" stroke-width="2"/>
+${ell(100,146,14,9,C.mesL,C.mesD,1.5)}${ell(300,146,14,9,C.mesL,C.mesD,1.5)}
+<circle cx="176" cy="150" r="8" fill="#fff" stroke="#c0392b" stroke-width="3"/><circle cx="224" cy="150" r="8" fill="#fff" stroke="#c0392b" stroke-width="3"/>
+<circle cx="200" cy="130" r="13" fill="${C.noto}"/>
+${ell(200,80,28,36,C.neu,C.neuD,2)}${ell(200,80,5,22,C.lum)}`}
+
+function drawTransCabeza(){return `
+${ell(200,150,165,118,C.mch,C.ecto,8)}
+<line x1="160" y1="115" x2="112" y2="140" stroke="${C.neu}" stroke-width="20" stroke-linecap="round"/>
+<line x1="240" y1="115" x2="288" y2="140" stroke="${C.neu}" stroke-width="20" stroke-linecap="round"/>
+<line x1="160" y1="115" x2="112" y2="140" stroke="${C.lum}" stroke-width="4" stroke-linecap="round"/>
+<line x1="240" y1="115" x2="288" y2="140" stroke="${C.lum}" stroke-width="4" stroke-linecap="round"/>
+${ell(96,148,30,27,C.neu,C.neuD,2)}${ell(96,148,15,13,C.lum)}
+${ell(304,148,30,27,C.neu,C.neuD,2)}${ell(304,148,15,13,C.lum)}
+${ell(50,148,9,22,C.ecto)}${ell(350,148,9,22,C.ecto)}
+${ell(200,92,64,48,C.neu,C.neuD,2)}${ell(200,94,42,28,C.lum)}
+${ell(200,208,78,17,C.endo,C.endoD,1.5)}${ell(200,208,62,5,C.lum)}`}
+
+function drawSagital(){return `
+<path d="${OUT_LONG}" fill="${C.mch}" stroke="${C.ecto}" stroke-width="7"/>
+<path d="M105 178 C150 172 250 168 335 158" stroke="${C.endoD}" stroke-width="18" fill="none" stroke-linecap="round"/>
+<path d="M105 178 C150 172 250 168 335 158" stroke="${C.endo}" stroke-width="14" fill="none" stroke-linecap="round"/>
+<path d="M108 178 C150 172 250 168 332 158" stroke="${C.lum}" stroke-width="4" fill="none" stroke-linecap="round"/>
+${ell(150,204,28,15,C.mes,C.mesD,2)}${ell(150,204,14,5,C.lum)}
+<path d="M195 128 L345 147" stroke="${C.noto}" stroke-width="8" stroke-linecap="round"/>
+<path d="M232 95 L352 127 L349 140 L232 113Z" fill="${C.neu}"/>
+${ell(212,103,30,15,C.neu,C.neuD,1.5)}${ell(166,92,26,20,C.neu,C.neuD,1.5)}${ell(115,118,36,32,C.neu,C.neuD,1.5)}
+${ell(115,118,22,18,C.lum)}${ell(166,93,14,9,C.lum)}${ell(212,103,20,6,C.lum)}
+<path d="M236 104 L348 133" stroke="${C.lum}" stroke-width="3"/>`}
+
+function drawParasagital(){let s='';
+  for(let i=0;i<9;i++){const x=232+i*13,y=100+(x-232)*.296,h=20-i*1.1;s+=`<rect x="${x-5.5}" y="${(y-h/2).toFixed(1)}" width="11" height="${h.toFixed(1)}" rx="3" fill="${C.mes}" stroke="${C.mesD}" stroke-width="1.3"/>`}
+  return `
+<path d="${OUT_LONG}" fill="${C.mch}" stroke="${C.ecto}" stroke-width="7"/>
+${ell(125,192,13,17,C.mesL,C.mesD,1.5)}${ell(152,198,11,15,C.mesL,C.mesD,1.5)}${ell(176,202,10,13,C.mesL,C.mesD,1.5)}
+<path d="M210 196 C260 185 300 172 335 160" stroke="${C.mes}" stroke-width="7" fill="none" stroke-linecap="round"/>
+<circle cx="115" cy="118" r="25" fill="${C.neu}" stroke="${C.neuD}" stroke-width="2"/>
+<circle cx="112" cy="118" r="15" fill="${C.lum}"/>
+<circle cx="108" cy="118" r="10" fill="#d7e8f7" stroke="${C.ectoD}" stroke-width="2"/>
+<circle cx="200" cy="102" r="11" fill="${C.ecto}" stroke="${C.ectoD}" stroke-width="1.5"/><circle cx="200" cy="102" r="5" fill="${C.lum}"/>
+${s}`}
+
+function frontalSomites(fill,stroke,extra=''){let s='';
+  for(let i=0;i<7;i++){const x=242+i*13,nh=10-(x-232)*(6/124),h=12-i*.7;
+    s+=`<rect x="${x-5}" y="${(150-nh-2-h).toFixed(1)}" width="10" height="${h.toFixed(1)}" rx="2.5" fill="${fill}" stroke="${stroke}" stroke-width="1.3" ${extra}/>`;
+    s+=`<rect x="${x-5}" y="${(150+nh+2).toFixed(1)}" width="10" height="${h.toFixed(1)}" rx="2.5" fill="${fill}" stroke="${stroke}" stroke-width="1.3" ${extra}/>`}
+  return s}
+function drawFrontal(){return `
+<path d="${OUT_FR}" fill="${C.mch}" stroke="${C.ecto}" stroke-width="7"/>
+<path d="M232 140 L356 146 L356 154 L232 160Z" fill="${C.neu}"/>
+${ell(104,114,17,11,C.neu,C.neuD,1.5)}${ell(104,186,17,11,C.neu,C.neuD,1.5)}
+${ell(210,150,28,16,C.neu,C.neuD,1.5)}${ell(166,150,22,21,C.neu,C.neuD,1.5)}${ell(115,150,34,30,C.neu,C.neuD,1.5)}
+${ell(115,150,20,16,C.lum)}${ell(166,150,11,10,C.lum)}${ell(210,150,17,6,C.lum)}${ell(104,114,8,5,C.lum)}${ell(104,186,8,5,C.lum)}
+<line x1="232" y1="150" x2="352" y2="150" stroke="${C.lum}" stroke-width="3"/>
+${frontalSomites(C.mes,C.mesD)}`}
+
+function drawVDorsal(){return `
+<path d="${OUT_FR}" fill="${C.body}" stroke="${C.bodyD}" stroke-width="2.5"/>
+<path d="M232 142 L330 145 L330 155 L232 158Z" fill="#dbe7f5"/>
+<path d="M232 142 L330 145 M232 158 L330 155" stroke="${C.neuD}" stroke-width="2" fill="none"/>
+<path d="M330 145 Q346 134 359 147 M330 155 Q346 166 359 153" stroke="${C.neuD}" stroke-width="2" fill="none"/>
+${ell(104,114,17,11,'#dbe7f5',C.neuD,2)}${ell(104,186,17,11,'#dbe7f5',C.neuD,2)}
+${ell(210,150,27,15,'#dbe7f5',C.neuD,2)}${ell(166,150,22,20,'#dbe7f5',C.neuD,2)}${ell(115,150,34,30,'#dbe7f5',C.neuD,2)}
+<line x1="86" y1="150" x2="345" y2="150" stroke="${C.neuD}" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>
+${frontalSomites('#f2b9a7',C.mesD)}`}
+
+function drawVVentral(){return `
+<path d="${OUT_FR}" fill="${C.body}" stroke="${C.bodyD}" stroke-width="2.5"/>
+${ell(104,114,17,11,'none',C.neuD,1.5,'stroke-dasharray="4 3" opacity=".35"')}${ell(104,186,17,11,'none',C.neuD,1.5,'stroke-dasharray="4 3" opacity=".35"')}
+${ell(115,150,34,30,'none',C.neuD,1.5,'stroke-dasharray="4 3" opacity=".35"')}
+${frontalSomites('none',C.mesD,'stroke-dasharray="3 2" opacity=".35"')}
+${ell(172,150,48,20,C.endo,C.endoD,1,'fill-opacity=".45"')}
+<path d="M222 116 Q198 150 222 184" stroke="${C.endoD}" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M190 150 C205 140 225 120 290 120" stroke="#c0392b" stroke-width="3" fill="none"/>
+<path d="M190 150 C205 160 225 180 290 180" stroke="#c0392b" stroke-width="3" fill="none"/>
+<path d="M190 150 C176 126 140 128 146 149 C152 170 128 178 118 163" stroke="${C.mesD}" stroke-width="16" fill="none" stroke-linecap="round"/>
+<path d="M190 150 C176 126 140 128 146 149 C152 170 128 178 118 163" stroke="${C.mes}" stroke-width="11" fill="none" stroke-linecap="round"/>`}
+
+const cub=(p0,p1,p2,p3,t)=>{const u=1-t;return [0,1].map(k=>u*u*u*p0[k]+3*u*u*t*p1[k]+3*u*t*t*p2[k]+t*t*t*p3[k])};
+const cubD=(p0,p1,p2,p3,t)=>{const u=1-t;return [0,1].map(k=>3*u*u*(p1[k]-p0[k])+6*u*t*(p2[k]-p1[k])+3*t*t*(p3[k]-p2[k]))};
+const LAT_SOM=(()=>{const out=[];const segs=[[[170,58],[240,56],[320,90],[345,150],.4,1,.085],[[345,150],[362,195],[345,240],[305,255],.07,.5,.085]];
+  for(const [a,b,c,d,t0,t1,st] of segs)for(let t=t0;t<=t1+1e-6;t+=st){const p=cub(a,b,c,d,t),dv=cubD(a,b,c,d,t),l=Math.hypot(dv[0],dv[1]),nx=-dv[1]/l,ny=dv[0]/l;
+    out.push({x:p[0]+nx*16,y:p[1]+ny*16,ang:Math.atan2(dv[1],dv[0])*180/Math.PI})}
+  return out})();
+function drawVLateral(){
+  const som=LAT_SOM.map((s,i)=>{const k=i>10?1-(i-10)*.07:1;return `<rect x="${(-5*k).toFixed(1)}" y="${(-8*k).toFixed(1)}" width="${(10*k).toFixed(1)}" height="${(16*k).toFixed(1)}" rx="2.5" fill="#f2b9a7" stroke="${C.mesD}" stroke-width="1.2" transform="translate(${s.x.toFixed(1)} ${s.y.toFixed(1)}) rotate(${s.ang.toFixed(1)})"/>`}).join('');
+  return `
+<path d="M80 150 C70 100 110 60 170 58 C240 56 320 90 345 150 C362 195 345 240 305 255 C290 260 280 252 290 243 C315 228 318 195 300 178 C280 160 250 175 235 195 C215 222 175 230 150 215 C120 200 95 190 80 150Z" fill="${C.body}" stroke="${C.bodyD}" stroke-width="2.5"/>
+${som}
+${ell(180,208,24,18,'#e9927f',C.mesD,1.8)}
+${ell(125,170,10,16,'#f0c0ae',C.bodyD,1.5)}${ell(147,176,9,14,'#f0c0ae',C.bodyD,1.5)}${ell(167,180,8,12,'#f0c0ae',C.bodyD,1.5)}
+${ell(238,140,16,9,'#f0c8b4',C.bodyD,1.5,'transform="rotate(35 238 140)"')}
+${ell(322,230,11,7,'#f0c8b4',C.bodyD,1.5,'transform="rotate(-30 322 230)"')}
+<circle cx="125" cy="115" r="16" fill="#cfe0f3" stroke="${C.neuD}" stroke-width="2"/>
+<circle cx="121" cy="117" r="6" fill="#fff" stroke="${C.neuD}" stroke-width="1.5"/>
+<circle cx="195" cy="110" r="7" fill="#e3eef9" stroke="${C.ectoD}" stroke-width="1.5"/>`}
+
+const FIGS={
+  trans_tronco:{nombre:'Corte transversal a nivel del tronco',plane:'transversal',draw:drawTransTronco,dirs:{dorsal:'up',ventral:'down'},
+    labels:[['Tubo neural',200,44,200,4],['Ectodermo',327,80,410,40],['Somita',137,68,40,28],['Notocorda',213,130,420,128],['Aorta dorsal',230,154,420,168],['Mesodermo intermedio',88,146,10,118],['Celoma',275,215,420,215],['Intestino (endodermo)',200,236,250,318],['Lámina lateral',98,242,10,272]],
+    expl:'Estructuras pares a cada lado (somitas, aortas dorsales, mesodermo intermedio), simetría izquierda–derecha y el tubo neural visto como un anillo con su luz en medio: lo has cortado «de través».',
+    tip:'Tubo neural redondo + notocorda justo debajo + un somita a cada lado → transversal.',
+    clues:{dorsal:'El tubo neural (con la notocorda justo debajo) marca siempre el lado dorsal.',ventral:'El intestino y el celoma quedan en el lado ventral, opuestos al tubo neural.'}},
+  trans_cabeza:{nombre:'Corte transversal a nivel de la cabeza',plane:'transversal',draw:drawTransCabeza,dirs:{dorsal:'up',ventral:'down'},
+    labels:[['Prosencéfalo (diencéfalo)',200,44,200,4],['Vesícula óptica',318,168,420,205],['Pedúnculo óptico',264,128,420,92],['Placoda del cristalino',48,128,20,85],['Faringe (endodermo)',200,225,250,318],['Mesénquima',130,240,10,272],['Ectodermo',342,210,425,250]],
+    expl:'El encéfalo aparece como una sección redonda con las dos vesículas ópticas, una a cada lado: simetría bilateral → transversal. Está a nivel del prosencéfalo, por eso no aparece la notocorda (no llega tan anterior).',
+    tip:'Si ves los dos ojos (vesículas ópticas) a la vez, simétricos respecto al encéfalo, el corte es transversal (o frontal, pero entonces verías también el eje AP alargado).',
+    clues:{dorsal:'El encéfalo ocupa el lado dorsal; la faringe queda ventral.',ventral:'La faringe (endodermo) está en el lado ventral, debajo del encéfalo.'}},
+  sagital:{nombre:'Corte sagital medio',plane:'sagital',draw:drawSagital,dirs:{dorsal:'up',ventral:'down',anterior:'left',posterior:'right'},
+    labels:[['Prosencéfalo',96,92,40,14],['Mesencéfalo',166,73,175,2],['Rombencéfalo',225,92,290,26],['Médula espinal',320,121,390,70],['Notocorda',300,141,400,192],['Intestino / faringe',262,166,330,250],['Corazón',150,219,120,302],['Ectodermo',74,182,-20,222]],
+    expl:'Ves el eje anteroposterior completo (vesículas encefálicas → médula) y solo estructuras impares de la línea media: tubo neural, notocorda, intestino y corazón. Ni rastro de somitas, que son laterales.',
+    tip:'Eje AP largo + notocorda + sin somitas → sagital medio.',
+    clues:{dorsal:'El tubo neural recorre el lado dorsal; corazón e intestino son ventrales.',ventral:'Corazón e intestino están en el lado ventral.',anterior:'Las vesículas encefálicas (prosencéfalo) marcan el extremo anterior.',posterior:'La médula se va estrechando hacia la cola: ese es el extremo posterior.'}},
+  parasagital:{nombre:'Corte parasagital',plane:'parasagital',draw:drawParasagital,dirs:{dorsal:'up',ventral:'down',anterior:'left',posterior:'right'},
+    labels:[['Copa óptica',115,93,60,16],['Cristalino',98,118,-20,118],['Vesícula ótica',200,91,215,12],['Somitas',284,113,330,42],['Arcos faríngeos',152,213,140,302],['Lámina lateral',300,173,380,240]],
+    expl:'Ves el eje AP completo pero no el tubo neural ni la notocorda; en cambio aparecen estructuras pares de un solo lado: una fila de somitas, el ojo y la vesícula ótica. El corte está desplazado lateralmente respecto a la línea media.',
+    tip:'Eje AP largo + una sola fila de somitas + sin notocorda → parasagital.',
+    clues:{dorsal:'La fila de somitas va por el lado dorsal; arcos faríngeos y lámina lateral son ventrales.',ventral:'Arcos faríngeos y lámina lateral están en el lado ventral.',anterior:'El ojo (copa óptica) está en la cabeza: extremo anterior.',posterior:'Los somitas se hacen más pequeños hacia la cola (posterior).'}},
+  frontal:{nombre:'Corte frontal',plane:'frontal',draw:drawFrontal,dirs:{anterior:'left',posterior:'right'},
+    labels:[['Prosencéfalo',100,160,-10,235],['Vesículas ópticas',104,103,80,14],['Mesencéfalo',166,129,185,28],['Rombencéfalo',215,135,265,50],['Tubo neural',330,150,410,110],['Somitas (pares)',281,172,320,272],['Ectodermo',150,209,90,300]],
+    expl:'Ves a la vez el eje AP y la simetría izquierda–derecha: dos filas de somitas flanqueando el tubo neural (como una escalera) y las dos vesículas ópticas. El plano separa la mitad dorsal de la ventral.',
+    tip:'Eje AP largo + estructuras pares a ambos lados («escalera» de somitas) → frontal.',
+    clues:{anterior:'Las vesículas encefálicas y ópticas están en el extremo anterior.',posterior:'Los somitas más pequeños y el tubo neural que se estrecha indican el extremo posterior.'}},
+  v_dorsal:{nombre:'Embrión entero',draw:drawVDorsal,dirs:{anterior:'left',posterior:'right'},
+    labels:[['Prosencéfalo',100,160,-10,235],['Vesículas ópticas',104,103,80,14],['Mesencéfalo',166,130,185,28],['Tubo neural',290,146,330,60],['Somitas',281,170,320,272],['Neuroporo posterior',352,148,340,250]],
+    clues:{anterior:'El encéfalo y las vesículas ópticas están en el extremo anterior.',posterior:'Los pliegues neurales aún abiertos (neuroporo posterior) y los somitas más pequeños están en el extremo posterior.'}},
+  v_ventral:{nombre:'Embrión entero',draw:drawVVentral,dirs:{anterior:'left',posterior:'right'},
+    labels:[['Corazón (tubo cardíaco)',150,136,110,32],['Venas vitelinas',262,121,300,60],['Portal intestinal anterior',216,170,250,282],['Intestino anterior',168,166,90,292]],
+    clues:{anterior:'El corazón y el intestino anterior están en la región anterior (cefálica).',posterior:'Las venas vitelinas se abren hacia la parte posterior del embrión.'}},
+  v_lateral:{nombre:'Embrión entero',draw:drawVLateral,dirs:{dorsal:'up',ventral:'down',anterior:'left',posterior:'right'},
+    labels:[['Ojo',125,99,80,12],['Vesícula ótica',195,103,215,14],['Somitas',0,0,400,70],['Arcos faríngeos',147,190,60,290],['Corazón',184,226,160,335],['Esbozo de extremidad',238,149,250,290],['Cola',290,247,390,275]],
+    clues:{dorsal:'Los somitas recorren el dorso (la curva convexa).',ventral:'El corazón y los arcos faríngeos son ventrales.',anterior:'La cabeza, con el ojo, es el extremo anterior.',posterior:'La cola es el extremo posterior.'}}
+};
+{const s=LAT_SOM[5];FIGS.v_lateral.labels[2]=['Somitas',+s.x.toFixed(0),+s.y.toFixed(0),400,70]}
+
+const DIRS=['up','right','down','left'];
+const DIR_LABEL={up:'arriba',right:'a la derecha',down:'abajo',left:'a la izquierda'};
+function txDir(d,mirror,rot){if(mirror&&(d==='left'||d==='right'))d=d==='left'?'right':'left';return DIRS[(DIRS.indexOf(d)+rot)%4]}
+const AXNAME={dorsal:'Dorsal',ventral:'Ventral',anterior:'Anterior',posterior:'Posterior'};
+const AXCOL={dorsal:'#2f6db3',ventral:'#2f6db3',anterior:'#c8513a',posterior:'#c8513a'};
+
+function labelsSVG(fig,mir){
+  let s='';
+  for(let [t,px,py,tx,ty] of fig.labels){if(mir){px=400-px;tx=400-tx}
+    const an=tx<px-4?'end':tx>px+4?'start':'middle',dx=an==='end'?-4:an==='start'?4:0,dy=an==='middle'?(ty<py?-4:13):4;
+    s+=`<line x1="${px}" y1="${py}" x2="${tx}" y2="${ty}" class="ll"/><circle cx="${px}" cy="${py}" r="2.6" class="ld"/><text x="${tx+dx}" y="${ty+dy}" text-anchor="${an}" class="lt">${t}</text>`}
+  const pos={up:[200,-40],down:[200,352],left:[-118,150],right:[528,150]};
+  for(const [ax,d] of Object.entries(fig.dirs)){const dd=txDir(d,mir,0),[x,y]=pos[dd],side=dd==='left'||dd==='right';s+=`<text transform="translate(${x} ${y})${side?' rotate(-90)':''}" text-anchor="middle" dy="${side?5:0}" class="axt" fill="${AXCOL[ax]}">${AXNAME[ax].toUpperCase()}</text>`}
+  return s}
+const tfRot=a=>`rotate(${a} 200 150)`,tfMir=sx=>`translate(200 0) scale(${sx} 1) translate(-200 0)`;
+function figSVG(fig,o){
+  return `<svg class="fig" id="figsvg" viewBox="-20 -50 440 400"><g id="rotg" transform="${tfRot(o.rot*90)}"><g id="mirg" transform="${tfMir(o.mirror?-1:1)}">${fig.draw()}</g><g class="lbl" id="lblg">${labelsSVG(fig,o.keepMirror)}</g></g></svg>`}
+function revealFig(o){
+  const rg=$('#rotg'),mg=$('#mirg'),lb=$('#lblg');if(!rg)return;
+  const a0=o.rot*90,a1=o.rot===3?360:0,s0=o.mirror?-1:1,s1=o.keepMirror?-1:1,t0=performance.now(),ms=800;
+  const sv=$('#figsvg'),V0=[-20,-50,440,400],V1=[-140,-60,680,420];
+  const step=t=>{let k=Math.min(1,(t-t0)/ms);k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;if(sv)sv.setAttribute('viewBox',V0.map((v,i)=>(v+(V1[i]-v)*k).toFixed(1)).join(' '));rg.setAttribute('transform',tfRot(a0+(a1-a0)*k));mg.setAttribute('transform',tfMir(s0+(s1-s0)*k));if(k<1)requestAnimationFrame(step)};
+  requestAnimationFrame(step);lb.classList.add('show');
+}
+
+/* ================= generadores de preguntas ================= */
+const PLANE_OPTS=[{id:'transversal',label:'Transversal'},{id:'sagital',label:'Sagital (medio)'},{id:'parasagital',label:'Parasagital'},{id:'frontal',label:'Frontal (coronal)'}];
+const PLANE_INFO={
+  transversal:'El plano transversal es perpendicular al eje anteroposterior (craneocaudal): contiene los ejes dorsoventral e izquierda–derecha y separa una parte craneal de una caudal.',
+  sagital:'El plano sagital medio contiene los ejes anteroposterior y dorsoventral y pasa justo por la línea media: divide el cuerpo en mitades izquierda y derecha simétricas.',
+  parasagital:'El plano parasagital es paralelo al sagital pero está desplazado de la línea media, así que las partes izquierda y derecha son desiguales.',
+  frontal:'El plano frontal contiene los ejes anteroposterior e izquierda–derecha: separa la parte dorsal de la ventral. En anatomía humana se llama también coronal.'};
+function extraPlane(org,type){
+  if(org.human){if(type==='transversal')return ' Como el humano está de pie, aquí el transversal queda horizontal (paralelo al suelo).';if(type==='frontal')return ' En el humano de pie es vertical y paralelo a la frente.';return ' En el humano de pie es vertical y va de delante hacia atrás.'}
+  if(type==='transversal')return ' Ojo: en un animal o embrión «tumbado» el transversal es vertical, no horizontal; los planos se definen por los ejes del cuerpo, no por el suelo.';
+  if(type==='frontal')return ' En un cuadrúpedo o embrión queda horizontal, paralelo al dorso.';return '';
+}
+function genPlano3D(){
+  const key=pick(['embrion','embrion','raton','humano']),org=ORGS[key],type=pick(['transversal','transversal','sagital','parasagital','frontal','frontal']);
+  const off=type==='transversal'?rnd(...org.trans):type==='frontal'?rnd(...org.front):type==='parasagital'?(Math.random()<.5?-1:1)*org.para:0;
+  const plane=makePlane(org,type,off),cam=randomCam(org,plane.n);
+  return {cat:'planos3d',kind:'3d',prompt:'¿Qué plano de corte es este?',sub:`${org.name}. La parte «fantasma» es la que se ha retirado. Puedes arrastrar para girarlo.`,
+    options:PLANE_OPTS,answer:type,st:{org,plane,cam:{...cam},cam0:{...cam},axes:false},
+    explain:PLANE_INFO[type]+extraPlane(org,type),tip:'Pregúntate qué dos ejes del cuerpo contiene el plano: AP + DV → sagital · AP + izquierda-derecha → frontal · DV + izquierda-derecha → transversal.'};
+}
+function genCorte(){
+  const key=pick(['trans_tronco','trans_tronco','trans_cabeza','sagital','parasagital','frontal']),f=FIGS[key];
+  const fo={rot:Math.floor(Math.random()*4),mirror:Math.random()<.5,keepMirror:false};
+  return {cat:'cortes',kind:'svg',fig:f,fo,prompt:'¿Qué tipo de corte es?',sub:'Corte histológico esquemático de un embrión de vertebrado. Puede estar girado o reflejado: guíate por las estructuras.',
+    options:PLANE_OPTS,answer:f.plane,explain:f.expl,tip:f.tip};
+}
+const VIEW_OPTS=[{id:'dorsal',label:'Vista dorsal'},{id:'ventral',label:'Vista ventral'},{id:'latIzq',label:'Vista lateral izquierda'},{id:'latDer',label:'Vista lateral derecha'}];
+const LAT_RULE='Truco: gira mentalmente la imagen hasta dejar el dorso (los somitas) arriba. Si entonces la cabeza queda a tu izquierda, estás viendo su lado izquierdo; si queda a tu derecha, su lado derecho. (Compruébalo poniéndote en su lugar: tumbado de lado, mirando hacia la izquierda, tu costado izquierdo queda hacia el observador.)';
+function genVista(){
+  const v=pick(['dorsal','ventral','latIzq','latDer','latIzq','latDer']),rot=Math.floor(Math.random()*4);
+  let f,fo,explain,tip;
+  if(v==='dorsal'){f=FIGS.v_dorsal;fo={rot,mirror:Math.random()<.5,keepMirror:false};explain='Domina el sistema nervioso: el tubo neural recorre la línea media, con las vesículas encefálicas y ópticas delante y los somitas a pares a ambos lados. Estás mirando la cara dorsal.';tip='En vista dorsal «manda» el tubo neural; en ventral, el corazón y el intestino.'}
+  else if(v==='ventral'){f=FIGS.v_ventral;fo={rot,mirror:Math.random()<.5,keepMirror:false};explain='Lo que destaca es el tubo cardíaco en la línea media, las venas vitelinas y el portal intestinal anterior; el tubo neural y los somitas solo se adivinan por transparencia. Estás mirando la cara ventral.';tip='En vista dorsal «manda» el tubo neural; en ventral, el corazón y el intestino.'}
+  else{f=FIGS.v_lateral;const m=v==='latDer';fo={rot,mirror:m,keepMirror:m};
+    explain=`Ves el perfil: cabeza con el ojo, somitas en fila por el dorso y corazón y arcos faríngeos por el lado ventral, así que es una vista lateral. Con el dorso arriba, la cabeza queda a la ${m?'derecha':'izquierda'}: estás viendo el lado ${m?'derecho':'izquierdo'}.`;tip=LAT_RULE}
+  return {cat:'vistas',kind:'svg',fig:f,fo,prompt:'¿Desde qué perspectiva estás viendo este embrión?',sub:'Embrión entero (no es un corte). La imagen puede estar girada.',options:VIEW_OPTS,answer:v,explain,tip};
+}
+function genOrienta(){
+  const key=pick(['trans_tronco','trans_cabeza','sagital','parasagital','frontal','v_dorsal','v_lateral','v_ventral']),f=FIGS[key];
+  const ax=pick(Object.keys(f.dirs)),mirror=Math.random()<.5,rot=Math.floor(Math.random()*4),fo={rot,mirror,keepMirror:mirror};
+  return {cat:'orienta',kind:'dir',fig:f,fo,prompt:`Señala hacia dónde queda la parte <span style="color:${AXCOL[ax]}">${AXNAME[ax].toUpperCase()}</span>`,
+    sub:`${f.nombre}. La imagen está girada y quizá reflejada. Pulsa la flecha correspondiente.`,
+    options:DIRS.map(d=>({id:d,label:DIR_LABEL[d]})),answer:txDir(f.dirs[ax],mirror,rot),explain:f.clues[ax],
+    tip:'Busca primero una estructura que no engañe: el tubo neural siempre es dorsal (por encima de la notocorda) y las vesículas encefálicas, el ojo o el corazón marcan lo anterior.'};
+}
+const VOCAB=[
+ ['En un humano en posición anatómica, ¿qué plano es paralelo al suelo?',['Transversal','Frontal (coronal)','Sagital','Parasagital'],'El transversal (también llamado axial u horizontal en humanos) es perpendicular al eje craneocaudal; como el humano está de pie, queda paralelo al suelo.'],
+ ['En un ratón apoyado en sus cuatro patas, ¿qué plano es paralelo al suelo?',['Frontal','Transversal','Sagital','Parasagital'],'En un cuadrúpedo el eje AP es horizontal, así que el plano paralelo al dorso y al suelo es el frontal. «Transversal = horizontal» solo vale para el humano de pie.'],
+ ['¿Qué plano separa la mitad dorsal de la ventral?',['Frontal (coronal)','Transversal','Sagital medio','Parasagital'],'El frontal contiene los ejes AP e izquierda–derecha, así que deja a un lado lo dorsal y al otro lo ventral.'],
+ ['¿Qué plano divide el cuerpo en dos mitades izquierda y derecha simétricas?',['Sagital medio','Parasagital','Frontal','Transversal'],'El sagital medio pasa por la línea media. Si se desplaza a un lado, las mitades dejan de ser iguales y pasa a ser parasagital.'],
+ ['En anatomía humana, «posterior» equivale a…',['Dorsal','Caudal','Ventral','Distal'],'En el humano erguido, el eje dorsoventral va de atrás hacia delante: posterior = dorsal y anterior = ventral.'],
+ ['En un embrión o un animal, «anterior» equivale a…',['Craneal (rostral)','Ventral','Dorsal','Proximal'],'En embriología anterior se refiere al eje AP: hacia la cabeza. ¡No es lo mismo que en anatomía humana, donde anterior = ventral!'],
+ ['Ves el tubo neural redondo, la notocorda debajo y un somita a cada lado. ¿Qué corte es?',['Transversal','Frontal','Sagital medio','Parasagital'],'Estructuras pares a ambos lados y el tubo neural seccionado de través: corte transversal.'],
+ ['Ves dos filas de somitas flanqueando el tubo neural, como los peldaños de una escalera. ¿Qué corte es?',['Frontal','Transversal','Sagital medio','Parasagital'],'Ves el eje AP (muchos somitas seguidos) y a la vez los dos lados: corte frontal.'],
+ ['Ves las vesículas encefálicas, la notocorda, el intestino y el corazón, pero ningún somita. ¿Qué corte es?',['Sagital medio','Parasagital','Frontal','Transversal'],'Eje AP completo con solo estructuras impares de la línea media: sagital medio.'],
+ ['Ves una fila de somitas y el ojo, pero ni tubo neural ni notocorda. ¿Qué corte es?',['Parasagital','Sagital medio','Frontal','Transversal'],'Eje AP con estructuras pares de un solo lado y sin estructuras de línea media: parasagital.'],
+ ['Respecto a la notocorda, el tubo neural está…',['Dorsal','Ventral','Lateral','Caudal'],'La notocorda induce la placa del suelo del tubo neural, que queda justo encima (dorsal) de ella.'],
+ ['Respecto al tubo neural, los somitas son…',['Laterales','Mediales','Dorsales','Craneales'],'Medial = hacia la línea media; lateral = hacia fuera. Los somitas flanquean el tubo neural y la notocorda.'],
+ ['En una extremidad, la parte más alejada de su unión con el tronco es…',['Distal','Proximal','Lateral','Caudal'],'Proximal/distal se usa en extremidades (eje proximodistal): la mano o el autópodo es distal; el hombro, proximal.'],
+ ['Vista lateral con el dorso arriba y la cabeza hacia la DERECHA. ¿Qué lado del embrión estás viendo?',['El derecho','El izquierdo','El dorsal','No se puede saber'],'Con el dorso arriba: cabeza a la izquierda → ves su lado izquierdo; cabeza a la derecha → su lado derecho.'],
+ ['En un corte transversal a nivel del prosencéfalo (a la altura de los ojos), ¿qué estructura NO esperas ver?',['La notocorda','El encéfalo','Las vesículas ópticas','El ectodermo'],'La notocorda no se extiende hasta el prosencéfalo (por delante de ella queda la placa precordal), así que en cortes a la altura de los ojos no aparece.'],
+ ['Un corte paralelo al sagital pero desplazado de la línea media se llama…',['Parasagital','Frontal','Oblicuo','Transversal'],'Para- = «al lado de»: paralelo al sagital, fuera de la línea media.'],
+ ['En anatomía humana, otro nombre del plano frontal es…',['Coronal','Axial','Medio','Horizontal'],'Frontal = coronal (paralelo a la frente, como una corona). Axial u horizontal se usa para el transversal.'],
+ ['¿Qué dos ejes contiene un plano transversal?',['Dorsoventral e izquierda–derecha','Anteroposterior y dorsoventral','Anteroposterior e izquierda–derecha','Solo el anteroposterior'],'Es perpendicular al eje AP, así que contiene los otros dos: dorsoventral e izquierda–derecha.']
+];
+let vocabBag=[];
+function genVocab(){
+  if(!vocabBag.length)vocabBag=shuffle(VOCAB.map((_,i)=>i));const [q,opts,ex]=VOCAB[vocabBag.pop()];
+  const o=shuffle(opts.map((l,i)=>({id:'o'+i,label:l})));
+  return {cat:'vocab',kind:'text',prompt:q,options:o,answer:'o0',explain:ex};
+}
+const GEN={planos3d:genPlano3D,cortes:genCorte,vistas:genVista,orienta:genOrienta,vocab:genVocab};
+
+/* ================= estado y pantallas ================= */
+const S={mode:null,score:0,total:0,streak:0,best:0,q:null,answered:false,exam:null};
+const OKS=['¡Correcto!','¡Eso es!','¡Bien visto!','¡Exacto!','¡Perfecto!'];
+const KOS=['Casi…','No exactamente.','Uy, esta no.','Vuelve a mirarlo.'];
+const MODES=[
+  {id:'planos3d',ic:'🧊',bg:'#dfe9f6',t:'Planos en 3D',d:'Un embrión, un ratón o un humano cortados por un plano. Gíralos y di qué plano es.'},
+  {id:'cortes',ic:'🔬',bg:'#fbe3dc',t:'Del corte al plano',d:'Te enseño el corte histológico (girado) y tú deduces si es transversal, sagital, parasagital o frontal.'},
+  {id:'vistas',ic:'👁️',bg:'#fdf0cf',t:'¿Desde dónde lo ves?',d:'Embrión entero: ¿vista dorsal, ventral, lateral izquierda o lateral derecha?'},
+  {id:'orienta',ic:'🧭',bg:'#dcefe3',t:'Orienta la imagen',d:'La imagen está girada o reflejada: señala dónde queda lo dorsal, ventral, anterior o posterior.'},
+  {id:'vocab',ic:'📖',bg:'#ece4f6',t:'Vocabulario',d:'Ejes, sinónimos y trampas típicas (anterior en humano ≠ anterior en embrión).'}
+];
+function chipsHTML(){return `<div class="chips"><span class="chip">✓ ${S.score} / ${S.total}</span><span class="chip fire">Racha ${S.streak}</span></div>`}
+function accHTML(id){const s=STATS[id];if(!s||!s.n)return '<span>Aún sin jugar</span>';const p=Math.round(100*s.ok/s.n);return `<div class="bar"><div style="width:${p}%"></div></div><span>${p}% · ${s.n}</span>`}
+
+function renderHome(){
+  ACTIVE3D=null;S.mode=null;S.exam=null;
+  $('#app').innerHTML=`
+  <div class="hero"><div><h1>Planos, cortes <em>y perspectivas</em></h1>
+  <p>Entrena el ojo para reconocer qué corte te están enseñando y desde dónde lo estás mirando. Biología del Desarrollo.</p></div>
+  <div class="legend"><span><i style="background:${C.ecto}"></i>Ectodermo / SN</span><span><i style="background:${C.mes}"></i>Mesodermo</span><span><i style="background:${C.endo}"></i>Endodermo</span></div></div>
+  <div class="grid">
+    <button class="mcard exam" data-mode="exam"><div class="ic" style="background:#2c3846">🎯</div><h3>Modo examen</h3><p>12 preguntas mezcladas de todos los tipos, con nota final y lo que más fallas.</p><div class="acc" style="color:#c9c2b5">Ideal antes del parcial</div></button>
+    ${MODES.map(m=>`<button class="mcard" data-mode="${m.id}"><div class="ic" style="background:${m.bg}">${m.ic}</div><h3>${m.t}</h3><p>${m.d}</p><div class="acc">${accHTML(m.id)}</div></button>`).join('')}
+    <button class="mcard" data-mode="lab"><div class="ic" style="background:#e9e3d8">🧪</div><h3>Laboratorio 3D</h3><p>Sin puntos: elige organismo y plano, mueve el corte y gíralo para entender cada plano.</p><div class="acc">Para explorar</div></button>
+  </div>
+  <h2 class="section-title">Chuleta</h2>
+  <div class="cheat">
+   <details open><summary>Los tres ejes del cuerpo</summary>
+    <p><span class="tag t-ap">Anteroposterior</span> = craneocaudal = rostrocaudal (cabeza → cola). <span class="tag t-dv">Dorsoventral</span> (espalda → vientre). <span class="tag t-lr">Izquierda–derecha</span>; para posiciones se usa <b>medial</b> (hacia la línea media) y <b>lateral</b> (hacia fuera). En extremidades: <b>proximal</b> (cerca del tronco) y <b>distal</b> (lejos).</p></details>
+   <details open><summary>Los planos se definen por los ejes, no por el suelo</summary>
+    <table><tr><th>Plano</th><th>Contiene los ejes</th><th>Separa</th><th>Humano de pie</th><th>Embrión / cuadrúpedo</th></tr>
+    <tr><td><b>Transversal</b></td><td><span class="tag t-dv">DV</span> <span class="tag t-lr">I–D</span></td><td>craneal | caudal</td><td>horizontal</td><td>vertical</td></tr>
+    <tr><td><b>Sagital medio</b></td><td><span class="tag t-ap">AP</span> <span class="tag t-dv">DV</span>, por la línea media</td><td>izquierda | derecha (iguales)</td><td>vertical, de delante atrás</td><td>vertical, a lo largo</td></tr>
+    <tr><td><b>Parasagital</b></td><td><span class="tag t-ap">AP</span> <span class="tag t-dv">DV</span>, fuera de la línea media</td><td>izq. | der. (desiguales)</td><td>igual que el sagital</td><td>igual que el sagital</td></tr>
+    <tr><td><b>Frontal (coronal)</b></td><td><span class="tag t-ap">AP</span> <span class="tag t-lr">I–D</span></td><td>dorsal | ventral</td><td>vertical, paralelo a la frente</td><td>horizontal, paralelo al dorso</td></tr></table></details>
+   <details><summary>La trampa: humano vs. embrión</summary>
+    <p>En anatomía humana <b>anterior = ventral</b>, <b>posterior = dorsal</b>, <b>superior = craneal</b> e <b>inferior = caudal</b>. En embriones y animales, <b>anterior = craneal</b> y <b>posterior = caudal</b>. Por eso, ante la duda, usa craneal/caudal y dorsal/ventral: valen siempre.</p></details>
+   <details><summary>Reconocer un corte en 5 segundos</summary>
+    <table><tr><th>Si ves…</th><th>Es…</th></tr>
+    <tr><td>Tubo neural redondo, notocorda debajo, un somita a cada lado</td><td><b>Transversal</b></td></tr>
+    <tr><td>Los dos ojos simétricos alrededor del encéfalo (sin eje AP largo)</td><td><b>Transversal</b> (cabeza)</td></tr>
+    <tr><td>Eje AP largo + notocorda, intestino y corazón, sin somitas</td><td><b>Sagital medio</b></td></tr>
+    <tr><td>Eje AP largo + una sola fila de somitas, ojo, sin notocorda</td><td><b>Parasagital</b></td></tr>
+    <tr><td>Eje AP largo + dos filas de somitas («escalera»)</td><td><b>Frontal</b></td></tr></table></details>
+   <details><summary>Perspectivas del embrión entero</summary>
+    <p><b>Dorsal:</b> manda el tubo neural y los somitas a pares. <b>Ventral:</b> se ven el corazón, las venas vitelinas y el portal intestinal. <b>Lateral:</b> perfil; deja el dorso arriba: cabeza a tu izquierda → lado izquierdo; cabeza a tu derecha → lado derecho.</p></details>
+  </div>`;
+  $$('.mcard').forEach(b=>b.onclick=()=>{const m=b.dataset.mode;if(m==='lab')renderLab();else startMode(m)});
+}
+function startMode(m){S.mode=m;S.score=0;S.total=0;S.streak=0;
+  if(m==='exam'){S.exam={queue:shuffle(['planos3d','planos3d','planos3d','cortes','cortes','cortes','vistas','vistas','orienta','orienta','vocab','vocab']),i:0,res:[]}}else S.exam=null;
+  nextQ()}
+function nextQ(){
+  if(S.exam){if(S.exam.i>=S.exam.queue.length)return renderResults();S.q=GEN[S.exam.queue[S.exam.i]]();S.exam.i++}
+  else S.q=GEN[S.mode]();
+  S.answered=false;renderQ();
+}
+function renderQ(){
+  const q=S.q,title=S.exam?'Modo examen':CATS[S.mode];let fig='';
+  if(q.kind==='3d')fig=`<canvas id="cv"></canvas><div class="figtools"><button id="axbtn">Mostrar ejes (pista)</button><button id="camr">Vista inicial</button><span>Arrastra para girar</span></div>`;
+  else if(q.kind==='svg')fig=figSVG(q.fig,q.fo);
+  else if(q.kind==='dir')fig=`<div class="dirgrid"><span></span><button class="dir" data-id="up">▲</button><span></span><button class="dir" data-id="left">◀</button><div class="figcell">${figSVG(q.fig,q.fo)}</div><button class="dir" data-id="right">▶</button><span></span><button class="dir" data-id="down">▼</button><span></span></div>`;
+  $('#app').innerHTML=`
+  <div class="topbar"><button class="ghost" id="back">← Menú</button><div class="mode-title">${title}</div>${chipsHTML()}</div>
+  ${S.exam?`<div class="progress"><div style="width:${100*(S.exam.i-1)/S.exam.queue.length}%"></div></div>`:''}
+  <div class="qcard ${q.kind==='text'?'textonly':''}">
+   ${q.kind!=='text'?`<div class="figwrap">${fig}</div>`:''}
+   <div class="qside"><div class="cat">${CATS[q.cat]}${S.exam?` · ${S.exam.i}/${S.exam.queue.length}`:''}</div><h2>${q.prompt}</h2>${q.sub?`<p class="sub">${q.sub}</p>`:''}
+    ${q.kind!=='dir'?`<div class="opts">${q.options.map((o,i)=>`<button class="opt" data-id="${o.id}"><span class="k">${i+1}</span>${o.label}</button>`).join('')}</div>`:''}
+    <div id="fb"></div>
+    <div class="kbd">${q.kind==='dir'?'Teclado: flechas para responder':'Teclado: 1–4 para responder'} · Enter para seguir</div></div>
+  </div>`;
+  $('#back').onclick=renderHome;
+  $$('.opt,.dir').forEach(b=>b.onclick=()=>answer(b.dataset.id));
+  if(q.kind==='3d'){const cv=$('#cv');attach3D(cv,q.st);
+    $('#axbtn').onclick=e=>{q.st.axes=!q.st.axes;e.target.classList.toggle('on',q.st.axes);render3D(cv,q.st)};
+    $('#camr').onclick=()=>{q.st.cam={...q.st.cam0};render3D(cv,q.st)}}
+  else ACTIVE3D=null;
+}
+function answer(id){
+  if(S.answered)return;S.answered=true;const q=S.q,ok=id===q.answer;
+  S.total++;if(ok){S.score++;S.streak++;S.best=Math.max(S.best,S.streak)}else S.streak=0;
+  record(q.cat,ok);if(S.exam)S.exam.res.push({cat:q.cat,ok});
+  $$('.opt,.dir').forEach(b=>{b.disabled=true;if(b.dataset.id===q.answer)b.classList.add('correct');else if(b.dataset.id===id)b.classList.add('wrong')});
+  if(q.kind==='svg'||q.kind==='dir')revealFig(q.fo);
+  if(q.kind==='3d'){q.st.axes=true;const b=$('#axbtn');if(b)b.classList.add('on');render3D($('#cv'),q.st)}
+  const corr=q.options.find(o=>o.id===q.answer);
+  const last=S.exam&&S.exam.i>=S.exam.queue.length;
+  $('#fb').innerHTML=`<div class="fb ${ok?'ok':'ko'}"><strong>${ok?pick(OKS):pick(KOS)}</strong>${ok?'':` La respuesta era <b>${q.kind==='dir'?corr.label:corr.label}</b>.`}<p>${q.explain}</p>${q.tip?`<p class="tip"><b>Truco:</b> ${q.tip}</p>`:''}<button class="primary" id="next">${last?'Ver resultados':'Siguiente →'}</button></div>`;
+  $('.chips').outerHTML=chipsHTML();
+  $('#next').onclick=nextQ;$('#next').focus({preventScroll:true});
+}
+function renderResults(){
+  ACTIVE3D=null;const r=S.exam.res,n=r.length,ok=r.filter(x=>x.ok).length,nota=(10*ok/n).toFixed(1).replace('.',',');
+  const by={};r.forEach(x=>{(by[x.cat]=by[x.cat]||{ok:0,n:0}).n++;if(x.ok)by[x.cat].ok++});
+  const worst=Object.entries(by).sort((a,b)=>a[1].ok/a[1].n-b[1].ok/b[1].n)[0];
+  const msg=ok===n?'Pleno. El examen no tiene nada que hacer.':ok>=n*.75?'Muy bien: ya tienes el ojo entrenado.':ok>=n*.5?'Vas bien; repasa la categoría que más fallas.':'Toca practicar un poco más: empieza por la chuleta y el laboratorio 3D.';
+  $('#app').innerHTML=`<div class="topbar"><button class="ghost" id="back">← Menú</button><div class="mode-title">Resultados</div></div>
+  <div class="results"><div class="big">${nota}</div><p style="color:var(--muted);margin:6px 0 0">${ok} de ${n} aciertos · mejor racha ${S.best}</p><p style="margin:14px 0 0;font-weight:500">${msg}</p>
+  <div class="rows">${Object.entries(by).map(([c,v])=>`<div class="row"><span>${CATS[c]}</span><div class="bar"><div style="width:${100*v.ok/v.n}%;background:${v.ok/v.n>=.75?'var(--green)':v.ok/v.n>=.5?'var(--yellow)':'var(--coral)'}"></div></div><span>${v.ok}/${v.n}</span></div>`).join('')}</div>
+  <div class="btnrow"><button class="primary" id="again">Repetir examen</button>${worst&&worst[1].ok<worst[1].n?`<button class="ghost" id="weak">Practicar: ${CATS[worst[0]]}</button>`:''}</div></div>`;
+  $('#back').onclick=renderHome;$('#again').onclick=()=>startMode('exam');const w=$('#weak');if(w)w.onclick=()=>startMode(worst[0]);
+}
+/* ================= laboratorio ================= */
+function renderLab(){
+  S.mode='lab';const L={org:'embrion',type:'transversal',v:0};
+  $('#app').innerHTML=`<div class="topbar"><button class="ghost" id="back">← Menú</button><div class="mode-title">Laboratorio 3D</div></div>
+  <div class="lab"><div class="figwrap"><canvas id="cv"></canvas><div class="figtools"><span>Arrastra para girar · los ejes están siempre visibles</span></div></div>
+  <div class="ctrl"><div><label>Organismo</label><div class="seg" id="sorg"><button data-v="embrion">Embrión</button><button data-v="raton">Ratón</button><button data-v="humano">Humano</button></div></div>
+  <div><label>Plano</label><div class="seg" id="stype"><button data-v="transversal">Transversal</button><button data-v="sagital">Sagital / parasagital</button><button data-v="frontal">Frontal</button><button data-v="none">Sin corte</button></div></div>
+  <div><label id="slbl">Posición del plano</label><input type="range" id="rng" min="-1" max="1" step="0.01" value="0"></div>
+  <div class="desc" id="desc"></div></div></div>`;
+  $('#back').onclick=renderHome;
+  const cv=$('#cv'),st={org:ORGS.embrion,plane:null,cam:{yaw:.75,pitch:.4},axes:true};
+  const upd=()=>{const org=ORGS[L.org];st.org=org;let name='Sin corte',txt='Gira el modelo y fíjate en los tres ejes: anteroposterior (rojo), dorsoventral (azul) e izquierda–derecha (verde).';
+    if(L.type==='none'){st.plane=null;$('#rng').disabled=true}
+    else{$('#rng').disabled=false;let off,t=L.type;
+      if(t==='transversal'){const [a,b]=org.trans;off=(a+b)/2+L.v*(b-a)/2}
+      else if(t==='frontal'){const [a,b]=org.front;off=(a+b)/2+L.v*Math.max(.35,(b-a))}
+      else{off=L.v*org.para*1.6;if(Math.abs(off)>.06)t='parasagital';else t='sagital'}
+      st.plane=makePlane(org,t,off);name=PLANE_OPTS.find(o=>o.id===t).label;txt=PLANE_INFO[t]+extraPlane(org,t)}
+    $('#desc').innerHTML=`<b>${name}</b>${txt}`;
+    $$('#sorg button').forEach(b=>b.classList.toggle('on',b.dataset.v===L.org));$$('#stype button').forEach(b=>b.classList.toggle('on',b.dataset.v===L.type));
+    render3D(cv,st)};
+  $$('#sorg button').forEach(b=>b.onclick=()=>{L.org=b.dataset.v;upd()});
+  $$('#stype button').forEach(b=>b.onclick=()=>{L.type=b.dataset.v;L.v=0;$('#rng').value=0;upd()});
+  $('#rng').oninput=e=>{L.v=+e.target.value;upd()};
+  attach3D(cv,st);requestAnimationFrame(upd);
+}
+document.addEventListener('keydown',e=>{
+  if(!S.q||!S.mode||S.mode==='lab'||!$('.qside'))return;
+  if(S.answered&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const n=$('#next');if(n)n.click();return}
+  if(S.answered)return;
+  if(S.q.kind==='dir'){const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(m){e.preventDefault();answer(m)}}
+  else{const i=parseInt(e.key,10);if(i>=1&&i<=S.q.options.length)answer(S.q.options[i-1].id)}
+});
+renderHome();
+</script>
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body>
+</html>

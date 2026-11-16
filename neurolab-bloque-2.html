@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neurolab · Bloque 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Osciloscopio de laboratorio: fondo tinta, trazas de fósforo verde, ámbar para lo que manipulas. */
+:root{
+  --bg:#0d121c; --panel:#151d2b; --panel2:#1b2536; --line:#2a3750; --ink:#e9eef6; --muted:#93a1b8;
+  --phos:#5cf2a6; --phos-soft:rgba(92,242,166,.13); --amber:#ffb547; --amber-soft:rgba(255,181,71,.14);
+  --coral:#ff6f6f; --coral-soft:rgba(255,111,111,.14); --blue:#6fb2ff; --blue-soft:rgba(111,178,255,.14); --violet:#c49bff;
+  --f-d:"Space Grotesk",system-ui,sans-serif; --f-b:Inter,system-ui,sans-serif; --f-m:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-b);-webkit-font-smoothing:antialiased}
+body{background-image:linear-gradient(rgba(92,242,166,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(92,242,166,.035) 1px,transparent 1px);background-size:28px 28px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+#app{max-width:1040px;margin:0 auto;padding:18px 16px 70px}
+h1,h2,h3{font-family:var(--f-d);margin:0;letter-spacing:-.01em}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-m)}
+.hidden{display:none!important}
+
+/* cabecera */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-family:var(--f-d);font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px;flex:1}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--phos);box-shadow:0 0 12px var(--phos)}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13.5px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+.chip b{font-family:var(--f-m)}
+.back{width:38px;height:38px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:18px;display:grid;place-items:center}
+
+/* home */
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:22px}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+.mission h2{font-size:28px;line-height:1.05}
+.mission p{color:var(--muted);line-height:1.5;margin:8px 0 14px}
+.mission .steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.mission .steps span{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px}
+.big-btn{background:var(--phos);color:#06210f;font-weight:700;border-radius:14px;padding:13px 20px;font-size:16px;box-shadow:0 0 0 0 var(--phos);transition:transform .1s}
+.big-btn:hover{transform:translateY(-1px)}
+.btn{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px 14px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--muted)}
+.btn.on{background:var(--amber);color:#2a1700;border-color:var(--amber)}
+.btn.go{background:var(--phos);color:#06210f;border-color:var(--phos)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--panel2);border-radius:14px;padding:12px}
+.stat .n{font-family:var(--f-m);font-size:26px;font-weight:700}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.week{grid-column:1/-1;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.week b{color:var(--amber)}
+.section{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:6px 0 12px}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.sala{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:8px;min-height:168px;position:relative;transition:transform .12s,border-color .12s}
+.sala:hover{transform:translateY(-2px);border-color:var(--phos)}
+.sala.focus{border-color:var(--amber)}
+.sala.focus::after{content:"foco de la semana";position:absolute;top:12px;right:12px;font-size:11px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:3px 8px;border-radius:99px}
+.sala .num{font-family:var(--f-m);font-size:12px;color:var(--muted)}
+.sala h3{font-size:19px}
+.sala p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.4;flex:1}
+.stars{display:flex;gap:6px;font-size:12.5px}
+.stars span{padding:3px 8px;border-radius:8px;background:var(--panel2);color:var(--muted)}
+.stars span.ok{background:var(--phos-soft);color:var(--phos)}
+.spark{display:inline-block;width:46px;height:14px;vertical-align:middle}
+
+/* sala */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 16px}
+.tab{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;font-size:14.5px}
+.tab.on{border-color:var(--phos);color:var(--phos);background:var(--phos-soft)}
+.intro{color:var(--muted);line-height:1.55;margin:0 0 14px;max-width:760px}
+.mbar{height:6px;background:var(--panel2);border-radius:99px;overflow:hidden;margin:-6px 0 16px}
+.mbar i{display:block;height:100%;background:var(--phos);transition:width .3s}
+
+/* laboratorio */
+.lab{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px}
+@media(max-width:820px){.lab{grid-template-columns:1fr}}
+.scope{background:#0a0f17;border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.scope .hd{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);font-family:var(--f-m)}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.grp label,.grp .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;margin-bottom:6px}
+.grp label b{font-family:var(--f-m);color:var(--amber);text-transform:none;letter-spacing:0}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:13.5px;font-weight:600}
+.seg button.on{background:var(--amber);color:#2a1700;border-color:var(--amber)}
+input[type=range]{width:100%;accent-color:var(--amber)}
+.read{background:var(--panel2);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.5}
+.read b{color:var(--phos)}
+.read .warn{color:var(--amber)}
+.retos{background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.retos h4{margin:0;font-family:var(--f-d);font-size:15px}
+.reto{display:flex;gap:10px;font-size:14px;line-height:1.4;align-items:flex-start}
+.reto i{flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--muted);display:grid;place-items:center;font-style:normal;font-size:12px;margin-top:1px}
+.reto.done i{background:var(--phos);border-color:var(--phos);color:#06210f}
+.reto.done span{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(147,161,184,.5)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* SVG */
+svg.plot{width:100%;height:auto;display:block}
+.ax{stroke:#56627a;stroke-width:1.2;fill:none}
+.grid{stroke:#1f2a3c;stroke-width:1}
+.tr{fill:none;stroke:var(--phos);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.tr.a{stroke:var(--amber)}.tr.c{stroke:var(--coral)}.tr.b{stroke:var(--blue)}.tr.v{stroke:var(--violet)}.tr.m{stroke:#56627a}
+.tr.thin{stroke-width:1.2;opacity:.55}
+.sb{stroke:var(--ink);stroke-width:2.2;fill:none}
+.tx{fill:var(--ink);font-family:var(--f-b);font-size:12.5px}
+.tx.s{font-size:11px;fill:var(--muted)}
+.tx.m{font-family:var(--f-m)}
+.tx.a{fill:var(--amber)}.tx.g{fill:var(--phos)}.tx.c{fill:var(--coral)}.tx.b{fill:var(--blue)}
+.bar{fill:var(--phos);opacity:.85}.bar.a{fill:var(--amber)}.bar.c{fill:var(--coral)}.bar.b{fill:var(--blue)}
+.mark{fill:var(--amber)}
+.dash{stroke-dasharray:4 4}
+
+/* predice */
+.qbox{max-width:880px}
+.ctx{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:14px;padding:14px 16px;line-height:1.55;margin-bottom:12px}
+.ctx .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);font-weight:700;display:block;margin-bottom:4px}
+.qtitle{font-family:var(--f-d);font-size:22px;margin:4px 0 12px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.opts.txt{grid-template-columns:1fr}
+.opt{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:8px;transition:border-color .12s,transform .08s}
+.opt:hover:not(:disabled){border-color:var(--muted);transform:translateY(-1px)}
+.opt .k{font-family:var(--f-m);font-size:12px;color:var(--muted)}
+.opt.txt{flex-direction:row;align-items:center;gap:12px;font-size:15px;padding:13px 14px}
+.opt.ok{border-color:var(--phos);background:var(--phos-soft)}
+.opt.ko{border-color:var(--coral);background:var(--coral-soft)}
+.opt:disabled{cursor:default}
+.fb{margin-top:12px;border-radius:14px;padding:14px 16px;line-height:1.55;font-size:14.5px;animation:pop .25s}
+.fb.ok{background:var(--phos-soft);border:1px solid rgba(92,242,166,.35)}
+.fb.ko{background:var(--coral-soft);border:1px solid rgba(255,111,111,.35)}
+.fb .base{margin-top:10px;background:rgba(0,0,0,.22);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.fb .base b{color:var(--amber)}
+@keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.next{margin-top:14px}
+
+/* figura */
+.figgrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px}
+@media(max-width:860px){.figgrid{grid-template-columns:1fr}}
+.figpanel{background:#0a0f17;border:1px solid var(--line);border-radius:18px;padding:14px;position:sticky;top:10px;align-self:start}
+.figpanel .cap{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+.ladder{display:flex;gap:6px;margin-bottom:12px}
+.ladder span{flex:1;height:30px;border-radius:9px;background:var(--panel2);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted)}
+.ladder span.now{background:var(--amber);color:#2a1700}
+.ladder span.ok{background:var(--phos-soft);color:var(--phos)}
+.ladder span.ko{background:var(--coral-soft);color:var(--coral)}
+.stepq{font-family:var(--f-d);font-size:19px;line-height:1.25;margin-bottom:4px}
+.stepsub{color:var(--muted);font-size:13.5px;margin-bottom:10px;line-height:1.45}
+.hint{font-size:13px;color:var(--amber);background:var(--amber-soft);border-radius:10px;padding:8px 10px;margin-bottom:10px}
+.builder{background:var(--panel2);border:1.5px dashed var(--line);border-radius:14px;min-height:96px;padding:10px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;margin-bottom:10px}
+.builder.ok{border-color:var(--phos);border-style:solid}
+.builder.ko{border-color:var(--coral);border-style:solid}
+.frag{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.35;text-align:left}
+.frag:hover{border-color:var(--amber)}
+.builder .frag{background:var(--blue-soft);border-color:rgba(111,178,255,.4)}
+.pool{display:flex;flex-wrap:wrap;gap:6px}
+.model{background:rgba(0,0,0,.25);border-left:3px solid var(--phos);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:14px;line-height:1.55}
+
+/* piezas base */
+.pieces{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.piece{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.piece h4{margin:0 0 8px;font-family:var(--f-d);font-size:17px;color:var(--amber)}
+.piece p,.piece li{font-size:14px;line-height:1.55;color:#cdd6e4;margin:0 0 6px}
+.piece ul{padding-left:18px;margin:0}
+
+/* final */
+.fin{max-width:620px;margin:20px auto;text-align:center}
+.fin .xp{font-family:var(--f-m);font-size:64px;font-weight:700;color:var(--phos);line-height:1}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(30px);background:var(--phos);color:#06210f;font-weight:700;border-radius:14px;padding:12px 18px;opacity:0;transition:all .3s;z-index:50;max-width:92vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+"use strict";
+/* ========================= utilidades ========================= */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const binom=(n,p)=>{let k=0;for(let i=0;i<n;i++)if(Math.random()<p)k++;return k};
+const fmt=(x,d=1)=>(Math.round(x*10**d)/10**d).toString().replace('.',',');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function seeded(seed){let s=seed%2147483647;if(s<=0)s+=2147483646;return()=>{s=s*16807%2147483647;return(s-1)/2147483646}}
+function sgauss(r){let u=r()||1e-9,v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+/* ========================= guardado ========================= */
+const KEY='neurolab_b2_v1';
+let S={xp:0,days:{},retos:{},pred:{},fig:{},lab:{},wrong:{}};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function streak(){let n=0;const d=new Date();if(!S.days[today()])d.setDate(d.getDate()-1);
+  for(;;){const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');if(S.days[k]){n++;d.setDate(d.getDate()-1)}else break}return n}
+let toastT;function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)}
+function addXP(n,msg){S.xp+=n;save();const c=$('#xpchip b');if(c)c.textContent=S.xp;if(msg)toast(msg+'  +'+n+' XP')}
+
+/* ========================= dibujo de figuras ========================= */
+function kernel(tr,td){const tp=tr*td/(td-tr)*Math.log(td/tr),nrm=Math.exp(-tp/td)-Math.exp(-tp/tr);return dt=>dt<0?0:(Math.exp(-dt/td)-Math.exp(-dt/tr))/nrm}
+/* events: [{t,a,tr,td}] -> pts */
+function trace(events,T0,T1,n=500,base=0,noise=0,seed=7){const r=seeded(seed),pts=[],ks=events.map(e=>kernel(e.tr||1,e.td||5));
+  for(let i=0;i<=n;i++){const t=T0+(T1-T0)*i/n;let y=base;events.forEach((e,j)=>{y+=e.a*ks[j](t-e.t)});if(noise)y+=noise*sgauss(r);pts.push([t,y])}return pts}
+/* plot({w,h,xr,yr,series,sbar,axes,texts,hl,vl,bars,marks}) */
+function plot(o){
+  const W=o.w||560,H=o.h||230,ax=o.axes,m={l:ax?52:14,r:14,t:o.top||14,b:ax?40:16};
+  const X=x=>m.l+(x-o.xr[0])/(o.xr[1]-o.xr[0])*(W-m.l-m.r), Y=y=>H-m.b-(y-o.yr[0])/(o.yr[1]-o.yr[0])*(H-m.t-m.b);
+  let g='';
+  if(ax){(ax.yt||[]).forEach(v=>{g+=`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tx s m" x="${m.l-6}" y="${Y(v)+4}" text-anchor="end">${v}</text>`});
+    (ax.xt||[]).forEach(v=>{g+=`<text class="tx s m" x="${X(v)}" y="${H-m.b+16}" text-anchor="middle">${v}</text>`});
+    g+=`<path class="ax" d="M${m.l} ${m.t} V${H-m.b} H${W-m.r}"/>`;
+    if(ax.xl)g+=`<text class="tx s" x="${(m.l+W-m.r)/2}" y="${H-4}" text-anchor="middle">${ax.xl}</text>`;
+    if(ax.yl)g+=`<text class="tx s" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${ax.yl}</text>`}
+  (o.bands||[]).forEach(b=>{g+=`<rect x="${X(b.x0)}" y="${m.t}" width="${X(b.x1)-X(b.x0)}" height="${H-m.t-m.b}" fill="${b.fill||'rgba(255,181,71,.10)'}"/>`;if(b.label)g+=`<text class="tx s a" x="${X(b.x0)+4}" y="${m.t+12}">${b.label}</text>`});
+  (o.hl||[]).forEach(h=>{g+=`<line class="ax ${h.dash?'dash':''}" style="${h.color?'stroke:'+h.color:''}" x1="${m.l}" x2="${W-m.r}" y1="${Y(h.y)}" y2="${Y(h.y)}"/>`;if(h.label)g+=`<text class="tx s" x="${W-m.r-4}" y="${Y(h.y)-5}" text-anchor="end" style="${h.color?'fill:'+h.color:''}">${h.label}</text>`});
+  (o.vl||[]).forEach(v=>{g+=`<line class="ax dash" style="${v.color?'stroke:'+v.color:''}" x1="${X(v.x)}" x2="${X(v.x)}" y1="${m.t}" y2="${H-m.b}"/>`;if(v.label)g+=`<text class="tx s a" x="${X(v.x)+4}" y="${m.t+11}">${v.label}</text>`});
+  (o.bars||[]).forEach(b=>{const y0=Y(Math.max(0,o.yr[0])),y1=Y(b.y);g+=`<rect class="bar ${b.c||''}" x="${X(b.x0)+1}" y="${Math.min(y0,y1)}" width="${Math.max(1,X(b.x1)-X(b.x0)-2)}" height="${Math.abs(y1-y0)}" rx="2"/>`});
+  (o.series||[]).forEach(s=>{if(!s.pts.length)return;const d=s.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(clamp(p[1],o.yr[0]-(o.yr[1]-o.yr[0])*.2,o.yr[1]+(o.yr[1]-o.yr[0])*.2)).toFixed(1)).join('');g+=`<path class="tr ${s.c||''}" d="${d}" ${s.dash?'stroke-dasharray="5 4"':''}/>`;
+    if(s.dots)s.pts.forEach(p=>{g+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="${s.r||3.2}" class="mark" style="${s.fill?'fill:'+s.fill:''}"/>`})});
+  (o.marks||[]).forEach(k=>{g+=`<path d="M${X(k.x)} ${Y(k.y)+(k.up?10:-10)} l-5 ${k.up?8:-8} h10z" class="mark"/>`;if(k.label)g+=`<text class="tx s a" x="${X(k.x)}" y="${Y(k.y)+(k.up?30:-22)}" text-anchor="middle">${k.label}</text>`});
+  (o.texts||[]).forEach(t=>{g+=`<text class="tx ${t.c||''}" x="${t.px?t.x:X(t.x)}" y="${t.px?t.y:Y(t.y)}" text-anchor="${t.a||'start'}">${t.t}</text>`});
+  if(o.sbar){const sb=o.sbar,x1=W-m.r-6,y1=H-m.b-4,x0=x1-(sb.x/(o.xr[1]-o.xr[0]))*(W-m.l-m.r),y0=y1-(sb.y/(o.yr[1]-o.yr[0]))*(H-m.t-m.b);
+    g+=`<path class="sb" d="M${x0} ${y1} H${x1} V${y0}"/><text class="tx s m" x="${(x0+x1)/2}" y="${y1+13}" text-anchor="middle" style="fill:var(--ink)">${sb.xl}</text><text class="tx s m" x="${x1-5}" y="${(y0+y1)/2+4}" text-anchor="end" style="fill:var(--ink)">${sb.yl}</text>`}
+  if(o.label)g+=`<text class="tx" x="${m.l+4}" y="${m.t+12}" style="font-weight:600">${o.label}</text>`;
+  return `<svg class="plot" viewBox="0 0 ${W} ${H}">${g}</svg>`;
+}
+/* tren de eventos sinápticos */
+function train(amps,{isi=10,t0=5,T,tr=.5,td=4,sign=-1,base=0,noise=0,seed=3}={}){const ev=amps.map((a,i)=>({t:t0+i*isi,a:sign*a,tr,td}));return trace(ev,0,T||t0+amps.length*isi+td*4,700,base,noise,seed)}
+function histBars(counts,bw,c,off=0){return counts.map((n,i)=>({x0:i*bw+off,x1:(i+1)*bw+off,y:n,c:i===0&&c?c:''}))}
+/* raster de espigas */
+function raster(trials,{T=1.5,on=[.5,1],label='',w=300,h=150}={}){const m={l:10,r:10,t:22,b:22},rowH=(h-m.t-m.b)/trials.length,X=t=>m.l+t/T*(w-m.l-m.r);let g='';
+  g+=`<rect x="${X(on[0])}" y="${m.t-12}" width="${X(on[1])-X(on[0])}" height="6" rx="2" fill="var(--amber)"/><text class="tx s a" x="${X(on[0])}" y="${m.t-15}">luz</text>`;
+  trials.forEach((sp,i)=>{sp.forEach(t=>{const x=X(t);g+=`<line x1="${x}" x2="${x}" y1="${m.t+i*rowH+2}" y2="${m.t+(i+1)*rowH-2}" stroke="var(--phos)" stroke-width="1.6"/>`})});
+  g+=`<line class="ax" x1="${m.l}" x2="${w-m.r}" y1="${h-m.b+2}" y2="${h-m.b+2}"/><text class="tx s" x="${w/2}" y="${h-5}" text-anchor="middle">${label}</text>`;
+  return `<svg class="plot" viewBox="0 0 ${w} ${h}">${g}</svg>`}
+function spikes(rateFn,T,seed){const r=seeded(seed),out=[];let t=0;const dt=.002;while(t<T){if(r()<rateFn(t)*dt)out.push(t);t+=dt}return out}
+function rgcRate(cell,stim){const base=10;let during=base,after=base;
+  const on=cell==='on';
+  if(stim==='centro'){during=on?75:1;after=on?4:55}
+  else if(stim==='anillo'){during=on?1:60;after=on?50:4}
+  else if(stim==='difusa'){during=base+4;after=base}
+  return t=>t<.5?base:t<1?during:(t<1.15?after:base)}
+function rasterFor(cell,stim,label,seedBase=1,h=150){const tr=[];for(let i=0;i<6;i++)tr.push(spikes(rgcRate(cell,stim),1.5,seedBase*31+i*7+(cell==='on'?3:11)));return raster(tr,{label,h})}
+function rfIcon(stim,size=70){const c=size/2;let g=`<circle cx="${c}" cy="${c}" r="${c-3}" fill="#0a0f17" stroke="#56627a"/><circle cx="${c}" cy="${c}" r="${c*.38}" fill="none" stroke="#56627a" stroke-dasharray="3 3"/>`;
+  if(stim==='centro')g+=`<circle cx="${c}" cy="${c}" r="${c*.32}" fill="var(--amber)" opacity=".9"/>`;
+  if(stim==='anillo')g+=`<path d="M${c} 4 a${c-4} ${c-4} 0 1 0 .01 0 M${c} ${c-c*.44} a${c*.44} ${c*.44} 0 1 1 -.01 0" fill="var(--amber)" fill-rule="evenodd" opacity=".9"/>`;
+  if(stim==='difusa')g+=`<circle cx="${c}" cy="${c}" r="${c-4}" fill="var(--amber)" opacity=".9"/>`;
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${g}</svg>`}
+
+/* ========================= PIEZAS BASE (lo que falta de Fisiología) ========================= */
+const BASE={
+ clamp:{t:'Current clamp vs voltage clamp',h:`<p><b>Current clamp:</b> fijas la corriente que inyectas y <b>mides el voltaje</b>. El eje sale en <b>mV</b> y ves PPSE (EPSP), PPSI y potenciales de acción.</p><p><b>Voltage clamp:</b> fijas el voltaje (potencial de <i>holding</i>) y <b>mides la corriente</b> que hace falta para mantenerlo. El eje sale en <b>pA o nA</b> y ves EPSC o IPSC. Aquí no hay potenciales de acción en la célula registrada, porque su voltaje no se mueve.</p><p>👉 Lo primero que miras en cualquier figura es la barra de escala: ¿pone mV o pA?</p>`},
+ signo:{t:'¿Por qué las EPSC van hacia abajo?',h:`<p>Es un convenio: la <b>corriente entrante de cationes</b> (Na⁺ entrando) se dibuja <b>negativa, hacia abajo</b>. La corriente saliente se dibuja hacia arriba.</p><p>Por eso la misma sinapsis excitadora sale <b>hacia abajo en voltage clamp</b> (EPSC, una corriente entrante) y <b>hacia arriba en current clamp</b> (EPSP, despolariza).</p>`},
+ erev:{t:'Potencial de inversión (E<sub>rev</sub>)',h:`<p>La corriente de un canal es I = g · (V − E<sub>rev</sub>). A (V − E<sub>rev</sub>) se le llama fuerza impulsora.</p><ul><li>AMPA/NMDA (catiónicos): E<sub>rev</sub> ≈ 0 mV. Por debajo de 0 la corriente es entrante (abajo); por encima de 0 se invierte y sale.</li><li>GABA-A (Cl⁻): E<sub>rev</sub> ≈ −70 mV. Si la neurona está justo a −70, abrir el canal casi no cambia el voltaje, pero sí la <i>cortocircuita</i> (inhibición por shunting).</li></ul><p>Regla práctica: un canal abierto siempre empuja el voltaje hacia su E<sub>rev</sub>.</p>`},
+ ttx:{t:'TTX y los minis',h:`<p>La <b>TTX</b> bloquea los canales de Na⁺ dependientes de voltaje, así que no hay potenciales de acción. Lo que sigue apareciendo en el registro son los <b>minis</b> (mEPSP o mEPSC): la liberación espontánea de <b>una sola vesícula</b>. Su tamaño medio es el <b>Q</b>.</p>`},
+ iono:{t:'Ionotrópico vs metabotrópico',h:`<p><b>Ionotrópico:</b> el receptor es un canal. La respuesta es rápida (ms). Ejemplos: AMPA, kainato, NMDA, GABA-A, nicotínico.</p><p><b>Metabotrópico:</b> el receptor está acoplado a proteína G. La respuesta es más lenta y puede abrir o cerrar canales por una cascada. Ejemplos: mGluR (como el mGluR6 de las bipolares ON), GABA-B, muscarínicos.</p>`},
+ elec:{t:'Sinapsis eléctrica vs química',h:`<p><b>Eléctrica:</b> uniones gap (conexinas). La corriente pasa directamente, así que <b>casi no hay retraso</b> y suele ser bidireccional.</p><p><b>Química:</b> llega el PA, entra Ca²⁺, se fusiona la vesícula, el neurotransmisor difunde y se une al receptor. Todo esto tarda unos 0,5–1 ms: es el <b>retraso sináptico</b>.</p><p>Una sinapsis <b>mixta</b> (como las club endings sobre la célula de Mauthner) da las dos respuestas, una detrás de otra.</p>`},
+ tipos:{t:'¿Quién es quién? Tipos de neuronas',h:`<ul><li><b>Piramidales</b> (corteza, CA1 y CA3 del hipocampo): <b>glutamatérgicas, excitadoras</b> y de proyección. Tienen muchas espinas dendríticas, que es donde se estudia la LTP.</li><li><b>Interneuronas</b>: casi siempre <b>GABAérgicas (o glicinérgicas en tronco y médula), inhibidoras</b> y locales. Controlan cuándo disparan las demás.</li><li><b>Granulares del giro dentado</b>: excitadoras. Sus axones son las <b>fibras musgosas</b> que van a CA3.</li><li><b>Purkinje</b> (cerebelo): <b>GABAérgica</b> y única salida de la corteza cerebelosa. Recibe la <b>fibra trepadora</b>.</li><li><b>Motoneurona</b>: colinérgica. Su sinapsis es la unión neuromuscular.</li><li><b>Célula de Mauthner</b> (romboencéfalo de peces y anfibios): neurona gigante del escape en C.</li></ul>`},
+ sumacion:{t:'Sumación y umbral',h:`<p>Los PPSE son graduados y se suman. En la <b>sumación temporal</b> llegan seguidos y se montan uno sobre otro; en la <b>espacial</b> llegan de sitios distintos. Si el voltaje en el cono axónico supera el <b>umbral</b>, se dispara un PA, que es todo o nada.</p><p>Una inhibición <b>cerca del soma</b> pesa más que una excitación lejana en la dendrita.</p>`}
+};
+
+/* ========================= SALAS ========================= */
+const SALAS=[
+ {id:0,num:'00',t:'Kit básico',sub:'Clamp, signos, E<sub>rev</sub>, tipos de neuronas',temas:'Base del bloque 1 / Fisio',intro:'Antes de leer cualquier figura necesitas saber qué está midiendo. Juega con la pinza: cambia de modo, de sinapsis y de voltaje, y mira cómo se da la vuelta la traza. Es lo que te pedirán en el 80 % de las figuras.'},
+ {id:1,num:'11–12',t:'Q · P · N',sub:'Neurotransmisión cuántica, minis, fallos',temas:'Temas 11–12',intro:'Eres Katz en la unión neuromuscular. Ajusta cuántos sitios de liberación hay (N), con qué probabilidad liberan (P) y cuánto vale una vesícula (Q). Después estimula cien veces y mira el histograma que se forma.'},
+ {id:2,num:'13',t:'Ciclo vesicular',sub:'RRP, reciclaje, reserva, endocitosis',temas:'Tema 13',intro:'Una terminal hipocampal tiene unas 200 vesículas. Pisa el acelerador: estimula a distintas frecuencias, deja descansar a la terminal y bloquea la dinamina para ver qué pasa cuando no se reciclan.'},
+ {id:3,num:'14',t:'Plasticidad a corto plazo',sub:'Facilitación, depresión, Ca²⁺ residual',temas:'Tema 14',intro:'Los PA que llegan son idénticos, pero las respuestas no. Mueve la P inicial, el intervalo entre PA y el tampón de Ca²⁺, y descubre por qué unas sinapsis facilitan y otras deprimen.'},
+ {id:4,num:'15–16',t:'LTP y LTD',sub:'NMDA, Mg²⁺, tétanos, espinas',temas:'Temas 15–16',intro:'Primero abre el receptor NMDA: necesita glutamato y despolarización a la vez. Después lanza protocolos sobre la sinapsis de hipocampo y sigue la pendiente del fEPSP durante horas.'},
+ {id:5,num:'17',t:'Célula de Mauthner',sub:'Sinapsis mixtas, retraso sináptico, escape en C',temas:'Tema 17',intro:'Un pez cebra oye un golpe. Ajusta la intensidad del sonido y bloquea, si quieres, las uniones gap, el glutamato o la inhibición. ¿Dispara la célula de Mauthner? ¿Cuánto tarda?'},
+ {id:6,num:'V',t:'Visión',sub:'Campos receptivos, ON/OFF, bipolares, NGL',temas:'Visión I–III',intro:'Proyecta luz sobre el campo receptivo de una célula ganglionar (en el centro, en la periferia o difusa) y mira cómo dispara. Debajo verás la cadena que va del fotorreceptor a la bipolar.'}
+];
+
+/* ========================= LABORATORIOS ========================= */
+const LABS={};
+function seg(name,opts,val){return `<div class="seg" data-seg="${name}">${opts.map(([v,l])=>`<button data-v="${v}" class="${v==val?'on':''}">${l}</button>`).join('')}</div>`}
+function bindSeg(root,name,fn){$$(`[data-seg="${name}"] button`,root).forEach(b=>b.onclick=()=>{$$(`[data-seg="${name}"] button`,root).forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset.v)})}
+function retosHTML(list){return `<div class="retos"><h4>🎯 Retos del laboratorio</h4>${list.map(r=>`<div class="reto ${S.retos[r.id]?'done':''}" data-reto="${r.id}"><i>${S.retos[r.id]?'✓':''}</i><span>${r.t}</span></div>`).join('')}</div>`}
+function makeApi(root,onReto){return{reto(id,list){if(S.retos[id])return;S.retos[id]=true;save();const el=$(`[data-reto="${id}"]`,root);if(el){el.classList.add('done');el.querySelector('i').textContent='✓'}addXP(15,'¡Reto conseguido!');onReto&&onReto(id)}}}
+
+/* ---- LAB 0: la pinza ---- */
+LABS[0]={retos:[
+  {id:'r0a',t:'Consigue que la sinapsis <b>excitadora</b> dé una corriente <b>hacia arriba</b>.'},
+  {id:'r0b',t:'Haz que la sinapsis <b>inhibidora</b> desaparezca del registro (que casi no se vea).'},
+  {id:'r0c',t:'Consigue que una sinapsis <b>inhibidora despolarice</b>.'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span id="l0mode">VOLTAGE CLAMP</span><span id="l0v"></span></div><div id="l0plot"></div><div class="read" id="l0read"></div></div>
+  <div class="ctrl"><div class="grp"><div class="lbl">Modo de registro</div>${seg('mode',[['vc','Voltage clamp'],['cc','Current clamp']],'vc')}</div>
+  <div class="grp"><div class="lbl">Sinapsis que estimulas</div>${seg('syn',[['exc','Excitadora · AMPA'],['inh','Inhibidora · GABA-A']],'exc')}</div>
+  <div class="grp"><label>Voltaje de la neurona <b id="l0vv">−70 mV</b></label><input type="range" id="l0V" min="-100" max="40" step="5" value="-70"><div class="muted" style="font-size:12px;margin-top:4px" id="l0vhelp"></div></div>
+  ${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let mode='vc',syn='exc',V=-70;
+  const draw=()=>{const E=syn==='exc'?0:-70,df=V-E;$('#l0vv',root).textContent=(V>0?'+':'')+String(V).replace('-','−')+' mV';
+   $('#l0vhelp',root).textContent=mode==='vc'?'En voltage clamp este es el potencial de holding: tú lo fijas.':'En current clamp este es el potencial de reposo de partida.';
+   $('#l0mode',root).textContent=mode==='vc'?'VOLTAGE CLAMP · mides corriente':'CURRENT CLAMP · mides voltaje';
+   let html,desc;
+   if(mode==='vc'){const I=4*df;const pts=trace([{t:10,a:I,tr:.6,td:5}],0,40,400,0,3);
+     html=plot({xr:[0,40],yr:[-450,450],series:[{pts}],hl:[{y:0,dash:1,label:'0 pA'}],sbar:{x:10,xl:'10 ms',y:200,yl:'200 pA'},marks:[{x:10,y:I>0?-60:60,up:I<=0,label:'estímulo'}]});
+     const dir=Math.abs(df)<4?'casi <b>nula</b>':df<0?'<b>entrante</b> → se dibuja <b>hacia abajo</b>':'<b>saliente</b> → se dibuja <b>hacia arriba</b>';
+     desc=`Fuerza impulsora: V − E<sub>rev</sub> = ${fmt(V)} − (${E}) = <b>${fmt(df)} mV</b>. La corriente es ${dir}. Pico ≈ <span class="mono">${fmt(4*df,0)} pA</span>.`;
+     if(syn==='exc'&&I>20)api.reto('r0a');
+   }else{const dv=-0.16*df;const pts=trace([{t:10,a:dv,tr:1.2,td:12}],0,60,400,V,.15);
+     html=plot({xr:[0,60],yr:[V-14,V+14],series:[{pts}],hl:[{y:V,dash:1,label:'reposo '+String(V).replace('-','−')+' mV'},{y:E,dash:1,color:'var(--violet)',label:E>=V-14&&E<=V+14?'Erev':''}],sbar:{x:10,xl:'10 ms',y:5,yl:'5 mV'},marks:[{x:10,y:dv>=0?V-3:V+3,up:dv>=0,label:'estímulo'}]});
+     const dir=Math.abs(dv)<.6?'casi <b>no se mueve</b>':dv>0?'se <b>despolariza</b> (hacia arriba)':'se <b>hiperpolariza</b> (hacia abajo)';
+     desc=`El voltaje va hacia E<sub>rev</sub> = ${E} mV, así que la neurona ${dir}: ΔV ≈ <span class="mono">${fmt(dv)} mV</span>.`;
+     if(syn==='inh'&&dv>.8)api.reto('r0c');}
+   if(syn==='inh'&&Math.abs(df)<=3)api.reto('r0b');
+   $('#l0plot',root).innerHTML=html;$('#l0v',root).textContent=(syn==='exc'?'AMPA · E<sub>rev</sub> 0 mV':'GABA-A · E<sub>rev</sub> −70 mV').replace(/<\/?sub>/g,'');
+   $('#l0read',root).innerHTML=desc+(syn==='inh'&&Math.abs(df)<=3?'<br><span class="warn">Abres canales de Cl⁻, pero no hay fuerza impulsora: el registro no muestra nada aunque la sinapsis está funcionando y la inhibe (shunting).</span>':'')};
+  bindSeg(root,'mode',v=>{mode=v;draw()});bindSeg(root,'syn',v=>{syn=v;draw()});
+  $('#l0V',root).oninput=e=>{V=+e.target.value;draw()};draw();}};
+
+/* ---- LAB 1: Q P N ---- */
+LABS[1]={retos:[
+  {id:'r1a',t:'Consigue que <b>más de la mitad</b> de los estímulos fallen (sinapsis tipo tálamo).'},
+  {id:'r1b',t:'Reproduce la <b>unión neuromuscular</b>: 100 estímulos y <b>ningún fallo</b>.'},
+  {id:'r1c',t:'Mide Q: añade <b>TTX</b> y registra los minis.'},
+  {id:'r1d',t:'Consigue un histograma con <b>al menos 3 picos</b> separados (0, Q, 2Q…) como el de Katz.'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span id="l1hd">CURRENT CLAMP · EPP en mV</span><span>12 barridos superpuestos</span></div><div id="l1sw"></div><div id="l1h"></div><div class="read" id="l1read">Ajusta N, P y Q, y pulsa <b>Estimular ×100</b>.</div></div>
+  <div class="ctrl"><div class="grp"><label>N · sitios de liberación <b id="l1Nv">3</b></label><input type="range" id="l1N" min="1" max="20" value="3"></div>
+  <div class="grp"><label>P · probabilidad de liberación <b id="l1Pv">0,30</b></label><input type="range" id="l1P" min="0.05" max="0.95" step="0.05" value="0.3"></div>
+  <div class="grp"><label>Q · tamaño cuántico <b id="l1Qv">0,40 mV</b></label><input type="range" id="l1Q" min="0.2" max="1" step="0.05" value="0.4"></div>
+  <div class="grp"><div class="lbl">Condición</div>${seg('ttx',[['0','Estímulo evocado'],['1','+TTX (espontáneo)']],'0')}</div>
+  <button class="btn go" id="l1go">⚡ Estimular ×100</button>${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let N=3,P=.3,Q=.4,ttx=false;
+  const upd=()=>{$('#l1Nv',root).textContent=N;$('#l1Pv',root).textContent=fmt(P,2);$('#l1Qv',root).textContent=fmt(Q,2)+' mV'};
+  $('#l1N',root).oninput=e=>{N=+e.target.value;upd()};$('#l1P',root).oninput=e=>{P=+e.target.value;upd()};$('#l1Q',root).oninput=e=>{Q=+e.target.value;upd()};
+  bindSeg(root,'ttx',v=>{ttx=v==='1';$('#l1hd',root).textContent=ttx?'CURRENT CLAMP · minis espontáneos (con TTX)':'CURRENT CLAMP · EPP en mV'});
+  $('#l1go',root).onclick=()=>{const amps=[];let fails=0;
+   for(let i=0;i<100;i++){if(ttx){amps.push(Math.max(.02,Q*(1+.2*gauss())))}else{const k=binom(N,P);if(!k)fails++;let a=0;for(let j=0;j<k;j++)a+=Q*(1+.15*gauss());a+=.025*gauss();amps.push(Math.max(0,a))}}
+   const maxA=Math.max(N*Q*1.05,Q*3,Math.max(...amps)*1.05),bw=Math.max(.04,Q/6),nb=Math.ceil(maxA/bw)+1,counts=new Array(nb).fill(0);amps.forEach(a=>counts[Math.min(nb-1,Math.round(a/bw))]++);
+   const ymax=Math.max(...counts)+2,sw=[];
+   if(ttx){const ev=[];for(let i=0;i<9;i++)ev.push({t:4+i*9+Math.random()*5,a:amps[i],tr:.5,td:5});sw.push({pts:trace(ev,0,90,600,0,.02,11)});}
+   else for(let i=0;i<12;i++)sw.push({pts:trace([{t:5,a:amps[i],tr:.5,td:5}],0,25,200,0,.02,i+5),c:'thin'});
+   const yTop=Math.max(...amps.slice(0,12))*1.25+.2;
+   $('#l1sw',root).innerHTML=plot({h:170,xr:ttx?[0,90]:[0,25],yr:[-.15,ttx?Q*2.2:Math.max(yTop,Q*2)],series:sw,sbar:{x:5,xl:'5 ms',y:Math.round(Q*10)/10||.2,yl:fmt(Math.round(Q*10)/10||.2)+' mV'},marks:ttx?[]:[{x:5,y:-.1,up:true,label:'PA'}]});
+   const qlines=[];for(let k=1;k*Q<maxA;k++)qlines.push({x:k*Q,label:k===1?'Q':k+'Q'});
+   $('#l1h',root).innerHTML=plot({h:210,xr:[-bw/2,nb*bw],yr:[0,ymax],bars:histBars(counts,bw,ttx?'':'c',-bw/2),vl:ttx?[{x:Q,label:'Q'}]:qlines.slice(0,8),axes:{xl:'Amplitud (mV)',yl:'Nº de respuestas',xt:[0,Math.round(nb*bw*5)/10,Math.round(nb*bw*10)/10],yt:[0,Math.round(ymax/2),ymax]}});
+   const mean=amps.reduce((a,b)=>a+b,0)/100;
+   if(ttx){$('#l1read',root).innerHTML=`Con TTX no hay PA: lo que ves son <b>minis</b>, cada uno una sola vesícula. Su amplitud media es <b>Q ≈ ${fmt(mean,2)} mV</b>. Fíjate en que el histograma tiene un único pico y que no hay fallos, porque aquí no estás estimulando nada.`;api.reto('r1c')}
+   else{const exp=Math.pow(1-P,N)*100,m=mean/Q;
+    $('#l1read',root).innerHTML=`Fallos: <b>${fails}</b>/100 (esperados por la binomial (1−P)<sup>N</sup> ≈ ${fmt(exp,0)}).<br>Amplitud media <b>${fmt(mean,2)} mV</b> ≈ N·P·Q = ${fmt(N*P*Q,2)} mV.<br>Contenido cuántico m = media/Q ≈ <b>${fmt(m,1)}</b> vesículas por PA.${fails>0?'<br><span class="warn">La barra roja en 0 son los fallos: llegó el PA y no se liberó ninguna vesícula.</span>':''}`;
+    if(fails>50)api.reto('r1a');if(fails===0)api.reto('r1b');
+    const peaks=[0,1,2].filter(k=>{const i=Math.round(k*Q/bw);let s=0;for(let d=-1;d<=1;d++)s+=counts[i+d]||0;return s>=4});if(peaks.length===3&&P<.6)api.reto('r1d')}};}};
+
+/* ---- LAB 2: ciclo vesicular ---- */
+LABS[2]={retos:[
+  {id:'r2a',t:'Agota el <b>RRP</b>: que la última respuesta del tren baje a <b>menos del 30 %</b> de la primera.'},
+  {id:'r2b',t:'Moviliza la <b>reserva</b>: haz que se gasten vesículas del depósito de reserva.'},
+  {id:'r2c',t:'Bloquea la <b>dinamina</b>, estimula, descansa 60 s y comprueba que la terminal <b>no se recupera</b>.'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span>TERMINAL HIPOCAMPAL · 200 vesículas</span><span id="l2t">t = 0 s</span></div><div id="l2pools"></div><div id="l2amp"></div><div id="l2cum"></div><div class="read" id="l2read">Elige frecuencia y duración y pulsa <b>Estimular</b>.</div></div>
+  <div class="ctrl"><div class="grp"><div class="lbl">Frecuencia del tren</div>${seg('fq',[['5','5 Hz'],['20','20 Hz'],['100','100 Hz (a fondo)']],'20')}</div>
+  <div class="grp"><label>Duración del tren <b id="l2dv">5 s</b></label><input type="range" id="l2d" min="1" max="20" value="5"></div>
+  <div class="grp"><div class="lbl">Endocitosis</div>${seg('dyn',[['0','Normal (clatrina + dinamina)'],['1','Dinamina bloqueada']],'0')}</div>
+  <div class="seg"><button class="btn go" id="l2go">⚡ Estimular</button><button class="btn" id="l2rest">☕ Descansar 60 s</button><button class="btn" id="l2test">Pulso de prueba</button><button class="btn" id="l2reset">↺ Terminal nueva</button></div>
+  ${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let fq=20,dur=5,dyn=false;const RMAX=4,CMAX=16,SMAX=180;let R,C,Sv,E,A0,lastTest=null,stimmed=false;
+  const reset=()=>{R=RMAX;C=CMAX;Sv=SMAX;E=0;A0=null;lastTest=null;stimmed=false;drawPools();$('#l2amp',root).innerHTML='';$('#l2cum',root).innerHTML='';$('#l2read',root).innerHTML='Terminal fresca: <b>RRP 4</b> · reciclaje 16 · reserva 180 vesículas (≈2 % · 8 % · 90 %).'};
+  const drawPools=()=>{const tot=200;let g='';const dotsOf=(n,col,x0,y0,cols,lab,max)=>{let s='';for(let i=0;i<max;i++){const cx=x0+(i%cols)*9,cy=y0+Math.floor(i/cols)*9;s+=`<circle cx="${cx}" cy="${cy}" r="3.4" fill="${i<Math.round(n)?col:'#1f2a3c'}"/>`}return s+`<text class="tx s" x="${x0-4}" y="${y0-10}">${lab}: <tspan class="m" style="fill:var(--ink)">${Math.round(n)}</tspan></text>`};
+   g+=`<rect x="8" y="118" width="544" height="8" rx="3" fill="#2a3750"/><text class="tx s" x="12" y="140">zona activa · canales de Ca²⁺</text>`;
+   g+=dotsOf(R,'var(--phos)',30,104,4,'RRP',RMAX);g+=dotsOf(C,'var(--amber)',100,58,8,'Reciclaje',CMAX);g+=dotsOf(Sv,'var(--blue)',220,22,36,'Reserva',SMAX);
+   g+=`<text class="tx s" x="480" y="104" text-anchor="end">membrana por endocitar: <tspan class="m" style="fill:var(--coral)">${Math.round(E)}</tspan></text>`;
+   $('#l2pools',root).innerHTML=`<svg class="plot" viewBox="0 0 560 146">${g}</svg>`};
+  bindSeg(root,'fq',v=>{fq=+v});bindSeg(root,'dyn',v=>{dyn=v==='1'});$('#l2d',root).oninput=e=>{dur=+e.target.value;$('#l2dv',root).textContent=dur+' s'};
+  const step=(dt,fire)=>{let rel=0;if(fire){rel=R*.2;R-=rel;E+=rel}
+   const kRC=1.2,kSC=fq>=50?.5:.0;const need=RMAX-R,mv=Math.min(C,need*(1-Math.exp(-kRC*dt)));R+=mv;C-=mv;
+   if(fire&&fq>=50){const mv2=Math.min(Sv,(CMAX-C)*(1-Math.exp(-kSC*dt))*0.6+ .02);Sv-=mv2;C+=mv2}
+   if(!dyn){const back=E*(1-Math.exp(-dt/40));E-=back;C+=back}return rel};
+  $('#l2go',root).onclick=()=>{stimmed=true;const n=Math.round(fq*dur),dt=1/fq,amps=[],cum=[];let tot=0;const S0=Sv;
+   for(let i=0;i<n;i++){const r=step(dt,true);if(A0===null)A0=r;amps.push([i*dt,r/A0*100]);tot+=r;cum.push([i*dt,tot])}
+   const thin=n>300?amps.filter((_,i)=>i%Math.ceil(n/300)===0):amps;
+   $('#l2amp',root).innerHTML=plot({h:170,xr:[0,dur],yr:[0,110],series:[{pts:thin,c:'a'}],axes:{xl:'Tiempo de estimulación (s)',yl:'EPSC (% de la 1ª)',xt:[0,dur/2,dur],yt:[0,50,100]},label:'Amplitud de cada respuesta'});
+   const cmax=Math.max(10,tot*1.1);const cthin=n>300?cum.filter((_,i)=>i%Math.ceil(n/300)===0):cum;
+   $('#l2cum',root).innerHTML=plot({h:170,xr:[0,dur],yr:[0,cmax],series:[{pts:cthin}],axes:{xl:'Tiempo (s)',yl:'Vesículas liberadas (acum.)',xt:[0,dur/2,dur],yt:[0,Math.round(cmax/2),Math.round(cmax)]},label:'Liberación acumulada'});
+   drawPools();const last=amps[amps.length-1][1];
+   $('#l2read',root).innerHTML=`Has liberado <b>${fmt(tot,0)}</b> vesículas. La última respuesta es el <b>${fmt(last,0)} %</b> de la primera.<br>${fq>=50?'A 100 Hz la terminal tira también de la <b>reserva</b>: es la situación de “acelerador a fondo”.':'A esta frecuencia la reserva casi no participa: la terminal hace economía y trabaja con el RRP y el depósito de reciclaje.'}`;
+   if(last<30)api.reto('r2a');if(Sv<S0-1)api.reto('r2b')};
+  $('#l2rest',root).onclick=()=>{for(let i=0;i<60;i++)step(1,false);drawPools();$('#l2read',root).innerHTML=dyn?'Han pasado 60 s, pero con la dinamina bloqueada las vesículas fusionadas siguen en la membrana: <b>no vuelven al ciclo</b>. Haz un pulso de prueba.':'Han pasado 60 s. La endocitosis por clatrina (que tarda 30 s–1 min y es la <b>etapa limitante</b>) ha devuelto vesículas al depósito de reciclaje y el RRP se ha rellenado. Haz un pulso de prueba.'};
+  $('#l2test',root).onclick=()=>{if(A0===null){toast('Primero estimula la terminal.');return}const r=R*.2/A0*100;lastTest=r;
+   $('#l2read',root).innerHTML=`Pulso de prueba: <b>${fmt(r,0)} %</b> de la respuesta inicial. ${r>80?'La terminal se ha recuperado.':'La terminal <b>no se ha recuperado</b>: no tiene vesículas listas.'}`;
+   if(dyn&&stimmed&&r<50)api.reto('r2c')};
+  $('#l2reset',root).onclick=reset;reset();}};
+
+/* ---- LAB 3: plasticidad a corto plazo ---- */
+function stpRun(P0,isi,buf,n=8){let R=1,c=0;const inc=buf==='alto'?.25:1,out=[],ca=[];
+ for(let i=0;i<n;i++){if(i>0){c*=Math.exp(-isi/45);R+=(1-R)*(1-Math.exp(-isi/350))}
+  const p=clamp(1-(1-P0)*Math.exp(-.16*c),0,.97);out.push(p*R);R-=p*R;c+=inc;ca.push(c)}return{amps:out,ca}}
+LABS[3]={retos:[
+  {id:'r3a',t:'Consigue <b>facilitación</b>: ratio de pulsos pareados (PPR = 2ª/1ª) mayor de 1,3.'},
+  {id:'r3b',t:'Consigue <b>depresión</b>: PPR menor de 0,7.'},
+  {id:'r3c',t:'Con una P baja (≤ 0,3), <b>elimina la facilitación</b> usando el tampón de Ca²⁺ (PPR entre 0,85 y 1,15).'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span>VOLTAGE CLAMP · EPSC (pA)</span><span id="l3lab"></span></div><div id="l3tr"></div><div id="l3bars"></div><div class="read" id="l3read"></div></div>
+  <div class="ctrl"><div class="grp"><label>P inicial de liberación <b id="l3pv">0,10</b></label><input type="range" id="l3p" min="0.05" max="0.9" step="0.05" value="0.1"></div>
+  <div class="grp"><label>Intervalo entre PA <b id="l3iv">20 ms</b></label><input type="range" id="l3i" min="5" max="300" step="5" value="20"></div>
+  <div class="grp"><div class="lbl">Tampón de Ca²⁺ en la terminal</div>${seg('buf',[['normal','Normal'],['alto','Tampón exógeno (EGTA)']],'normal')}</div>
+  <div class="read muted" style="font-size:13px">Los <b>8 PA presinápticos son idénticos</b>. Lo único que cambia es la historia de la terminal.</div>${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let P0=.1,isi=20,buf='normal';
+  const draw=()=>{$('#l3pv',root).textContent=fmt(P0,2);$('#l3iv',root).textContent=isi+' ms';const {amps,ca}=stpRun(P0,isi,buf),A=amps.map(a=>a*900);
+   const T=10+isi*8+30,pts=train(A,{isi,t0:10,T,tr:.4,td:3});const ymin=-Math.max(...A)*1.15-20;
+   $('#l3tr',root).innerHTML=plot({h:200,xr:[0,T],yr:[ymin,40],series:[{pts}],sbar:{x:isi>=50?100:20,xl:(isi>=50?100:20)+' ms',y:100,yl:'100 pA'},marks:A.map((_,i)=>({x:10+i*isi,y:20,up:false}))});
+   const norm=A.map(a=>a/A[0]*100);
+   $('#l3bars',root).innerHTML=plot({h:150,xr:[0,8],yr:[0,Math.max(150,...norm)*1.08],bars:norm.map((v,i)=>({x0:i,x1:i+1,y:v,c:v>105?'':v<95?'c':'b'})),hl:[{y:100,dash:1,label:'100 % (1ª)'}],axes:{xl:'Nº de PA',yl:'% de la 1ª',xt:[],yt:[0,100]}});
+   const ppr=A[1]/A[0];const type=ppr>1.08?'FACILITACIÓN':ppr<.92?'DEPRESIÓN':'SIN CAMBIO';$('#l3lab',root).textContent='PPR = '+fmt(ppr,2)+' · '+type;
+   let why='';if(ppr>1.08)why='Con P baja, el primer PA libera poco y deja <b>Ca²⁺ residual</b>. El segundo PA llega con más Ca²⁺ libre, así que la P sube y la respuesta crece.';
+   else if(ppr<.92)why='Con P alta, el primer PA ya gasta buena parte de las vesículas listas. El segundo se encuentra con <b>menos vesículas disponibles</b> (y canales de Ca²⁺ inactivándose), así que la respuesta baja.';
+   else why='Facilitación y agotamiento se compensan (o el Ca²⁺ residual ya se ha ido porque el intervalo es largo).';
+   if(buf==='alto')why+=' El <b>tampón</b> captura el Ca²⁺ residual antes del siguiente PA, y la facilitación desaparece.';
+   if(isi>=200)why+=' Con intervalos largos el Ca²⁺ residual ya se ha ido.';
+   $('#l3read',root).innerHTML=why;
+   if(ppr>1.3)api.reto('r3a');if(ppr<.7)api.reto('r3b');if(P0<=.3&&buf==='alto'&&ppr>=.85&&ppr<=1.15&&isi<=40)api.reto('r3c')};
+  $('#l3p',root).oninput=e=>{P0=+e.target.value;draw()};$('#l3i',root).oninput=e=>{isi=+e.target.value;draw()};bindSeg(root,'buf',v=>{buf=v;draw()});draw();}};
+
+/* ---- LAB 4: NMDA + protocolos ---- */
+function ltpCurve(proto,apv,aniso){const pts=[];for(let t=-30;t<=180;t+=2){let y=100+1.5*Math.sin(t*1.7);
+  if(t>0){if(proto==='tet'){const ptp=120*Math.exp(-t/2.5);let ltp=apv?0:65;if(aniso&&!apv)ltp*=Math.exp(-Math.max(0,t-50)/45);y+=ptp+ltp}
+   else if(proto==='lfs'){y+=apv?0:-32*(1-Math.exp(-t/4))}}pts.push([t,y])}return pts}
+LABS[4]={retos:[
+  {id:'r4a',t:'Haz que el <b>NMDA conduzca Ca²⁺ sin quitar el Mg²⁺</b>.'},
+  {id:'r4b',t:'Induce <b>LTP</b> que dure horas.'},
+  {id:'r4c',t:'Demuestra que la LTP <b>depende del NMDA</b>.'},
+  {id:'r4d',t:'Induce <b>LTD</b>.'},
+  {id:'r4e',t:'Consigue una LTP que se <b>apague a las ~2 h</b> (E-LTP sin L-LTP).'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span>ESPINA DE CA1 · detector de coincidencia</span><span id="l4ca"></span></div><div id="l4syn"></div><div class="read" id="l4read"></div>
+  <div class="hd" style="margin-top:4px"><span>fEPSP · pendiente (% del basal)</span><span id="l4pl"></span></div><div id="l4ltp"></div></div>
+  <div class="ctrl"><div class="grp"><div class="lbl">1 · Presináptica</div>${seg('glu',[['1','Libera glutamato'],['0','En silencio']],'1')}</div>
+  <div class="grp"><label>2 · Voltaje de la espina <b id="l4vv">−70 mV</b></label><input type="range" id="l4v" min="-80" max="0" step="5" value="-70"></div>
+  <div class="grp"><div class="lbl">Fármacos y iones</div><div class="seg"><button class="btn on" id="l4mg">Mg²⁺ extracelular</button><button class="btn" id="l4apv">APV (bloquea NMDA)</button><button class="btn" id="l4cnqx">CNQX (bloquea AMPA)</button><button class="btn" id="l4ani">Anisomicina (sin síntesis proteica)</button></div></div>
+  <div class="grp"><div class="lbl">3 · Protocolo de estimulación</div><div class="seg"><button class="btn go" id="l4tet">Tétanos 100 Hz · 1 s</button><button class="btn go" id="l4lfs">LFS 1 Hz · 15 min</button></div></div>
+  ${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let glu=true,V=-70,mg=true,apv=false,cnqx=false,ani=false;
+  const tog=(id,f)=>{$(id,root).onclick=e=>{f();e.currentTarget.classList.toggle('on');draw()}};
+  const draw=()=>{$('#l4vv',root).textContent=String(V).replace('-','−')+' mV';
+   const unb=mg?1/(1+(1/3.57)*Math.exp(-.062*V)):1,ampa=glu&&!cnqx,nmdaBound=glu&&!apv,ca=nmdaBound?unb:0;
+   const lvl=ca<.08?'nada':ca<.35?'moderado':'alto';$('#l4ca',root).textContent='Ca²⁺ en la espina: '+lvl.toUpperCase();
+   const plug=mg&&unb<.5;let g=`<rect x="0" y="70" width="560" height="44" fill="#1b2536"/><text class="tx s" x="10" y="64">extracelular</text><text class="tx s" x="10" y="132">espina (citosol)</text>`;
+   const ch=(x,col,lab,open,ion,blocked)=>`<rect x="${x}" y="62" width="22" height="60" rx="6" fill="${col}" opacity="${open?1:.35}"/><rect x="${x+44}" y="62" width="22" height="60" rx="6" fill="${col}" opacity="${open?1:.35}"/><rect x="${x+22}" y="62" width="22" height="60" fill="${open&&!blocked?'#0a0f17':col}" opacity="${open&&!blocked?1:.25}"/><text class="tx" x="${x+33}" y="150" text-anchor="middle" style="font-weight:600">${lab}</text>`+(open&&!blocked?`<path d="M${x+33} 30 V112" stroke="var(--phos)" stroke-width="3" marker-end="url(#ar)"/><text class="tx s g" x="${x+33}" y="24" text-anchor="middle">${ion}</text>`:'');
+   g+=`<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--phos)"/></marker></defs>`;
+   g+=ch(110,'#e9c46a','AMPA',ampa,'Na⁺',false)+ch(350,'#f4a261','NMDA',nmdaBound,'Ca²⁺ + Na⁺',plug);
+   if(mg)g+=`<circle cx="383" cy="${plug?86:40}" r="9" fill="var(--violet)"/><text class="tx s" x="424" y="${plug?90:44}" style="fill:var(--violet)">Mg²⁺ ${plug?'tapona':'expulsado'}</text>`;
+   if(glu)g+=[150,180,390,420].map(x=>`<circle cx="${x}" cy="54" r="4" fill="var(--amber)"/>`).join('')+`<text class="tx s a" x="250" y="44" text-anchor="middle">glutamato</text>`;
+   if(apv)g+=`<text class="tx s c" x="383" y="168" text-anchor="middle">APV unido</text>`;if(cnqx)g+=`<text class="tx s c" x="143" y="168" text-anchor="middle">CNQX unido</text>`;
+   $('#l4syn',root).innerHTML=`<svg class="plot" viewBox="0 0 560 176">${g}</svg>`;
+   let t='';if(!glu)t='Sin glutamato no se abre ningún receptor, da igual el voltaje.';
+   else if(apv)t='El APV ocupa el sitio del glutamato en el NMDA: <b>no entra Ca²⁺</b>, haya o no despolarización.';
+   else if(plug)t=`Hay glutamato, pero a ${V} mV el <b>Mg²⁺ tapona el NMDA</b>. ${ampa?'Solo conduce el AMPA (Na⁺).':''} Para quitar el tapón hay que <b>despolarizar</b> la espina (por ejemplo, con muchos AMPA activos a la vez en un tétanos o con un PA retropropagado).`;
+   else t=`Glutamato + despolarización = <b>coincidencia</b>. El Mg²⁺ ${mg?'ha sido expulsado':'no está'} y el NMDA deja entrar <b>Ca²⁺</b> (fracción desbloqueada ≈ ${fmt(unb*100,0)} %). ${lvl==='alto'?'Mucho Ca²⁺ → CaMKII → más AMPA en la membrana → <b>LTP</b>.':'Poco Ca²⁺ sostenido → fosfatasas (calcineurina) → retirada de AMPA → <b>LTD</b>.'}`;
+   if(cnqx&&glu)t+=' <span class="warn">Con CNQX en un experimento real la sinapsis apenas despolariza: el desbloqueo del NMDA se vuelve más difícil.</span>';
+   $('#l4read',root).innerHTML=t;if(glu&&mg&&!apv&&unb>=.3)api.reto('r4a')};
+  const run=proto=>{const pts=ltpCurve(proto,apv,ani);const end=pts[pts.length-1][1],at60=pts.find(p=>p[0]>=60)[1];
+   $('#l4ltp',root).innerHTML=plot({h:200,xr:[-30,180],yr:[40,260],series:[{pts,c:proto==='tet'?'':'b'}],hl:[{y:100,dash:1,label:'basal'}],vl:[{x:0,label:proto==='tet'?'tétanos':'LFS'}],axes:{xl:'Tiempo (min)',yl:'Pendiente fEPSP (%)',xt:[0,60,120,180],yt:[50,100,150,200,250]}});
+   const cond=[apv?'APV':'',ani?'anisomicina':''].filter(Boolean).join(' + ')||'control';$('#l4pl',root).textContent=(proto==='tet'?'Tétanos':'LFS')+' · '+cond;
+   if(proto==='tet'&&!apv&&!ani&&end>140)api.reto('r4b');if(proto==='tet'&&apv&&end<110)api.reto('r4c');if(proto==='lfs'&&!apv&&end<85)api.reto('r4d');if(proto==='tet'&&ani&&!apv&&at60>140&&end<115)api.reto('r4e');
+   $('#l4read',root).innerHTML=proto==='tet'?(apv?'El pico inicial (PTP, presináptica) aparece igual, pero <b>sin NMDA no hay LTP</b>: a los minutos la sinapsis vuelve al basal.':ani?'Hay LTP temprana (<b>E-LTP</b>, que no necesita proteínas nuevas), pero sin síntesis proteica <b>no se consolida la L-LTP</b>: cae a las ~2 h.':'Tétanos a alta frecuencia: muchos AMPA activos a la vez <b>despolarizan</b> la espina y expulsan el Mg²⁺, entra mucho Ca²⁺ por el NMDA. Resultado: PTP inicial y después una <b>LTP</b> sostenida durante horas (E-LTP + L-LTP).'):(apv?'Sin NMDA tampoco hay LTD en el hipocampo: la LTD también necesita Ca²⁺ (moderado).':'Estimulación a baja frecuencia: entrada de Ca²⁺ moderada y sostenida → <b>LTD</b>.')};
+  bindSeg(root,'glu',v=>{glu=v==='1';draw()});$('#l4v',root).oninput=e=>{V=+e.target.value;draw()};
+  tog('#l4mg',()=>mg=!mg);tog('#l4apv',()=>apv=!apv);tog('#l4cnqx',()=>cnqx=!cnqx);tog('#l4ani',()=>ani=!ani);
+  $('#l4tet',root).onclick=()=>run('tet');$('#l4lfs',root).onclick=()=>run('lfs');draw();
+  $('#l4ltp',root).innerHTML='<div class="muted" style="font-size:13px;padding:20px">Elige fármacos y lanza un protocolo →</div>';}};
+
+/* ---- LAB 5: Mauthner ---- */
+function mauthner(I,gap,glu,inh){const k1=kernel(.08,1),k2=kernel(.3,1.4),k3=kernel(.3,2.5),pts=[];const e=gap?0:4*I,c=glu?0:6*I,ih=inh?0:(2*I+12);let spikeT=null,thr=30;
+ for(let i=0;i<=400;i++){const t=-.5+5.5*i/400;let v=e*k1(t-.35)+c*k2(t-1.0)-ih*k3(t-.7);if(spikeT===null&&v>=thr){spikeT=t}
+  if(spikeT!==null){const d=t-spikeT;v=d<.25?thr+ (85)*Math.sin(Math.PI*Math.min(1,d/.25)):(d<1.2?-8*Math.exp(-(d-.25)/.4):v*0)} pts.push([t,v-80])}return{pts,spikeT}}
+LABS[5]={retos:[
+  {id:'r5a',t:'Haz disparar la célula de Mauthner con la <b>mínima intensidad</b> posible (en condiciones normales).'},
+  {id:'r5b',t:'Un sonido <b>fuerte pero no peligroso</b> (4–6) no dispara… salvo que quites algo. Descubre qué.'},
+  {id:'r5c',t:'Con un estímulo de <b>peligro</b> (≥ 8), bloquea las <b>uniones gap</b>. ¿Sigue habiendo escape? ¿Qué componente queda?'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span>CURRENT CLAMP · soma de la célula de Mauthner</span><span id="l5st"></span></div><div id="l5tr"></div><div class="read" id="l5read"></div></div>
+  <div class="ctrl"><div class="grp"><label>Intensidad del sonido <b id="l5iv">3</b></label><input type="range" id="l5i" min="0" max="10" value="3"><div class="muted" style="font-size:12px;margin-top:4px">0–3 ambiental · 4–7 fuerte · 8–10 peligro</div></div>
+  <div class="grp"><div class="lbl">Bloqueos</div><div class="seg"><button class="btn" id="l5gap">Bloquear uniones gap</button><button class="btn" id="l5glu">Bloquear glutamato</button><button class="btn" id="l5inh">Bloquear inhibición (estricnina)</button></div></div>
+  ${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let I=3,gap=false,glu=false,inh=false;
+  const draw=()=>{$('#l5iv',root).textContent=I;const {pts,spikeT}=mauthner(I,gap,glu,inh);
+   $('#l5tr',root).innerHTML=plot({h:230,xr:[-.5,5],yr:[-100,10],series:[{pts}],hl:[{y:-80,dash:1,label:'reposo −80 mV'},{y:-50,dash:1,color:'var(--coral)',label:'umbral'}],vl:[{x:.35,label:'PA presináptico (VIII)',color:'var(--amber)'}],sbar:{x:1,xl:'1 ms',y:20,yl:'20 mV'}});
+   $('#l5st',root).textContent=spikeT!==null?'DISPARA · '+fmt(spikeT-.35,2)+' ms':'no dispara';
+   let t=`<b>Componente eléctrico</b> (uniones gap): aparece <b>sin retraso</b>, justo con el PA presináptico. <b>Componente químico</b> (glutamato): llega unos <b>0,7 ms después</b>, que es el retraso sináptico. La <b>inhibición</b> de las interneuronas cercanas al soma (anticipatoria) se resta.`;
+   if(spikeT!==null)t+=`<br>✅ La célula dispara a los <b>${fmt(spikeT-.35,2)} ms</b> del PA presináptico → contracción de la musculatura <b>contralateral</b> → curvatura en C que aleja al pez del estímulo.`;
+   else t+=`<br>No llega al umbral: la célula está muy hiperpolarizada (−80 mV) y la inhibición anticipatoria la protege del ruido ambiental.`;
+   $('#l5read',root).innerHTML=t;
+   if(spikeT!==null&&!gap&&!glu&&!inh&&mauthner(I-1,false,false,false).spikeT===null)api.reto('r5a');
+   if(spikeT!==null&&inh&&I>=4&&I<=6&&!gap&&!glu)api.reto('r5b');
+   if(gap&&!glu&&I>=8)api.reto('r5c')};
+  $('#l5i',root).oninput=e=>{I=+e.target.value;draw()};
+  const tog=(id,f)=>{$(id,root).onclick=e=>{f();e.currentTarget.classList.toggle('on');draw()}};
+  tog('#l5gap',()=>gap=!gap);tog('#l5glu',()=>glu=!glu);tog('#l5inh',()=>inh=!inh);draw();}};
+
+/* ---- LAB 6: visión ---- */
+LABS[6]={retos:[
+  {id:'r6a',t:'Haz que una célula <b>ON-center</b> dispare al máximo.'},
+  {id:'r6b',t:'Haz que una célula <b>OFF-center</b> dispare al máximo <b>mientras la luz está encendida</b>.'},
+  {id:'r6c',t:'Demuestra que <b>las dos</b> células ignoran la luz difusa.'}],
+ html(){return `<div class="lab"><div class="scope"><div class="hd"><span>REGISTRO EXTRACELULAR · célula ganglionar</span><span id="l6hz"></span></div>
+  <div style="display:flex;gap:12px;align-items:center"><div id="l6rf"></div><div style="flex:1" id="l6ras"></div></div><div id="l6chain"></div><div class="read" id="l6read"></div></div>
+  <div class="ctrl"><div class="grp"><div class="lbl">Célula</div>${seg('cell',[['on','ON-center'],['off','OFF-center']],'on')}</div>
+  <div class="grp"><div class="lbl">Estímulo de luz</div>${seg('stim',[['nada','Oscuridad'],['centro','Punto central'],['anillo','Anillo periférico'],['difusa','Luz difusa']],'centro')}</div>
+  ${retosHTML(this.retos)}</div></div>`},
+ init(root,api){let cell='on',stim='centro';const seenDiff={};
+  const draw=()=>{$('#l6rf',root).innerHTML=rfIcon(stim,96);$('#l6ras',root).innerHTML=rasterFor(cell,stim,'6 ensayos · 1,5 s',stim.length);
+   const r=rgcRate(cell,stim)(0.7);$('#l6hz',root).textContent='durante la luz ≈ '+Math.round(r)+' Hz (basal 10)';
+   const cLit=stim==='centro'||stim==='difusa';
+   const pr=cLit?['Fotorreceptores del centro','se <b>hiperpolarizan</b> con la luz','↓ glutamato']:['Fotorreceptores del centro','en oscuridad: despolarizados (corriente oscura)','↑ glutamato'];
+   const bip=cell==='on'?['Bipolar ON (mGluR6 → cierra TRPM1)',cLit?'menos glutamato → TRPM1 se abre → <b>despolariza</b>':'mucho glutamato → TRPM1 cerrado → hiperpolarizada','<b>inversión de signo</b>']:['Bipolar OFF (AMPA/kainato)',cLit?'menos glutamato → <b>se hiperpolariza</b>':'mucho glutamato → despolarizada','<b>conserva el signo</b>'];
+   $('#l6chain',root).innerHTML=`<div class="read" style="font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><b>${pr[0]}</b><br>${pr[1]}<br><span class="muted">${pr[2]}</span></div><div><b>${bip[0]}</b><br>${bip[1]}<br><span class="muted">${bip[2]}</span></div></div>`;
+   const txt={nada:'Sin estímulo: disparo basal espontáneo.',centro:cell==='on'?'Luz en el centro de una ON-center: <b>máxima frecuencia</b> mientras dura la luz.':'Luz en el centro de una OFF-center: se <b>inhibe</b> durante la luz y da un rebote al apagarla.',anillo:cell==='on'?'Luz solo en la periferia: la periferia es <b>antagonista</b> → la ON-center se inhibe (y rebota al apagar).':'Luz en la periferia de una OFF-center: se activa (la periferia es antagonista del centro).',difusa:'Luz difusa: centro y periferia se <b>cancelan</b> → casi no cambia nada. Las ganglionares miden <b>contraste</b>, no la intensidad absoluta. La inhibición lateral viene de las <b>células horizontales</b>.'};
+   $('#l6read',root).innerHTML=txt[stim];
+   if(cell==='on'&&stim==='centro')api.reto('r6a');if(cell==='off'&&stim==='anillo')api.reto('r6b');if(stim==='difusa'){seenDiff[cell]=1;if(seenDiff.on&&seenDiff.off)api.reto('r6c')}};
+  bindSeg(root,'cell',v=>{cell=v;draw()});bindSeg(root,'stim',v=>{stim=v;draw()});draw();}};
+
+/* ========================= PREDICE LA TRAZA ========================= */
+const vcEPSC=(a,o={})=>plot({w:330,h:170,xr:[0,40],yr:[-320,120],series:[{pts:trace([{t:8,a,tr:.6,td:5}],0,40,300,0,4,o.s||2)}],sbar:{x:10,xl:'10 ms',y:100,yl:'100 pA'}});
+const ccEPSP=(a,o={})=>plot({w:330,h:170,xr:[0,60],yr:[-14,14],series:[{pts:trace([{t:10,a,tr:1.2,td:12}],0,60,300,0,.15,o.s||2)}],sbar:{x:10,xl:'10 ms',y:5,yl:'5 mV'}});
+const histOpt=(counts,bw,c)=>plot({w:330,h:180,xr:[0,counts.length*bw],yr:[0,Math.max(...counts)+3],bars:histBars(counts,bw,c),axes:{xl:'Amplitud',yl:'Nº',xt:[],yt:[]}});
+const trainOpt=(A,isi=12,unit='pA')=>plot({w:330,h:170,xr:[0,10+A.length*isi+20],yr:[-Math.max(...A)*1.15,30],series:[{pts:train(A,{isi,t0:10,T:10+A.length*isi+20,tr:.4,td:3})}],sbar:{x:20,xl:'20 ms',y:100,yl:'100 '+unit}});
+const timeOpt=(pts,yr=[40,260],xl='Tiempo (min)')=>plot({w:330,h:180,xr:[pts[0][0],pts[pts.length-1][0]],yr,series:[{pts}],hl:[{y:100,dash:1}],axes:{xl,yl:'%',xt:[],yt:[100]}});
+const rasOpt=(fn)=>{const tr=[];for(let i=0;i<5;i++)tr.push(spikes(fn,1.5,i*13+5));return raster(tr,{h:130})};
+const mtrOpt=(I,gap,glu,inh)=>{const {pts}=mauthner(I,gap,glu,inh);return plot({w:330,h:170,xr:[-.5,5],yr:[-100,10],series:[{pts}],hl:[{y:-80,dash:1}],vl:[{x:.35}],sbar:{x:1,xl:'1 ms',y:20,yl:'20 mV'}})};
+function cumOpt(type){const pts=[];for(let t=0;t<=10;t+=.05){let y;if(type==='ok')y=4*(1-Math.exp(-t/.08))+30*(1-Math.exp(-t/1.2))+5*t;else if(type==='lin')y=12*t;else y=40*(1-Math.exp(-t/.1));pts.push([t,y])}return plot({w:330,h:180,xr:[0,10],yr:[0,100],series:[{pts}],axes:{xl:'Tiempo (s)',yl:'Liberación acum.',xt:[],yt:[]}})}
+function stpOpt(P0,isi,buf){const A=stpRun(P0,isi,buf,6).amps.map(a=>a*700);return trainOpt(A,isi)}
+
+const PREDS=[
+ /* sala 0 */
+ {id:'p0a',s:0,ctx:'Registras una neurona piramidal de CA1 en <b>voltage clamp a −70 mV</b> y estimulas una aferencia glutamatérgica (AMPA).',q:'¿Qué ves en el registro?',
+  o:[()=>vcEPSC(-250),()=>ccEPSP(8),()=>vcEPSC(250)],ok:0,base:'clamp',
+  why:'En voltage clamp mides <b>corriente</b> (pA). A −70 mV la fuerza impulsora del AMPA (E<sub>rev</sub> 0) es negativa, así que la corriente es entrante y se dibuja <b>hacia abajo</b>. La B está en mV: eso sería current clamp.'},
+ {id:'p0b',s:0,ctx:'La misma neurona y la misma sinapsis, pero ahora en <b>current clamp</b>, en reposo a −70 mV.',q:'¿Qué ves?',
+  o:[()=>vcEPSC(-250),()=>ccEPSP(-6),()=>ccEPSP(8)],ok:2,base:'signo',
+  why:'En current clamp mides <b>voltaje</b> (mV). La corriente entrante de Na⁺ <b>despolariza</b>: un PPSE (EPSP) que va <b>hacia arriba</b>. Es la misma sinapsis que antes, pero el signo cambia según lo que mides.'},
+ {id:'p0c',s:0,ctx:'Sinapsis <b>GABA-A</b> (E<sub>Cl</sub> ≈ −70 mV). Fijas la neurona en voltage clamp a <b>−30 mV</b>.',q:'¿Qué corriente esperas?',
+  o:[()=>vcEPSC(-200),()=>vcEPSC(0),()=>vcEPSC(160)],ok:2,base:'erev',
+  why:'V − E = −30 − (−70) = +40 mV, una fuerza impulsora positiva: el Cl⁻ <b>entra</b>, que equivale a una corriente <b>saliente</b> (carga positiva que sale), y se dibuja <b>hacia arriba</b>. A −70 mV no verías nada (B).'},
+ {id:'p0d',s:0,ctx:'Aplicas <b>TTX</b> al baño y registras sin estimular durante un minuto.',q:'¿Qué esperas?',txt:true,
+  o:['Una línea totalmente plana: sin PA no se libera nada.','Pequeños eventos espontáneos de tamaño parecido, a tiempos aleatorios (minis).','Respuestas grandes cada vez que llega un PA.'],ok:1,base:'ttx',
+  why:'La TTX elimina los PA, pero <b>la liberación espontánea de vesículas sigue</b>. Cada mini es una vesícula, y su amplitud media es el Q.'},
+ {id:'p0e',s:0,ctx:'En la corteza, una neurona con muchas espinas, axón largo que sale del área y que libera glutamato.',q:'¿Qué tipo de neurona es?',txt:true,
+  o:['Interneurona GABAérgica','Neurona piramidal','Célula de Purkinje'],ok:1,base:'tipos',
+  why:'Las <b>piramidales</b> son las neuronas de proyección excitadoras (glutamatérgicas) de corteza e hipocampo. Las interneuronas son locales e inhibidoras, y la Purkinje es GABAérgica y está en el cerebelo.'},
+ /* sala 1 */
+ {id:'p1a',s:1,ctx:'Sinapsis central con <b>N = 1</b> y <b>P = 0,3</b>. Estimulas 100 veces y haces el histograma de amplitudes.',q:'¿Qué histograma sale?',
+  o:[()=>histOpt([70,0,0,1,6,14,7,2,0,0,0,0],.1,'c'),()=>histOpt([0,0,0,3,10,14,8,6,11,13,7,4,7,9,5],.1),()=>histOpt([0,0,0,0,0,0,2,8,15,20,14,6,2],.1)],ok:0,base:'ttx',
+  why:'Con una sola zona activa, cada PA libera <b>0 o 1 vesícula</b>. El 70 % son <b>fallos</b> (barra en 0) y el 30 % cae alrededor de <b>Q</b>. No puede haber picos en 2Q porque N = 1.'},
+ {id:'p1b',s:1,ctx:'Reduces el <b>Ca²⁺ extracelular</b> en la unión neuromuscular.',q:'¿Qué parámetro cuántico cambias principalmente y qué ves?',txt:true,
+  o:['Baja Q: los minis se hacen más pequeños.','Baja P: aparecen más fallos, pero el tamaño de los minis no cambia.','Baja N: desaparecen zonas activas.'],ok:1,
+  why:'El Ca²⁺ que entra por los canales de la zona activa dispara la fusión: menos Ca²⁺ significa <b>menor P</b>. Q depende de la vesícula y de los receptores postsinápticos, así que no cambia. Así trabajaba Katz: bajaba el Ca²⁺ y subía el Mg²⁺ para ver los cuantos separados.'},
+ {id:'p1c',s:1,ctx:'Añades una dosis baja de un <b>antagonista postsináptico</b> (bloquea parcialmente los receptores).',q:'¿Cómo cambia el histograma?',
+  o:[()=>histOpt([18,2,10,20,12,3,8,14,9,3,4,6,3],.1,'c'),()=>histOpt([18,14,22,10,10,16,6,3,2,1],.07,'c'),()=>histOpt([60,2,8,14,7,3,1,2,1,0],.1,'c')],ok:1,
+  why:'El antagonista hace más pequeña la respuesta a <b>cada vesícula</b> (baja Q): los picos se juntan hacia la izquierda, a múltiplos de un Q menor, pero <b>el número de fallos no cambia</b> (P y N siguen igual). La C sería una bajada de P.'},
+ {id:'p1d',s:1,ctx:'<b>Cáliz de Held</b>: ~700 zonas activas, cada una con P ≈ 0,3.',q:'¿Cuántos fallos esperas en 100 estímulos?',txt:true,
+  o:['Unos 70, como cualquier sinapsis con P = 0,3.','Prácticamente ninguno.','Unos 30.'],ok:1,
+  why:'Que fallen las 700 zonas a la vez tiene una probabilidad de 0,7<sup>700</sup> ≈ 0. Con una <b>N enorme</b>, aunque P sea baja, siempre se libera algo: es una sinapsis muy fiable, ideal para transmitir información auditiva sin perder ningún PA.'},
+ {id:'p1e',s:1,ctx:'Sinapsis del <b>tálamo</b> en voltage clamp: de 200 estímulos, 117 son fallos.',q:'¿Qué sentido funcional tiene fallar tanto?',txt:true,
+  o:['Ninguno: es un defecto de la sinapsis.','Deja margen para modular (subir o bajar P) y cambiar el peso de esa sinapsis: plasticidad.','Sirve para ahorrar glutamato.'],ok:1,
+  why:'En el SNC, una P baja no es un fallo de diseño: permite <b>aumentar o disminuir</b> el peso de la sinapsis, que es la base de la plasticidad. En la unión neuromuscular interesa lo contrario, que nunca falle.'},
+ /* sala 2 */
+ {id:'p2a',s:2,ctx:'Estimulas una terminal de forma continua a alta frecuencia y representas las <b>vesículas liberadas acumuladas</b> frente al tiempo.',q:'¿Qué curva esperas?',
+  o:[()=>cumOpt('lin'),()=>cumOpt('ok'),()=>cumOpt('plat')],ok:1,
+  why:'Primero hay un <b>salto rápido</b> (se vacía el RRP, las vesículas pegadas a los canales de Ca²⁺), después una fase <b>más lenta</b> (entra el depósito de reciclaje) y al final una fase <b>lineal lenta</b>, limitada por lo rápido que se reciclan y movilizan las vesículas.'},
+ {id:'p2b',s:2,ctx:'En la zona activa hay vesículas a distintas distancias de los canales de Ca²⁺.',q:'¿Cuáles tienen mayor probabilidad de liberarse?',txt:true,
+  o:['Las más alejadas, porque tienen más espacio para fusionarse.','Las más cercanas a los canales de Ca²⁺ (RRP).','Todas por igual: las vesículas son idénticas.'],ok:1,
+  why:'Las vesículas son idénticas, pero su <b>posición</b> decide su P: cuanto más cerca del canal de Ca²⁺, más Ca²⁺ ven cuando llega el PA. Esas forman el <b>RRP</b>, que es un % pequeño del total.'},
+ {id:'p2c',s:2,ctx:'Bloqueas la <b>dinamina</b> y estimulas un tren largo. Después dejas descansar 1 minuto.',q:'¿Qué pasa con la respuesta al pulso de prueba?',txt:true,
+  o:['Se recupera igual que en control.','No se recupera: las vesículas fusionadas no se reciclan.','Aumenta, porque hay más membrana.'],ok:1,
+  why:'La dinamina usa GTP para <b>estrangular el cuello</b> de la vesícula que se está endocitando. Sin ella, la membrana de las vesículas no vuelve al ciclo y la terminal se queda sin vesículas para liberar. La endocitosis es la <b>etapa limitante</b> del reciclaje.'},
+ {id:'p2d',s:2,ctx:'Estimulas con luz (channelrodopsina) y congelas el tejido a los pocos ms. Ves invaginaciones de membrana <b>sin cubierta de clatrina</b>, muy cerca de la zona activa.',q:'¿Qué modo de reciclaje es?',txt:true,
+  o:['Endocitosis clásica por clatrina','Kiss and run','Endocitosis ultrarrápida'],ok:2,
+  why:'La <b>endocitosis ultrarrápida</b> ocurre en terminales sinápticas, es <b>independiente de clatrina</b> y tarda decenas de ms. Resuelve el problema de que la clatrina sea demasiado lenta (30 s–1 min) para la frecuencia a la que llegan los PA.'},
+ {id:'p2e',s:2,ctx:'Una terminal tiene <b>vesículas densas</b> además de las claras.',q:'¿Qué es cierto de las vesículas densas?',txt:true,
+  o:['Son las más numerosas y liberan glutamato en la zona activa.','Son pocas, se generan en el Golgi, tienen una matriz densa y almacenan neuropéptidos (y aminas).','Son vesículas claras vistas con otro fijador.'],ok:1,
+  why:'Las vesículas densas son <b>pocas</b>, vienen del <b>Golgi</b> (no se reciclan localmente) y su matriz ayuda a almacenar <b>neuropéptidos</b>. Siguen una vía de liberación diferente.'},
+ /* sala 3 */
+ {id:'p3a',s:3,ctx:'Sinapsis <b>fibra musgosa → piramidal de CA3</b>: P inicial baja y muchas zonas activas. Tren de 6 PA a 50 Hz en voltage clamp.',q:'¿Qué registro esperas?',
+  o:[()=>stpOpt(.1,20,'normal'),()=>stpOpt(.8,20,'normal'),()=>trainOpt([220,220,220,220,220,220],20)],ok:0,
+  why:'Con P baja, cada PA deja <b>Ca²⁺ residual</b> y el siguiente libera más: <b>facilitación</b> (la respuesta crece). Es el ejemplo típico de sinapsis facilitadora.'},
+ {id:'p3b',s:3,ctx:'Sinapsis <b>fibra trepadora → célula de Purkinje</b>: P muy alta. Tren de 6 PA a 50 Hz.',q:'¿Qué registro esperas?',
+  o:[()=>stpOpt(.1,20,'normal'),()=>stpOpt(.85,20,'normal'),()=>trainOpt([60,60,60,60,60,60],20)],ok:1,
+  why:'Con P altísima, el primer PA ya libera casi todo el RRP: la primera respuesta es enorme y las siguientes son más pequeñas (<b>depresión</b>). A esta sinapsis le importa el primer PA, no lo que venga después.'},
+ {id:'p3c',s:3,ctx:'En la sinapsis facilitadora inyectas un <b>tampón de Ca²⁺</b> en la terminal.',q:'¿Qué esperas?',
+  o:[()=>stpOpt(.1,20,'normal'),()=>stpOpt(.1,20,'alto'),()=>stpOpt(.85,20,'normal')],ok:1,
+  why:'El tampón captura el <b>Ca²⁺ residual</b> entre PA, así que el segundo PA ya no tiene "Ca²⁺ extra": la facilitación desaparece y las respuestas se igualan. Si los tampones endógenos se <b>saturan</b>, pasa lo contrario: más Ca²⁺ libre y más facilitación.'},
+ {id:'p3d',s:3,ctx:'Sinapsis de P baja. Comparas dos pares de pulsos: uno separado <b>20 ms</b> y otro separado <b>500 ms</b>.',q:'¿Qué esperas?',txt:true,
+  o:['Facilitación en los dos.','Facilitación solo a 20 ms; a 500 ms las dos respuestas son iguales.','Facilitación solo a 500 ms.'],ok:1,
+  why:'El Ca²⁺ residual se va en decenas de ms. A 500 ms el segundo PA ya no "recuerda" al primero. La facilitación dura del orden de cientos de ms y la potenciación, segundos.'},
+ {id:'p3e',s:3,ctx:'Tras un tren largo y repetitivo, un <b>único PA</b> libera más neurotransmisor durante unos 5 s, y después vuelve al basal.',q:'¿Cómo se llama?',txt:true,
+  o:['Facilitación','Potenciación (a corto plazo)','LTP'],ok:1,
+  why:'La <b>potenciación</b> es un aumento de la liberación tras estimulación repetitiva que dura <b>segundos</b> (más que la facilitación, que dura unos ms o cientos de ms). La LTP dura horas o días y depende de NMDA.'},
+ /* sala 4 */
+ {id:'p4a',s:4,ctx:'Vía perforante o colaterales de Schaffer: aplicas un <b>tétanos de 100 Hz</b> y registras la pendiente del fEPSP durante 3 h.',q:'¿Qué curva esperas?',
+  o:[()=>timeOpt(ltpCurve('tet',false,false)),()=>timeOpt(ltpCurve('tet',true,false)),()=>timeOpt(ltpCurve('lfs',false,false))],ok:0,
+  why:'Alta frecuencia y muchos axones a la vez: despolarización suficiente para quitar el Mg²⁺ del NMDA, entra mucho Ca²⁺ → <b>LTP</b> sostenida. El pico inicial es la potenciación postetánica (PTP).'},
+ {id:'p4b',s:4,ctx:'Repites el tétanos, pero con <b>APV</b> en el baño.',q:'¿Qué curva esperas?',
+  o:[()=>timeOpt(ltpCurve('tet',false,false)),()=>timeOpt(ltpCurve('tet',true,false)),()=>timeOpt(ltpCurve('lfs',false,false))],ok:1,
+  why:'El APV bloquea el NMDA: no entra Ca²⁺ y <b>no hay LTP</b>. Puede quedar el pico transitorio (PTP), que es presináptico y no depende del NMDA.'},
+ {id:'p4c',s:4,ctx:'Registras EPSC en voltage clamp a <b>−40 mV</b>, con Mg²⁺ normal, y añades <b>CNQX</b>.',q:'¿Qué queda?',
+  o:[()=>plot({w:330,h:170,xr:[0,120],yr:[-120,20],series:[{pts:trace([{t:10,a:-90,tr:.8,td:5}],0,120,300,0,1.5)}],sbar:{x:20,xl:'20 ms',y:50,yl:'50 pA'}}),()=>plot({w:330,h:170,xr:[0,120],yr:[-120,20],series:[{pts:trace([{t:10,a:-35,tr:6,td:60}],0,120,300,0,1.5)}],sbar:{x:20,xl:'20 ms',y:50,yl:'50 pA'}}),()=>plot({w:330,h:170,xr:[0,120],yr:[-120,20],series:[{pts:trace([],0,120,300,0,1.5)}],sbar:{x:20,xl:'20 ms',y:50,yl:'50 pA'}})],ok:1,
+  why:'El CNQX quita el componente <b>AMPA</b> (rápido). Queda el <b>NMDA</b>: más lento (sube y baja en decenas de ms) y visible porque a −40 mV el Mg²⁺ se ha soltado en parte. Con APV + CNQX no quedaría nada.'},
+ {id:'p4d',s:4,ctx:'Aplicas <b>1 Hz durante 15 min</b> en hipocampo.',q:'¿Qué esperas?',
+  o:[()=>timeOpt(ltpCurve('tet',false,false)),()=>timeOpt(ltpCurve('lfs',false,false)),()=>timeOpt(ltpCurve('lfs',true,false))],ok:1,
+  why:'La estimulación a baja frecuencia produce una entrada de Ca²⁺ <b>moderada y prolongada</b>, que activa fosfatasas → <b>LTD</b>. Se ha descrito sobre todo en hipocampo y cerebelo.'},
+ {id:'p4e',s:4,ctx:'Haces imagen de espinas dendríticas <b>in vivo</b>, a cierta profundidad en la corteza, durante días.',q:'¿Qué técnica eliges?',txt:true,
+  o:['Microscopía de fluorescencia convencional','Confocal','Microscopía de dos fotones'],ok:2,
+  why:'El <b>dos fotones</b> usa luz infrarroja (penetra más en el tejido) y solo excita en el plano focal, así que hay <b>menos bleaching</b> y fototoxicidad. El confocal usa láseres de alta energía, penetra poco y blanquea.'},
+ {id:'p4f',s:4,ctx:'Con imagen de 2 fotones sigues espinas tras inducir <b>LTP</b> y, en otro experimento, <b>LTD</b>.',q:'¿Qué ves?',txt:true,
+  o:['LTP: aparecen espinas nuevas o crecen. LTD: las espinas se encogen o se pierden.','Las espinas no cambian: la plasticidad es solo molecular.','LTP: se pierden espinas. LTD: aparecen.'],ok:0,
+  why:'La plasticidad tiene un <b>correlato estructural</b>: la LTP se acompaña de crecimiento y aparición de espinas, y la LTD, de encogimiento y retracción (Zhou et al., 2004).'},
+ /* sala 5 */
+ {id:'p5a',s:5,ctx:'Estimulas el nervio auditivo (VIII) y registras el soma de la <b>célula de Mauthner</b> en current clamp.',q:'¿Qué ves?',
+  o:[()=>mtrOpt(6,true,false,false),()=>mtrOpt(6,false,false,false),()=>mtrOpt(6,false,true,false)],ok:1,
+  why:'Las club endings son <b>sinapsis mixtas</b>: primero el componente <b>eléctrico</b> (sin retraso) y ~0,7 ms después el <b>químico</b> (glutamato). La separación entre los dos es el <b>retraso sináptico</b>.'},
+ {id:'p5b',s:5,ctx:'Mismo registro, pero <b>bloqueando las uniones gap</b>.',q:'¿Qué queda?',
+  o:[()=>mtrOpt(6,true,false,false),()=>mtrOpt(6,false,false,false),()=>mtrOpt(6,false,true,false)],ok:0,
+  why:'Sin conexinas desaparece el pico temprano. Queda solo el componente <b>químico</b>, que empieza tras el retraso sináptico.'},
+ {id:'p5c',s:5,ctx:'La célula de Mauthner está en reposo a <b>−80 mV</b> y tiene interneuronas inhibidoras <b>pegadas al soma</b>.',q:'¿Para qué?',txt:true,
+  o:['Para que dispare con cualquier sonido.','Para que ignore el ruido ambiental y solo dispare con un estímulo de peligro muy fuerte.','Para que dispare más rápido.'],ok:1,
+  why:'Vivimos (y los peces viven) rodeados de sonido. La hiperpolarización y la <b>inhibición anticipatoria</b> cerca del soma hacen que solo un estímulo fuerte supere el umbral: así la célula discrimina peligro de ruido.'},
+ {id:'p5d',s:5,ctx:'Dispara la célula de Mauthner <b>izquierda</b>.',q:'¿Qué pasa?',txt:true,
+  o:['Se contrae la musculatura izquierda y también dispara la Mauthner derecha.','Se contrae la musculatura contralateral (derecha) y se inhibe la Mauthner derecha (inhibición recurrente).','No pasa nada hasta que dispara la derecha.'],ok:1,
+  why:'El axón cruza y excita motoneuronas <b>contralaterales</b> → curvatura en C. A la vez, la inhibición <b>recurrente/contralateral</b> impide que la otra Mauthner dispare: la respuesta es única e irreversible.'},
+ {id:'p5e',s:5,ctx:'En atletismo, salir antes de <b>100 ms</b> tras el disparo cuenta como salida falsa.',q:'¿Por qué no se puede reaccionar antes?',txt:true,
+  o:['Por la velocidad de conducción de los axones.','Por la suma de retrasos sinápticos de todas las sinapsis químicas del circuito.','Porque el sonido tarda en llegar.'],ok:1,
+  why:'Cada sinapsis química añade ~0,5–1 ms. Un circuito con muchas sinapsis, más el procesamiento, suma un mínimo que no se puede bajar. Con estímulo visual (Fórmula 1) es aún más lento, unos 200 ms.'},
+ /* sala 6 */
+ {id:'p6a',s:6,ctx:'Célula ganglionar <b>ON-center</b>. Proyectas un <b>anillo de luz</b> solo en la periferia de su campo receptivo.',q:'¿Qué raster esperas?',
+  o:[()=>rasOpt(rgcRate('on','centro')),()=>rasOpt(rgcRate('on','anillo')),()=>rasOpt(rgcRate('on','difusa'))],ok:1,
+  why:'La periferia es <b>antagonista</b> del centro: en una ON-center, la luz en la periferia <b>inhibe</b> el disparo, y al apagarla hay un rebote.'},
+ {id:'p6b',s:6,ctx:'Iluminas el campo receptivo entero con <b>luz difusa</b>.',q:'¿Qué raster esperas?',
+  o:[()=>rasOpt(rgcRate('on','centro')),()=>rasOpt(rgcRate('on','anillo')),()=>rasOpt(rgcRate('on','difusa'))],ok:2,
+  why:'Centro y periferia se cancelan: casi no hay cambio. Las ganglionares no miden cuánta luz hay, sino <b>contraste</b> y <b>cambios</b> de luz (bordes y contornos).'},
+ {id:'p6c',s:6,ctx:'Se enciende una luz en el centro del campo de una <b>bipolar ON</b>.',q:'¿Qué le pasa?',txt:true,
+  o:['Se hiperpolariza, igual que el fotorreceptor.','Se despolariza: el fotorreceptor libera menos glutamato, el mGluR6 deja de cerrar TRPM1 y entra catión.','No cambia: las bipolares no responden a la luz.'],ok:1,
+  why:'Luz → el fotorreceptor se hiperpolariza → <b>menos glutamato</b>. En la bipolar ON el glutamato actúa por <b>mGluR6</b> (metabotrópico) cerrando TRPM1, así que con menos glutamato el TRPM1 se abre y la célula se despolariza: <b>inversión de signo</b>. La OFF (AMPA/kainato) conserva el signo.'},
+ {id:'p6d',s:6,ctx:'Un paciente tiene una lesión del <b>tracto óptico derecho</b>.',q:'¿Qué pierde?',txt:true,
+  o:['Toda la visión del ojo derecho.','El hemicampo visual izquierdo de ambos ojos.','La visión temporal de ambos ojos (bitemporal).'],ok:1,
+  why:'En el quiasma <b>cruzan las fibras nasales</b>. El tracto óptico derecho lleva la hemirretina temporal derecha y la nasal izquierda, es decir, el <b>hemicampo visual izquierdo</b>. La lesión del quiasma central da hemianopsia bitemporal.'},
+ {id:'p6e',s:6,ctx:'Una ganglionar tiene un campo receptivo grande, conducción rápida, mucha sensibilidad al contraste y es insensible al color.',q:'¿Qué es y adónde proyecta?',txt:true,
+  o:['Tipo P (midget) → capas parvocelulares 3–6 del NGL','Tipo M (parasol) → capas magnocelulares 1–2 del NGL','Tipo K → capas koniocelulares'],ok:1,
+  why:'<b>M (parasol, ~10 %)</b>: grandes, rápidas, movimiento y profundidad, a las capas <b>magnocelulares (1–2, ventrales)</b>. Las <b>P (midget, ~80 %)</b> se encargan del color y el detalle y van a las capas parvocelulares (3–6, dorsales).'},
+ {id:'p6f',s:6,ctx:'Capas del <b>núcleo geniculado lateral</b> izquierdo.',q:'¿Qué capas reciben del ojo izquierdo (ipsilateral)?',txt:true,
+  o:['1, 4 y 6','2, 3 y 5','1 y 2'],ok:1,
+  why:'<b>Ipsilateral: 2, 3 y 5</b>. Contralateral: 1, 4 y 6. Truco: "<b>2-3-5 = I</b>psi" (los números que no son 1, 4, 6). Los ojos permanecen segregados hasta V1.'}
+];
+
+/* ========================= LEE LA FIGURA ========================= */
+const STEPNAMES=['📏 Mide','🔧 Hace','👀 Cambia','🧠 Por qué','✍️ Redacta'];
+function figReversal(){const Vs=[-80,-40,0,40],cols=['','a','b','c'];return plot({w:560,h:260,xr:[0,50],yr:[-380,200],series:Vs.map((v,i)=>({pts:trace([{t:8,a:4*v,tr:.6,td:5}],0,50,300,0,2,i+1),c:cols[i]})),hl:[{y:0,dash:1,label:'0 pA'}],sbar:{x:10,xl:'10 ms',y:100,yl:'100 pA'},texts:[{x:20,y:-330,t:'−80 mV',c:'g'},{x:20,y:-180,t:'−40 mV',c:'a'},{x:20,y:-30,t:'0 mV',c:'b'},{x:20,y:180,t:'+40 mV',c:'c'}]})}
+function figKatz(){const bw=.1,c=[18,0,2,10,30,27,8,3,17,22,12,4,9,11,5,3,4,3,1,1,1];return plot({w:560,h:260,xr:[-.05,c.length*bw-.05],yr:[0,32],bars:histBars(c,bw,'c',-.05),vl:[{x:.4,label:'0,4'},{x:.8,label:'0,8'},{x:1.2,label:'1,2'},{x:1.6,label:'1,6'}],axes:{xl:'Amplitud del EPP (mV)',yl:'Nº de observaciones',xt:[0,.5,1,1.5,2],yt:[0,10,20,30]},texts:[{x:.05,y:20,t:'18 fallos',c:'c'}]})}
+function figThal(){const r=seeded(4),pts=[],pts2=[];for(let i=0;i<120;i++){const fail=r()<.6;pts.push([i,fail?2*sgauss(r):-(8*(1+.25*sgauss(r))*(r()<.85?1:2))])}for(let i=0;i<60;i++)pts2.push([130+i,-(8*(1+.25*sgauss(r)))]);
+ return plot({w:560,h:260,xr:[0,192],yr:[-26,8],series:[{pts,dots:1,r:2.4,c:'m',fill:'var(--phos)'},{pts:pts2,dots:1,r:2.4,c:'m',fill:'var(--amber)'}],hl:[{y:0,dash:1}],bands:[{x0:126,x1:192,label:'+TTX: minis'}],axes:{xl:'Nº de ensayo',yl:'Amplitud EPSC (pA)',xt:[0,60,120,180],yt:[-24,-16,-8,0]},texts:[{x:5,y:6,t:'evocadas (sin TTX)',c:'g'}]})}
+function figPools(){const pts=[];for(let t=0;t<=10;t+=.04)pts.push([t,4*(1-Math.exp(-t/.08))+30*(1-Math.exp(-t/1.2))+5*t]);return plot({w:560,h:260,xr:[0,10],yr:[0,90],series:[{pts}],bands:[{x0:0,x1:.35,label:'A',fill:'rgba(92,242,166,.12)'},{x0:.35,x1:3.5,label:'B',fill:'rgba(255,181,71,.10)'},{x0:3.5,x1:10,label:'C',fill:'rgba(111,178,255,.10)'}],axes:{xl:'Tiempo de estimulación (s)',yl:'Vesículas liberadas (acumulado)',xt:[0,2,4,6,8,10],yt:[0,30,60,90]}})}
+function figSTP(){const A=[];let R=1,c=0;for(let i=0;i<40;i++){if(i){c*=Math.exp(-10/45);R+=(1-R)*(1-Math.exp(-10/350))}const p=clamp(1-(1-.35)*Math.exp(-.35*c),0,.97);A.push(p*R*600);R-=p*R;c+=1}
+ const T=10+40*10+20,pre=[];for(let i=0;i<40;i++){pre.push({t:10+i*10,a:90,tr:.15,td:.5})}
+ return plot({w:560,h:120,xr:[0,T],yr:[-75,95],series:[{pts:trace(pre,0,T,1400,-70,0),c:'a'}],sbar:{x:50,xl:'50 ms',y:50,yl:'50 mV'},label:'PA presinápticos (100 Hz)'})+plot({w:560,h:200,xr:[0,T],yr:[-Math.max(...A)*1.15,20],series:[{pts:train(A,{isi:10,t0:10,T,tr:.3,td:2.5})}],bands:[{x0:0,x1:42,label:'F'},{x0:42,x1:T,label:'D',fill:'rgba(111,178,255,.07)'}],sbar:{x:50,xl:'50 ms',y:200,yl:'200 pA'},label:'EPSC (Ca²⁺ ext. 1 mM)'})}
+function figPPR(){const isis=[10,20,40,60,100,200,400],a=[],b=[];isis.forEach(i=>{const x=stpRun(.1,i,'normal',2).amps,y=stpRun(.8,i,'normal',2).amps;a.push([Math.log10(i),x[1]/x[0]]);b.push([Math.log10(i),y[1]/y[0]])});
+ return plot({w:560,h:260,xr:[.9,2.7],yr:[0,2.2],series:[{pts:a,dots:1},{pts:b,dots:1,c:'b',fill:'var(--blue)'}],hl:[{y:1,dash:1,label:'PPR = 1'}],axes:{xl:'Intervalo entre pulsos (ms, escala log)',yl:'PPR (2ª / 1ª)',xt:[1,1.5,2,2.5],yt:[0,.5,1,1.5,2]},texts:[{x:1,y:2.05,t:'● sinapsis 1',c:'a'},{x:1,y:.15,t:'● sinapsis 2',c:'b'},{px:1,x:79,y:236,t:'10',c:'s',a:'middle'},{px:1,x:210,y:236,t:'30',c:'s',a:'middle'},{px:1,x:354,y:236,t:'100',c:'s',a:'middle'},{px:1,x:485,y:236,t:'300',c:'s',a:'middle'}]}).replace(/<text class="tx s m"[^>]*>(1|1\.5|2|2\.5)<\/text>/g,'')}
+function figNMDA(){const T=150,mk=(a1,a2)=>trace([{t:10,a:a1,tr:.8,td:5},{t:10,a:a2,tr:6,td:60}],0,T,400,0,0);
+ return plot({w:560,h:260,xr:[0,T],yr:[-130,15],series:[{pts:mk(-95,-35)},{pts:mk(0,-35),c:'a'},{pts:mk(-95,0),c:'b'},{pts:mk(0,0),c:'c'}],sbar:{x:20,xl:'20 ms',y:50,yl:'50 pA'},texts:[{x:60,y:-110,t:'— control',c:'g'},{x:60,y:-95,t:'— + CNQX',c:'a'},{x:60,y:-80,t:'— + APV',c:'b'},{x:60,y:-65,t:'— + CNQX + APV',c:'c'}],label:'Voltage clamp a −40 mV'})}
+function figLTP(){return plot({w:560,h:260,xr:[-30,180],yr:[40,260],series:[{pts:ltpCurve('tet',false,false)},{pts:ltpCurve('tet',false,true),c:'a'},{pts:ltpCurve('tet',true,false),c:'b'}],hl:[{y:100,dash:1}],vl:[{x:0,label:'tétanos 100 Hz'}],axes:{xl:'Tiempo (min)',yl:'Pendiente fEPSP (% basal)',xt:[0,60,120,180],yt:[50,100,150,200,250]},texts:[{x:120,y:245,t:'— control',c:'g'},{x:120,y:230,t:'— + anisomicina',c:'a'},{x:120,y:215,t:'— + APV',c:'b'}]})}
+function figMauth(){const {pts}=mauthner(7,false,false,false);return plot({w:560,h:260,xr:[-.5,5],yr:[-100,-40],series:[{pts}],hl:[{y:-80,dash:1}],vl:[{x:.35,label:'pre-spike'}],sbar:{x:1,xl:'1 ms',y:10,yl:'10 mV'},texts:[{x:.5,y:-52,t:'e',c:'a'},{x:1.55,y:-50,t:'c',c:'a'}]})}
+function figRGC(){const st=['centro','anillo','difusa'],lab=['A · punto central','B · anillo periférico','C · luz difusa'];
+ return `<div style="display:grid;gap:6px">${st.map((s,i)=>`<div style="display:flex;gap:10px;align-items:center">${rfIcon(s,58)}<div style="flex:1">${rasterFor('on',s,lab[i],i+3,120)}</div></div>`).join('')}</div>`}
+
+const FIGS=[
+ {id:'f0',s:0,t:'Corrientes sinápticas a distintos potenciales',fig:figReversal,cap:'Registro de la misma sinapsis glutamatérgica fijando la neurona a cuatro potenciales distintos.',
+  steps:[
+   {q:'¿Qué se está midiendo y con qué técnica?',o:['Voltaje en mV → current clamp','Corriente en pA → voltage clamp','Disparo de PA → registro extracelular'],ok:1,h:'Mira la barra de escala vertical.',fb:'La barra dice <b>100 pA</b>: es corriente, así que es <b>voltage clamp</b>.'},
+   {q:'¿Qué variable manipula el experimentador?',o:['La intensidad del estímulo','El potencial de holding de la neurona','La concentración de glutamato'],ok:1,h:'¿Qué cambia entre las cuatro trazas según las etiquetas?',fb:'Cada traza es un <b>potencial de holding</b> distinto: −80, −40, 0 y +40 mV.'},
+   {q:'Describe qué cambia (solo describir).',o:['La corriente es entrante a −80 mV, se hace más pequeña a −40, desaparece a 0 mV y se invierte (saliente) a +40 mV.','La corriente es igual en todas las trazas.','La corriente aumenta cuanto más positivo es el potencial.'],ok:0,fb:'Exacto: va de grande y hacia abajo a cero, y después hacia arriba.'},
+   {q:'¿Por qué pasa?',o:['Porque a +40 mV el glutamato se libera menos.','Porque la fuerza impulsora (V − E<sub>rev</sub>) cambia de signo al cruzar el E<sub>rev</sub> ≈ 0 mV de un canal catiónico no selectivo (AMPA).','Porque a 0 mV los canales se cierran.'],ok:1,fb:'I = g·(V − E<sub>rev</sub>). El canal está igual de abierto en todas, lo que cambia es la fuerza impulsora.'}],
+  frase:['En voltage clamp (se mide corriente, pA)','se registra la EPSC a distintos potenciales de holding.','La corriente es entrante a −80 mV, disminuye a −40 mV, se anula a 0 mV y se invierte a +40 mV.','Esto indica un potencial de inversión ≈ 0 mV,','propio de un canal catiónico no selectivo como el AMPA, porque la fuerza impulsora (V − E<sub>rev</sub>) cambia de signo.'],
+  dis:['Se registran PPSE en current clamp.','A +40 mV la sinapsis deja de liberar glutamato.']},
+ {id:'f1a',s:1,t:'El histograma de Katz',fig:figKatz,cap:'Unión neuromuscular en Ca²⁺ bajo / Mg²⁺ alto. Amplitud del EPP evocado tras estimular el axón motor unas 200 veces.',
+  steps:[
+   {q:'¿Qué representa cada eje?',o:['X: tiempo; Y: voltaje','X: amplitud del EPP (mV); Y: número de veces que aparece cada amplitud','X: concentración de Ca²⁺; Y: liberación'],ok:1,fb:'Es un <b>histograma de amplitudes</b>: cuántas respuestas de cada tamaño. Se mide en mV, así que es current clamp.'},
+   {q:'¿Qué se hace en el experimento?',o:['Se aplica TTX y se registran minis.','Se estimula el axón motor muchas veces con P reducida (Ca²⁺ bajo) y se mide cada respuesta.','Se aplica un antagonista nicotínico.'],ok:1,fb:'Estimulación repetida en condiciones de <b>baja P</b>, para ver los cuantos separados.'},
+   {q:'¿Qué observas?',o:['Una única campana centrada en 1 mV.','Una barra en 0 (18 fallos) y picos a ~0,4, 0,8, 1,2 y 1,6 mV.','Amplitudes distribuidas al azar.'],ok:1,fb:'Hay <b>fallos</b> y los picos están en <b>múltiplos de ~0,4 mV</b>.'},
+   {q:'¿Cómo se interpreta?',o:['El neurotransmisor se libera en cantidades continuas.','La liberación es cuántica: cada vesícula da ~0,4 mV (= amplitud del mini, Q), y en cada PA se liberan 0, 1, 2, 3… vesículas al azar (binomial/Poisson).','Los picos son ruido del amplificador.'],ok:1,fb:'<b>Hipótesis cuántica</b>: el paquete mínimo es una vesícula, su respuesta es Q y el número liberado es probabilístico.'}],
+  frase:['El histograma de amplitudes del EPP evocado (mV, current clamp) en condiciones de P baja','muestra fallos (amplitud 0) y picos en múltiplos de ~0,4 mV.','Como 0,4 mV coincide con la amplitud del mini (Q),','cada pico corresponde a la liberación de 1, 2, 3… vesículas:','la neurotransmisión es cuántica y probabilística (distribución binomial).'],
+  dis:['Los picos indican que hay varios tipos de receptor.','La liberación es continua y proporcional al Ca²⁺.']},
+ {id:'f1b',s:1,t:'Una sinapsis talámica que falla',fig:figThal,cap:'EPSC evocadas en una sinapsis del tálamo (verde) y, a la derecha, eventos espontáneos tras añadir TTX (ámbar).',
+  steps:[
+   {q:'¿Qué se mide?',o:['Corriente (pA) → voltage clamp','Voltaje (mV) → current clamp','Fluorescencia'],ok:0,fb:'El eje Y está en <b>pA</b>: voltage clamp. Por eso las EPSC son negativas.'},
+   {q:'¿Qué comparan las dos partes?',o:['Dos neuronas diferentes','Respuestas evocadas por PA frente a minis espontáneos con TTX','Antes y después de LTP'],ok:1,fb:'La izquierda es <b>evocada</b> y la derecha son <b>minis con TTX</b>, que dan el valor de Q (~8 pA).'},
+   {q:'¿Qué observas en las evocadas?',o:['Todas son de ~8 pA y ninguna falla.','Muchos ensayos dan 0 (fallos) y los éxitos tienen ~8 pA (a veces ~16).','Todas son de ~24 pA.'],ok:1,fb:'Gran parte de los ensayos son <b>fallos</b> y los éxitos coinciden con el tamaño del mini.'},
+   {q:'¿Cómo se interpreta?',o:['La sinapsis tiene una Q enorme.','P es baja y N pequeña: muchas veces llega el PA y no se libera ninguna vesícula; cuando se libera, suele ser una sola (≈ Q).','La TTX aumenta la liberación.'],ok:1,fb:'P baja → fallos frecuentes, y eso da margen para la <b>plasticidad</b>.'}],
+  frase:['En voltage clamp (pA) se comparan EPSC evocadas con minis espontáneos registrados con TTX.','Muchas respuestas evocadas son fallos y los éxitos tienen la amplitud de un mini (~8 pA).','Esto indica una probabilidad de liberación baja con pocas zonas activas:','a menudo llega el PA y no se libera ninguna vesícula,','lo que deja margen para modular el peso de la sinapsis.'],
+  dis:['La TTX aumenta la Q de la sinapsis.','Los fallos se deben a que el PA no llega a la terminal.']},
+ {id:'f2',s:2,t:'Tres fases de liberación',fig:figPools,cap:'Liberación acumulada en una terminal estimulada de forma continua a alta frecuencia.',
+  steps:[
+   {q:'¿Qué representa la curva?',o:['La amplitud de cada EPSC','El total de vesículas liberadas desde el inicio (acumulado) frente al tiempo','El Ca²⁺ intracelular'],ok:1,fb:'Es una curva <b>acumulada</b>: nunca baja; lo que importa es su <b>pendiente</b> (velocidad de liberación).'},
+   {q:'¿Qué hace el experimentador?',o:['Bloquea la endocitosis','Estimula de forma continua a alta frecuencia (no fisiológica)','Aplica TTX'],ok:1,fb:'Es la estimulación "con el acelerador a fondo".'},
+   {q:'¿Qué ves en A, B y C?',o:['A: subida muy rápida; B: más lenta; C: lineal lenta','Las tres tienen la misma pendiente','A es lenta y C es rápida'],ok:0,fb:'La pendiente va bajando: rapidísima, luego lenta y al final lineal.'},
+   {q:'¿A qué depósitos corresponden?',o:['A: reserva; B: RRP; C: reciclaje','A: RRP (cerca de los canales de Ca²⁺); B: depósito de reciclaje; C: liberación limitada por reciclaje/movilización de la reserva','Las tres son el RRP'],ok:1,fb:'Primero se gastan las de <b>mayor P</b> (RRP), después las de reciclaje y por último manda la velocidad del reciclaje (endocitosis limitante) y de la reserva.'}],
+  frase:['La curva muestra la liberación acumulada de vesículas durante una estimulación continua a alta frecuencia.','Se observa una fase inicial muy rápida, una segunda más lenta y una tercera lineal lenta.','La primera corresponde al RRP, las vesículas más cercanas a los canales de Ca²⁺ y con mayor P;','la segunda, al depósito de reciclaje,','y la tercera está limitada por el reciclaje (endocitosis) y la movilización de la reserva.'],
+  dis:['La fase lineal indica que la terminal ha dejado de liberar.','El RRP contiene la mayoría de las vesículas de la terminal.']},
+ {id:'f3a',s:3,t:'Mismos PA, distintas respuestas',fig:figSTP,cap:'Arriba: PA presinápticos a 100 Hz. Abajo: EPSC postsinápticas.',
+  steps:[
+   {q:'¿Qué técnica se usa en cada registro?',o:['Arriba: current clamp (mV, PA presináptico). Abajo: voltage clamp (pA, EPSC).','Los dos en voltage clamp','Los dos en current clamp'],ok:0,fb:'Arriba la barra está en <b>mV</b> (PA); abajo, en <b>pA</b> (EPSC).'},
+   {q:'¿Qué se hace?',o:['Un tren de 40 PA idénticos a 100 Hz','Un solo PA','Estimulación a 1 Hz'],ok:0,fb:'Un tren a 100 Hz de PA <b>idénticos</b>: esto es clave.'},
+   {q:'¿Qué observas en las EPSC?',o:['Todas iguales','Las primeras aumentan (F) y después disminuyen progresivamente (D)','Solo disminuyen'],ok:1,fb:'Hay una fase breve de <b>facilitación</b> seguida de <b>depresión</b>.'},
+   {q:'¿Por qué, si los PA son idénticos?',o:['Porque cambian los receptores postsinápticos','Al principio, el Ca²⁺ residual sube la P (facilitación); después se agotan las vesículas disponibles y se inactivan canales de Ca²⁺ (depresión): fenómenos presinápticos.','Porque el amplificador se satura'],ok:1,fb:'Si la entrada (PA) es igual y la salida cambia, el cambio está en la <b>terminal presináptica</b>, que tiene "historia".'}],
+  frase:['Ante un tren de PA presinápticos idénticos a 100 Hz (current clamp),','las EPSC (voltage clamp) primero aumentan y después disminuyen progresivamente.','La facilitación inicial se debe al Ca²⁺ residual, que aumenta la probabilidad de liberación;','la depresión posterior, al agotamiento de vesículas disponibles y a la inactivación de canales de Ca²⁺.','Es plasticidad a corto plazo de origen presináptico.'],
+  dis:['Las EPSC disminuyen porque los PA presinápticos son cada vez más pequeños.','Es LTP porque la respuesta cambia con la estimulación.']},
+ {id:'f3b',s:3,t:'Ratio de pulsos pareados',fig:figPPR,cap:'PPR (2ª respuesta / 1ª) en función del intervalo, para dos sinapsis distintas.',
+  steps:[
+   {q:'¿Qué representa el eje Y?',o:['La amplitud absoluta en pA','El cociente entre la 2ª y la 1ª respuesta (PPR): >1 es facilitación, <1 es depresión','La probabilidad P'],ok:1,fb:'El PPR compara dos respuestas: no tiene unidades.'},
+   {q:'¿Qué se varía?',o:['El intervalo entre los dos pulsos','La concentración de Ca²⁺','El potencial de holding'],ok:0,fb:'El eje X es el intervalo (en escala logarítmica).'},
+   {q:'¿Qué observas?',o:['La sinapsis 1 facilita (PPR > 1) a intervalos cortos y la 2 deprime (PPR < 1); las dos tienden a 1 con intervalos largos.','Las dos facilitan.','Ninguna cambia con el intervalo.'],ok:0,fb:'Son comportamientos opuestos, y los dos desaparecen al alargar el intervalo.'},
+   {q:'¿Qué tienen de diferente?',o:['La sinapsis 1 tiene P inicial baja (Ca²⁺ residual → facilita) y la 2, P alta (se agota el RRP → deprime).','La 1 es eléctrica y la 2 química.','La 1 tiene más receptores.'],ok:0,fb:'La <b>P inicial</b> decide: P baja → facilitación; P alta → depresión. Como el Ca²⁺ residual y la recuperación dependen del tiempo, todo converge a 1.'}],
+  frase:['Se representa el PPR (2ª/1ª respuesta) frente al intervalo entre pulsos para dos sinapsis.','La sinapsis 1 muestra facilitación (PPR > 1) y la 2 depresión (PPR < 1) a intervalos cortos, y ambas tienden a 1 a intervalos largos.','La sinapsis 1 tendría una P inicial baja, por lo que el Ca²⁺ residual facilita la segunda liberación;','la 2, una P alta que agota las vesículas disponibles con el primer pulso.','El efecto desaparece al dar tiempo a que se elimine el Ca²⁺ residual y se recuperen las vesículas.'],
+  dis:['La sinapsis 2 deprime porque tiene menos receptores postsinápticos.','El PPR es igual a la amplitud de la segunda respuesta en pA.']},
+ {id:'f4a',s:4,t:'Disección farmacológica AMPA/NMDA',fig:figNMDA,cap:'EPSC registradas a −40 mV en presencia de Mg²⁺ y de distintos antagonistas.',
+  steps:[
+   {q:'¿Qué se mide?',o:['Corriente (pA) en voltage clamp a −40 mV','Voltaje en current clamp','fEPSP'],ok:0,fb:'Hay una barra en pA y está fijado a −40 mV.'},
+   {q:'¿Qué se manipula?',o:['Se aplican antagonistas: CNQX (AMPA) y APV (NMDA), por separado y juntos','La frecuencia de estimulación','El Mg²⁺'],ok:0,fb:'Es una <b>disección farmacológica</b>.'},
+   {q:'¿Qué observas?',o:['Con CNQX queda un componente lento; con APV queda uno rápido; con los dos, nada.','Todas las trazas son iguales.','Con APV desaparece todo.'],ok:0,fb:'Componente rápido sensible a CNQX y componente lento sensible a APV.'},
+   {q:'¿Cómo se interpreta?',o:['La EPSC tiene un componente AMPA rápido y uno NMDA lento; el NMDA se ve a −40 mV porque la despolarización libera en parte el bloqueo por Mg²⁺.','El NMDA es el componente rápido.','El CNQX bloquea los dos receptores.'],ok:0,fb:'La cinética lenta del NMDA y su dependencia del voltaje por el Mg²⁺ son la base del <b>detector de coincidencia</b>.'}],
+  frase:['En voltage clamp a −40 mV se registran EPSC glutamatérgicas con distintos antagonistas.','El CNQX elimina un componente rápido y deja uno lento, que desaparece con APV; con los dos no queda respuesta.','La EPSC tiene un componente AMPA rápido y uno NMDA lento.','El componente NMDA es visible a −40 mV porque la despolarización libera parcialmente el bloqueo por Mg²⁺.','Esto convierte al NMDA en un detector de coincidencia (glutamato + despolarización).'],
+  dis:['El APV bloquea los receptores AMPA.','A −40 mV el Mg²⁺ bloquea completamente el NMDA.']},
+ {id:'f4b',s:4,t:'LTP, APV y síntesis proteica',fig:figLTP,cap:'Pendiente del fEPSP en CA1 antes y después de un tétanos (t = 0), en control y con fármacos.',
+  steps:[
+   {q:'¿Qué se mide?',o:['La pendiente del fEPSP (registro extracelular de campo) en % del basal','Corriente unitaria','Disparo de una neurona'],ok:0,fb:'Es un registro <b>de campo</b>, normalizado al basal (100 %).'},
+   {q:'¿Qué se manipula?',o:['Un tétanos de alta frecuencia en tres condiciones: control, + anisomicina, + APV','La temperatura','El potencial de holding'],ok:0,fb:'El mismo protocolo con distintos fármacos.'},
+   {q:'¿Qué observas?',o:['Control: aumento sostenido 3 h. Anisomicina: aumento que cae a las ~2 h. APV: solo un pico breve y vuelve al basal.','Las tres son iguales.','El APV potencia más.'],ok:0,fb:'Tres comportamientos distintos a partir del mismo tétanos.'},
+   {q:'¿Qué se concluye?',o:['La inducción de la LTP necesita NMDA, y su mantenimiento a largo plazo (L-LTP) necesita síntesis de proteínas; la E-LTP no.','La LTP es presináptica.','La anisomicina bloquea el NMDA.'],ok:0,fb:'<b>Inducción</b> → NMDA. <b>Mantenimiento tardío</b> → proteínas nuevas. El pico breve que queda con APV es la PTP (presináptica).'}],
+  frase:['Se registra la pendiente del fEPSP en CA1 tras un tétanos de alta frecuencia.','En control aparece una potenciación sostenida durante horas (LTP).','Con APV solo queda un pico transitorio, por lo que la inducción de la LTP depende de los receptores NMDA.','Con anisomicina la potenciación se mantiene al principio pero decae a las ~2 h:','la fase tardía (L-LTP) requiere síntesis de proteínas, y la temprana (E-LTP), no.'],
+  dis:['La anisomicina impide la inducción de la LTP desde el primer minuto.','El APV aumenta la LTP.']},
+ {id:'f5',s:5,t:'La respuesta de la célula de Mauthner',fig:figMauth,cap:'Registro intracelular del soma de la célula de Mauthner tras estimular el nervio auditivo. Línea discontinua: llegada del PA presináptico.',
+  steps:[
+   {q:'¿Qué se mide?',o:['Voltaje (mV) a escala de ms → current clamp','Corriente en pA','Fluorescencia de Ca²⁺'],ok:0,fb:'mV y ms: <b>current clamp</b> con resolución temporal muy fina.'},
+   {q:'¿Qué hace el experimentador?',o:['Estimula el nervio auditivo (club endings)','Aplica glutamato','Inyecta corriente en la Mauthner'],ok:0,fb:'Activa las aferencias auditivas que terminan en club endings.'},
+   {q:'¿Qué observas?',o:['Dos componentes despolarizantes: uno inmediato (e) y otro más tardío (c), separados por menos de 1 ms','Un solo componente lento','Una hiperpolarización'],ok:0,fb:'Hay dos picos: <b>e</b> (temprano) y <b>c</b> (tardío).'},
+   {q:'¿Qué son?',o:['e: componente eléctrico (uniones gap, sin retraso); c: componente químico (glutamato), retrasado por el retraso sináptico. Son sinapsis mixtas.','e es químico y c eléctrico','Son dos neuronas presinápticas distintas'],ok:0,fb:'Sinapsis <b>mixta</b>: la eléctrica da la rapidez y la química suma después. El intervalo e→c es el <b>retraso sináptico</b>.'}],
+  frase:['En current clamp se registra el soma de la célula de Mauthner tras estimular el nervio auditivo.','Aparecen dos componentes despolarizantes: uno inmediato (e) y otro unos 0,7 ms más tarde (c).','El componente e es eléctrico, por uniones gap, sin retraso;','el c es químico (glutamatérgico) y aparece tras el retraso sináptico (entrada de Ca²⁺, fusión, difusión y unión al receptor).','Las club endings son sinapsis mixtas que permiten una respuesta de escape muy rápida.'],
+  dis:['El componente c es más tardío porque viaja por un axón más largo.','La célula está despolarizada en reposo para disparar antes.']},
+ {id:'f6',s:6,t:'El experimento de Kuffler',fig:figRGC,cap:'Raster de una célula ganglionar ante tres estímulos de luz. La barra ámbar indica cuándo está encendida la luz.',
+  steps:[
+   {q:'¿Qué representa cada raya del raster?',o:['Un potencial de acción de la ganglionar; cada fila es un ensayo','Un fotón','Un PPSE'],ok:0,fb:'Registro extracelular: cada raya es un <b>PA</b>.'},
+   {q:'¿Qué se manipula?',o:['La posición y extensión de la luz dentro del campo receptivo','El color','El tipo de célula'],ok:0,fb:'Centro, anillo periférico o luz difusa.'},
+   {q:'¿Qué observas?',o:['A: aumenta mucho el disparo; B: se inhibe y rebota al apagar; C: casi no cambia.','Las tres aumentan.','Solo responde a la luz difusa.'],ok:0,fb:'Centro → excita; periferia → inhibe; difusa → nada.'},
+   {q:'¿Qué se concluye?',o:['Es una ON-center con campo receptivo centro-periferia antagonista: detecta contraste, no intensidad absoluta.','Es una OFF-center.','Es un fotorreceptor.'],ok:0,fb:'La retina ya envía información de <b>contraste</b> (bordes) y no de luminosidad; la periferia antagonista viene de la inhibición lateral (células horizontales).'}],
+  frase:['Se registra el disparo de una célula ganglionar ante luz en distintas zonas de su campo receptivo.','La luz en el centro aumenta el disparo, la luz en la periferia lo inhibe (con rebote al apagar) y la luz difusa casi no lo modifica.','Es una célula ON-center con un campo receptivo centro-periferia antagonista.','Centro y periferia se cancelan con luz uniforme,','por lo que la célula codifica contraste y no la intensidad absoluta de la luz.'],
+  dis:['Es una célula OFF-center porque rebota al apagar la luz en la periferia.','La luz difusa es el estímulo óptimo de las ganglionares.']}
+];
+
+/* ========================= COMPONENTES ========================= */
+function renderPred(item,host,done){
+  const letters='ABC';
+  host.innerHTML=`<div class="qbox"><div class="ctx"><span class="k">🔬 Experimento · ${SALAS[item.s].t}</span>${item.ctx}</div><div class="qtitle">${item.q}</div>
+   <div class="opts ${item.txt?'txt':''}">${shuffle(item.o.map((o,i)=>i)).map((i,pos)=>`<button class="opt ${item.txt?'txt':''}" data-i="${i}"><span class="k">${letters[pos]}</span>${item.txt?`<span>${item.o[i]}</span>`:item.o[i]()}</button>`).join('')}</div><div id="pfb"></div></div>`;
+  $$('.opt',host).forEach(b=>b.onclick=()=>{const i=+b.dataset.i,ok=i===item.ok;$$('.opt',host).forEach(x=>{x.disabled=true;if(+x.dataset.i===item.ok)x.classList.add('ok')});if(!ok)b.classList.add('ko');
+   S.pred[item.id]=ok;if(!ok)S.wrong[item.id]=(S.wrong[item.id]||0)+1;else if(S.wrong[item.id])S.wrong[item.id]=Math.max(0,S.wrong[item.id]-1);save();if(ok)addXP(10);
+   const b2=item.base&&BASE[item.base];
+   $('#pfb',host).innerHTML=`<div class="fb ${ok?'ok':'ko'}"><b>${ok?'¡Bien visto!':'Casi. Vamos a verlo con calma:'}</b> ${item.why}${b2&&!ok?`<div class="base"><b>🧩 Pieza base · ${b2.t}</b>${b2.h}</div>`:''}</div><button class="btn go next" id="pnext">Siguiente →</button>`;
+   $('#pnext',host).onclick=()=>done(ok)})}
+
+function renderFig(item,host,done){let k=0,score=0;const res=[];
+  host.innerHTML=`<div class="figgrid"><div class="figpanel"><div class="hd mono" style="font-size:12px;color:var(--muted);margin-bottom:8px">FIGURA · ${esc(item.t)}</div>${item.fig()}<div class="cap">${item.cap}</div></div><div><div class="ladder">${STEPNAMES.map((n,i)=>`<span data-st="${i}">${n}</span>`).join('')}</div><div id="fstep"></div></div></div>`;
+  const ladder=()=>$$('.ladder span',host).forEach((s,i)=>{s.className=i===k?'now':res[i]===true?'ok':res[i]===false?'ko':''});
+  const step=()=>{ladder();const box=$('#fstep',host);
+   if(k<4){const st=item.steps[k],L='ABC';
+    box.innerHTML=`<div class="stepq">${st.q}</div><div class="stepsub">Paso ${k+1} de 5 · ${['Primero, lee los ejes y las barras de escala.','¿Qué variable controla quien hace el experimento?','Solo describe lo que ves. Todavía no expliques.','Ahora sí: conecta lo que ves con la teoría.'][k]}</div>
+     ${st.h?`<button class="btn" id="fh" style="margin-bottom:10px">💡 Pista</button>`:''}<div class="opts txt">${shuffle(st.o.map((o,i)=>i)).map((i,pos)=>`<button class="opt txt" data-i="${i}"><span class="k">${L[pos]}</span><span>${st.o[i]}</span></button>`).join('')}</div><div id="ffb"></div>`;
+    if(st.h)$('#fh',box).onclick=e=>{e.target.outerHTML=`<div class="hint">💡 ${st.h}</div>`};
+    $$('.opt',box).forEach(b=>b.onclick=()=>{const i=+b.dataset.i,ok=i===st.ok;$$('.opt',box).forEach(x=>{x.disabled=true;if(+x.dataset.i===st.ok)x.classList.add('ok')});if(!ok)b.classList.add('ko');res[k]=ok;if(ok){score+=5;addXP(5)}ladder();
+     $('#ffb',box).innerHTML=`<div class="fb ${ok?'ok':'ko'}">${st.fb}</div><button class="btn go next" id="fn">Siguiente paso →</button>`;$('#fn',box).onclick=()=>{k++;step()}})}
+   else{const frags=item.frase.map((t,i)=>({t,i})),pool=shuffle(frags.concat(item.dis.map(t=>({t,i:-1}))));let ans=[];
+    box.innerHTML=`<div class="stepq">Monta tu respuesta de examen</div><div class="stepsub">Toca las piezas en orden: <b>qué se mide → qué se hace → qué cambia → por qué → conclusión</b>. Dos piezas son trampas. Toca una pieza de tu respuesta para quitarla.</div><div class="builder" id="bd"></div><div class="pool" id="pl"></div><div class="seg" style="margin-top:12px"><button class="btn go" id="chk">Comprobar</button></div><div id="bfb"></div>`;
+    const paint=()=>{$('#bd',box).innerHTML=ans.map((f,j)=>`<button class="frag" data-j="${j}">${f.t}</button>`).join('')||'<span class="muted" style="font-size:13px">Tu respuesta aparecerá aquí…</span>';
+     $('#pl',box).innerHTML=pool.filter(f=>!ans.includes(f)).map(f=>`<button class="frag" data-p="${pool.indexOf(f)}">${f.t}</button>`).join('');
+     $$('#bd .frag',box).forEach(b=>b.onclick=()=>{ans.splice(+b.dataset.j,1);paint()});$$('#pl .frag',box).forEach(b=>b.onclick=()=>{ans.push(pool[+b.dataset.p]);paint()})};paint();
+    $('#chk',box).onclick=()=>{const hasDis=ans.some(f=>f.i<0),all=item.frase.every((_,i)=>ans.some(f=>f.i===i)),order=ans.every((f,j)=>f.i===j)&&ans.length===item.frase.length;
+     const bd=$('#bd',box);let msg,pts=0;
+     if(order){msg='<b>¡Respuesta de matrícula!</b> Tiene la estructura completa: qué se mide, qué se hace, qué pasa, por qué y conclusión.';pts=15;bd.className='builder ok';res[4]=true}
+     else if(hasDis){msg='Se te ha colado una <b>trampa</b>: '+ans.filter(f=>f.i<0).map(f=>'«'+f.t+'»').join(', ')+'. Quítala y vuelve a probar.';bd.className='builder ko'}
+     else if(all){msg='Tienes <b>todas las ideas</b>, pero el orden no es el que convence a un corrector. Recuerda: <b>mide → hace → cambia → por qué → conclusión</b>.';pts=0;bd.className='builder ko'}
+     else{msg='Te faltan piezas. Una buena respuesta tiene <b>las cinco partes</b>.';bd.className='builder ko'}
+     $('#bfb',box).innerHTML=`<div class="fb ${order?'ok':'ko'}">${msg}${order?'':''}</div>`+(order?`<div class="model">${item.frase.join(' ')}</div><button class="btn go next" id="fend">Terminar figura →</button>`:`<button class="btn next" id="fshow">Ver la respuesta modelo</button>`);
+     if(order){score+=pts;addXP(pts,'Respuesta perfecta');$('#fend',box).onclick=fin}
+     else $('#fshow',box).onclick=()=>{res[4]=false;ladder();$('#bfb',box).innerHTML+=`<div class="model">${item.frase.join(' ')}</div><button class="btn go next" id="fend">Terminar figura →</button>`;$('#fend',box).onclick=fin;$('#fshow',box).remove()}}}};
+  const fin=()=>{S.fig[item.id]=Math.max(S.fig[item.id]||0,score);save();done(score)};step()}
+
+/* ========================= NAVEGACIÓN ========================= */
+const app=$('#app');
+function header(back){return `<div class="top">${back?`<button class="back" id="goback" aria-label="Volver">←</button>`:''}<div class="brand"><span class="dot"></span>Neurolab · Bloque 2</div><span class="chip" id="xpchip">⚡ <b>${S.xp}</b> XP</span><span class="chip">🔥 <b>${streak()}</b> días</span></div>`}
+function daysTo(){const d=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);return Math.round((d-n)/864e5)}
+function focusSalas(){const n=new Date();n.setHours(0,0,0,0);const d=x=>new Date(2026,x[0],x[1]);
+  if(n<d([10,24]))return[1,2];if(n<d([11,1]))return[3,4];if(n<d([11,8]))return[5,6];return[1,2,3,4,5,6]}
+function salaProgress(id){const labDone=LABS[id].retos.filter(r=>S.retos[r.id]).length,labTot=LABS[id].retos.length;const ps=PREDS.filter(p=>p.s===id),pOk=ps.filter(p=>S.pred[p.id]===true).length;const fs=FIGS.filter(f=>f.s===id),fOk=fs.filter(f=>(S.fig[f.id]||0)>=30).length;
+  return{lab:[labDone,labTot],pred:[pOk,ps.length],fig:[fOk,fs.length]}}
+
+function home(){const foc=focusSalas(),dleft=daysTo();
+  app.innerHTML=header(false)+`<div class="hero"><div class="card mission"><div class="section">Misión del día · ~20 min</div><h2>${S.days[today()]?'Misión de hoy completada ✓':'Tu ronda diaria de neuro'}</h2>
+   <p>${S.days[today()]?'Ya has sumado el día a la racha. Si quieres seguir, entra en cualquier sala o repite la misión para practicar.':'Un experimento para entender, cuatro predicciones para entrenar el ojo y una figura completa para entrenar la redacción. Mezcla el foco de la semana con lo que se te resistió.'}</p>
+   <div class="steps"><span>🧪 1 laboratorio</span><span>🔮 4 predicciones</span><span>📈 1 figura de examen</span></div><button class="big-btn" id="mis">${S.days[today()]?'Repetir misión':'Empezar misión →'}</button></div>
+   <div class="card stats"><div class="stat"><div class="n">${dleft>0?dleft:0}</div><div class="l">días al 2º parcial (14 dic)</div></div><div class="stat"><div class="n">${Object.keys(S.retos).length}/${Object.values(LABS).reduce((a,l)=>a+l.retos.length,0)}</div><div class="l">retos de laboratorio</div></div>
+   <div class="stat"><div class="n">${Object.values(S.pred).filter(Boolean).length}/${PREDS.length}</div><div class="l">predicciones acertadas</div></div><div class="stat"><div class="n">${FIGS.filter(f=>(S.fig[f.id]||0)>=30).length}/${FIGS.length}</div><div class="l">figuras dominadas (≥30 pts)</div></div>
+   <div class="week">Foco de esta semana: <b>${foc.length>4?'repaso total y simulacros':foc.map(i=>SALAS[i].t).join(' + ')}</b>. El Kit básico aparece mezclado en las misiones para ir tapando huecos de base.</div></div></div>
+   <div class="section">Mapa de salas</div><div class="map">${SALAS.map(s=>{const p=salaProgress(s.id),ok=a=>a[0]===a[1]&&a[1]>0;return `<button class="sala ${foc.includes(s.id)&&foc.length<5?'focus':''}" data-s="${s.id}"><span class="num">${s.temas}</span><h3>${s.t}</h3><p>${s.sub}</p><div class="stars"><span class="${ok(p.lab)?'ok':''}">🧪 ${p.lab[0]}/${p.lab[1]}</span><span class="${ok(p.pred)?'ok':''}">🔮 ${p.pred[0]}/${p.pred[1]}</span><span class="${ok(p.fig)?'ok':''}">📈 ${p.fig[0]}/${p.fig[1]}</span></div></button>`}).join('')}</div>`;
+  $('#mis').onclick=mission;$$('.sala').forEach(b=>b.onclick=()=>sala(+b.dataset.s));window.scrollTo(0,0)}
+
+function sala(id,tab='lab'){const s=SALAS[id];
+  app.innerHTML=header(true)+`<div class="section">${s.temas}</div><h1 style="font-size:32px;margin-bottom:8px">${s.t}</h1><p class="intro">${s.intro}</p>
+   <div class="tabs"><button class="tab" data-t="lab">🧪 Laboratorio</button><button class="tab" data-t="pred">🔮 Predice la traza</button><button class="tab" data-t="fig">📈 Lee la figura</button>${id===0?'<button class="tab" data-t="base">🧩 Piezas base</button>':''}</div><div id="tabhost"></div>`;
+  $('#goback').onclick=home;$$('.tab').forEach(b=>b.onclick=()=>show(b.dataset.t));
+  function show(t){$$('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));const h=$('#tabhost');
+   if(t==='lab'){h.innerHTML=LABS[id].html();LABS[id].init(h,makeApi(h))}
+   else if(t==='pred'){const list=PREDS.filter(p=>p.s===id);let i=0;const nx=()=>{if(i>=list.length){h.innerHTML=`<div class="card fin"><h2>Sala completada</h2><p class="muted">${list.filter(p=>S.pred[p.id]).length}/${list.length} acertadas. Las falladas te volverán a salir en las misiones.</p><button class="btn go" id="again">Repetir</button></div>`;$('#again').onclick=()=>show('pred');return}
+     h.innerHTML=`<div class="mbar"><i style="width:${i/list.length*100}%"></i></div><div id="ph"></div>`;renderPred(list[i],$('#ph'),()=>{i++;nx();window.scrollTo(0,0)})};nx()}
+   else if(t==='fig'){const list=FIGS.filter(f=>f.s===id);h.innerHTML=`<div class="tabs">${list.map((f,j)=>`<button class="btn" data-f="${j}">${esc(f.t)} ${S.fig[f.id]?'· '+S.fig[f.id]+' pts':''}</button>`).join('')}</div><div id="fh"></div>`;
+     const open=j=>{$$('[data-f]',h).forEach(b=>b.classList.toggle('on',+b.dataset.f===j));renderFig(list[j],$('#fh'),sc=>{$('#fh').innerHTML=`<div class="card fin"><div class="xp">${sc}</div><p class="muted">puntos de 35 en esta figura</p><button class="btn go" id="fa">Otra vez</button></div>`;$('#fa').onclick=()=>open(j)})};
+     $$('[data-f]',h).forEach(b=>b.onclick=()=>open(+b.dataset.f));open(0)}
+   else{h.innerHTML=`<div class="pieces">${Object.values(BASE).map(b=>`<div class="piece"><h4>${b.t}</h4>${b.h}</div>`).join('')}</div>`}}
+  show(tab);window.scrollTo(0,0)}
+
+function pickMission(){const foc=focusSalas();const labS=foc.slice().sort((a,b)=>{const pa=salaProgress(a).lab,pb=salaProgress(b).lab;return pa[0]/pa[1]-pb[0]/pb[1]})[0];
+  const wrong=shuffle(PREDS.filter(p=>S.wrong[p.id]>0)),fresh=shuffle(PREDS.filter(p=>foc.includes(p.s)&&S.pred[p.id]===undefined)),focAll=shuffle(PREDS.filter(p=>foc.includes(p.s))),base=shuffle(PREDS.filter(p=>p.s===0||!foc.includes(p.s)));
+  const out=[];const add=p=>{if(p&&!out.includes(p)&&out.length<4)out.push(p)};
+  add(wrong[0]);fresh.forEach(add);focAll.forEach(add);base.forEach(add);
+  const figs=FIGS.filter(f=>foc.includes(f.s)).sort((a,b)=>(S.fig[a.id]||0)-(S.fig[b.id]||0));
+  return{labS,preds:shuffle(out),fig:figs[0]||FIGS[0]}}
+
+function mission(){const M=pickMission();const steps=[{t:'lab'},...M.preds.map(p=>({t:'pred',p})),{t:'fig'}];let k=0,xp0=S.xp,retoHit=false;
+  const go=()=>{if(k>=steps.length){S.days[today()]=true;save();const gained=S.xp-xp0;
+    app.innerHTML=header(true)+`<div class="card fin"><div class="section">Misión completada</div><div class="xp">+${gained}</div><p class="muted">XP de hoy · racha de <b>${streak()}</b> ${streak()===1?'día':'días'}</p><p style="line-height:1.55">Mañana te saldrá otra combinación: lo que hoy has fallado vuelve a aparecer.</p><button class="big-btn" id="hm">Volver al mapa</button></div>`;$('#goback').onclick=home;$('#hm').onclick=home;return}
+   const st=steps[k];app.innerHTML=header(true)+`<div class="section">Misión del día · paso ${k+1} de ${steps.length}</div><div class="mbar" style="margin-top:6px"><i style="width:${k/steps.length*100}%"></i></div><div id="mh"></div>`;$('#goback').onclick=home;const h=$('#mh');
+   if(st.t==='lab'){const s=SALAS[M.labS];h.innerHTML=`<h2 style="font-size:26px;margin-bottom:6px">🧪 ${s.t}</h2><p class="intro">${s.intro} <b style="color:var(--amber)">Consigue al menos un reto nuevo (o, si ya los tienes todos, juega un rato) y continúa.</b></p><div id="lh"></div><button class="btn go next" id="lnext" ${LABS[M.labS].retos.every(r=>S.retos[r.id])?'':'disabled style="opacity:.45"'}>Continuar →</button>`;
+    LABS[M.labS].init(($('#lh').innerHTML=LABS[M.labS].html(),$('#lh')),makeApi($('#lh'),()=>{retoHit=true;const b=$('#lnext');b.disabled=false;b.style.opacity=1}));$('#lnext').onclick=()=>{k++;go()}}
+   else if(st.t==='pred')renderPred(st.p,h,()=>{k++;go()});
+   else renderFig(M.fig,h,()=>{k++;go()});window.scrollTo(0,0)};go()}
+
+home();
+})();
+</script>
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body>
+</html>

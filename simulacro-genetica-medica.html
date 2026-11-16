@@ -1,0 +1,440 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Simulacro Genética Médica</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una columna de lectura (~760px) con cabecera fija de examen (cronómetro) y tres pestañas. Acento = violeta Giemsa; correcto/incorrecto = verde/rojo FISH. */
+:root{
+  --bg:#f6f5f9; --surface:#ffffff; --ink:#1d1a26; --muted:#5e5870; --line:#dedae8;
+  --giemsa:#6b2f8f; --giemsa-soft:#efe6f6; --ok:#1f7a4a; --ok-soft:#e3f3ea; --bad:#b3263a; --bad-soft:#fbe7ea; --warn:#9a6400;
+  --f-display:"Fraunces", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15131b; --surface:#1e1b27; --ink:#ece8f4; --muted:#a59fb6; --line:#332e40;
+  --giemsa:#c79be6; --giemsa-soft:#2c2238; --ok:#5fd29a; --ok-soft:#173226; --bad:#ff8193; --bad-soft:#3a1c23; --warn:#e8b55a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15131b; --surface:#1e1b27; --ink:#ece8f4; --muted:#a59fb6; --line:#332e40;
+  --giemsa:#c79be6; --giemsa-soft:#2c2238; --ok:#5fd29a; --ok-soft:#173226; --bad:#ff8193; --bad-soft:#3a1c23; --warn:#e8b55a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:12px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.brand{font-family:var(--f-display);font-weight:700;font-size:1.15rem;letter-spacing:-.01em}
+.brand small{display:block;font-family:var(--f-mono);font-weight:400;font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.timer{display:flex;gap:8px;align-items:center}
+.clock{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:1.25rem;padding:2px 10px;border-radius:6px;background:var(--giemsa-soft);color:var(--giemsa)}
+.clock.late{color:var(--bad);background:var(--bad-soft)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 14px}
+button:hover{border-color:var(--giemsa)}
+button:focus-visible,textarea:focus-visible,input:focus-visible+label{outline:2px solid var(--giemsa);outline-offset:2px}
+button.primary{background:var(--giemsa);color:var(--surface);border-color:var(--giemsa);font-weight:600}
+button:disabled{opacity:.5;cursor:not-allowed}
+nav.tabs{display:flex;gap:4px;margin:22px 0 18px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{border:0;border-bottom:3px solid transparent;border-radius:0;background:none;padding:10px 12px;color:var(--muted);font-weight:500;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--giemsa);border-bottom-color:var(--giemsa)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;letter-spacing:-.01em}
+h1{font-size:1.9rem;margin:28px 0 6px}
+h2{font-size:1.35rem;margin:28px 0 8px}
+h3{font-size:1.05rem;margin:18px 0 6px}
+.lede{color:var(--muted);max-width:65ch;margin:0}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:18px 0}
+.rule{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.rule b{display:block;font-family:var(--f-mono);font-size:1.05rem;color:var(--giemsa)}
+.rule span{font-size:.85rem;color:var(--muted)}
+.q{border-top:1px solid var(--line);padding:18px 0}
+.qhead{display:flex;gap:10px;align-items:baseline}
+.qnum{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);min-width:2.6em}
+.qtag{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--giemsa);background:var(--giemsa-soft);padding:1px 7px;border-radius:4px;margin-left:auto;white-space:nowrap}
+.qtext{margin:4px 0 10px;font-weight:500;min-width:0}
+.opts{display:grid;gap:6px;margin-left:2.6em}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);cursor:pointer}
+.opt input{margin-top:5px;accent-color:var(--giemsa)}
+.opt .l{font-family:var(--f-mono);font-weight:500;color:var(--muted)}
+.opt.sel{border-color:var(--giemsa)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.qfoot{margin:8px 0 0 2.6em;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font-size:.85rem}
+.expl{margin:10px 0 0 2.6em;padding:10px 12px;border-left:3px solid var(--giemsa);background:var(--giemsa-soft);border-radius:0 8px 8px 0;font-size:.92rem}
+.verdict{font-family:var(--f-mono);font-size:.78rem;font-weight:500}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)} .verdict.blank{color:var(--warn)}
+.score{border:1px solid var(--giemsa);border-radius:12px;padding:16px 18px;background:var(--surface);margin:18px 0}
+.score .big{font-family:var(--f-display);font-size:2.4rem;font-weight:700;color:var(--giemsa);line-height:1}
+.score table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:12px;font-variant-numeric:tabular-nums}
+.score td,.score th{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+.tbl-wrap{overflow-x:auto}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}
+.picker{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.picker button[aria-pressed="true"]{background:var(--giemsa-soft);border-color:var(--giemsa);color:var(--giemsa);font-weight:600}
+.case{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+.case p{margin:0 0 10px;max-width:68ch}
+.lits{margin:0;padding-left:0;list-style:none;display:grid;gap:8px}
+.lits li{display:flex;gap:10px}
+.lits .lk{font-family:var(--f-mono);color:var(--giemsa);font-weight:500;min-width:2.2em}
+.lits .pts{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);white-space:nowrap;margin-left:auto;padding-left:8px}
+textarea{width:100%;min-height:340px;font:inherit;font-size:.95rem;line-height:1.55;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
+.meta{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.feedback{white-space:pre-wrap;background:var(--surface);border:1px solid var(--giemsa);border-radius:12px;padding:16px 18px;margin:14px 0;font-size:.95rem}
+.model{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 18px 14px;margin:14px 0}
+.model h3{color:var(--giemsa)}
+.model p,.model li{max-width:68ch}
+.chk{display:grid;gap:6px;margin:8px 0;padding:0;list-style:none}
+.chk label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.chk input{margin-top:5px;accent-color:var(--giemsa)}
+code,.mono{font-family:var(--f-mono);font-size:.9em;background:var(--giemsa-soft);padding:0 4px;border-radius:4px}
+.nums{border-collapse:collapse;width:100%;font-size:.9rem}
+.nums td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.nums td:first-child{font-family:var(--f-mono);color:var(--giemsa);white-space:nowrap;font-variant-numeric:tabular-nums}
+.note{font-size:.85rem;color:var(--muted)}
+ol.steps{padding-left:1.2em;display:grid;gap:8px;max-width:68ch}
+@media (max-width:520px){.opts,.qfoot,.expl{margin-left:0}.qtag{display:none}h1{font-size:1.55rem}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Simulacro · Genética Médica<small>CC. BIOMÉDICAS UB · TEMAS 1.1 – 2.3</small></div>
+    <div class="timer">
+      <span class="clock" id="clock">60:00</span>
+      <button id="timerBtn" type="button">Empezar examen</button>
+      <button id="resetTimer" type="button" class="link">reiniciar</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1>Examen simulado nº 1</h1>
+  <p class="lede">Mismo formato que el real: 30 preguntas tipo test y una pregunta de tema con literales, en una hora. Las preguntas salen solo de tus diapositivas y apuntes de clase.</p>
+  <div class="rules">
+    <div class="rule"><b>30 test</b><span>5 opciones, una válida · 50 % de la nota</span></div>
+    <div class="rule"><b>−0,20</b><span>por error · en blanco no resta</span></div>
+    <div class="rule"><b>1 tema</b><span>varios literales · 50 % de la nota</span></div>
+    <div class="rule"><b>60 min</b><span>sugerido: 20 test + 40 tema</span></div>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-test" aria-selected="true" data-tab="test">Test (30)</button>
+    <button role="tab" id="tab-tema" aria-selected="false" data-tab="tema">Pregunta de tema</button>
+    <button role="tab" id="tab-plan" aria-selected="false" data-tab="plan">Cómo preparar el tema</button>
+  </nav>
+
+  <section id="pane-test" role="tabpanel">
+    <div id="scoreBox" hidden></div>
+    <div id="questions"></div>
+    <div class="actions">
+      <button class="primary" id="gradeBtn" type="button">Corregir test</button>
+      <button id="clearBtn" type="button">Borrar respuestas</button>
+    </div>
+    <p class="note">Puntuación: acierto +1, error −0,20, blanco 0; el total sobre 30 se pasa a nota sobre 10. Si tu profesor aplica el −0,20 de otra forma, el orden de magnitud no cambia.</p>
+  </section>
+
+  <section id="pane-tema" role="tabpanel" hidden>
+    <p class="lede">Elige un tema, escríbelo como en el examen (sin apuntes, unos 40 min) y después pide la corrección o compáralo con la respuesta modelo y la rúbrica.</p>
+    <div class="picker" id="temaPicker"></div>
+    <div id="temaCase"></div>
+    <label class="meta" for="answer">Tu respuesta (se guarda en este navegador)</label>
+    <textarea id="answer" placeholder="a) ...&#10;&#10;b) ..."></textarea>
+    <div class="meta" id="wc">0 palabras</div>
+    <div class="actions">
+      <button class="primary" id="askGrade" type="button" hidden>Corregir con Claude</button>
+      <button id="stopGrade" type="button" hidden>Parar</button>
+      <button id="showModel" type="button">Ver respuesta modelo y rúbrica</button>
+    </div>
+    <div id="gradeOut"></div>
+    <div id="modelOut"></div>
+  </section>
+
+  <section id="pane-plan" role="tabpanel" hidden>
+    <h2>El tema vale el 50 %: cómo se gana la matrícula</h2>
+    <p class="lede">Ya sabes el temario. Lo que separa un 8 de un 10 en una pregunta de desarrollo es cómo lo escribes: precisión, datos, mecanismos y conexiones entre temas.</p>
+
+    <h3>Plantilla para cada literal</h3>
+    <ol class="steps">
+      <li><b>Definición exacta</b> en una frase, con el término técnico (p. ej. «translocación robertsoniana: fusión céntrica de dos acrocéntricos por q10 con pérdida de brazos cortos»).</li>
+      <li><b>Mecanismo</b>: el «cómo» (NAHR, no disyunción en MI/MII, XIST y marcas epigenéticas…). Es lo que más puntúa y lo que más gente omite.</li>
+      <li><b>Dato cuantitativo</b>: incidencia, porcentaje, tamaño, resolución. La profesora pidió el orden de magnitud, no la cifra exacta, pero sin cifras la respuesta queda vaga.</li>
+      <li><b>Ejemplo clínico</b> con fórmula ISCN bien escrita: <code>45,XX,rob(14;21)(q10;q10)</code>.</li>
+      <li><b>Consecuencia o técnica</b>: qué fenotipo da, cómo se detecta y por qué esa técnica sí y otra no.</li>
+      <li><b>Conexión con otro tema</b>: una frase que enlace (p. ej. duplicaciones segmentarias del 1.1 → NAHR del 1.3 → Williams/DiGeorge del 2.2).</li>
+    </ol>
+
+    <h3>Los hilos que cruzan el temario</h3>
+    <p>Las preguntas de tema con literales suelen recorrer varios temas a la vez. Estos hilos aparecen en casi todos tus PDFs; ten un párrafo preparado para cada uno:</p>
+    <ul>
+      <li><b>DNA repetitivo → NAHR → enfermedad</b>: duplicaciones segmentarias/LCR (5 %, &gt;90 % homología) → intercromátide/intracromátide → del/dup 22q11.2, 7q11.23, 15q11-q13, inversión del intrón 22 de F8, varones XX por recombinación PRKX/PRKY.</li>
+      <li><b>Tamaño de la variante ↔ técnica</b>: SNV/indel (secuenciación) → STR → CNV submicroscópica (array-CGH, FISH, OGM) → reordenamiento &gt;5–10 Mb y aneuploidía (cariotipo). Equilibradas: el array-CGH no las ve.</li>
+      <li><b>Epigenética</b>: metilación de islas CpG, H3K9me3/HP1 en heterocromatina, inactivación del X (XIST, macroH2A, H3K27me3), hipermetilación de FMR1, hipometilación del DNA repetitivo en cáncer.</li>
+      <li><b>LINEs</b>: transposones autónomos (1.1) y «estaciones de relevo» en la inactivación del X (2.3).</li>
+      <li><b>Meiosis → aneuploidía</b>: segregación independiente (2²³), recombinación (Spo11, Holliday), errores en MI/MII, edad materna (SAC, pérdida de cohesinas) y origen parental de cada síndrome.</li>
+    </ul>
+
+    <h3>Rutina para los días que quedan</h3>
+    <ol class="steps">
+      <li><b>Un tema cronometrado al día</b> (35–40 min, en papel, sin apuntes). Después, corrección con la rúbrica o con Claude y reescritura solo de lo que faltó.</li>
+      <li><b>Esquemas en blanco</b>: dibuja de memoria la segregación de una robertsoniana, la NAHR, la tabla nuclear/mitocondrial y la cascada SRY→SOX9 vs WNT4/RSPO1. Si un esquema no te sale en 3 min, ese es tu punto débil.</li>
+      <li><b>Test con penalización</b>: con 5 opciones y −0,20, contestar al azar ya tiene esperanza ≈ 0 o ligeramente positiva; si puedes descartar una opción, responde siempre. Deja en blanco solo cuando dudes entre opciones que no sabes distinguir.</li>
+      <li><b>Repasa los «señala la incorrecta»</b>: son las que más fallan por leer rápido. Subraya la palabra NO/INCORRECTA en el enunciado.</li>
+    </ol>
+
+    <h3>Cifras que conviene llevar en la cabeza</h3>
+    <div class="tbl-wrap"><table class="nums">
+      <tr><td>2 % / ~50 % / 5 %</td><td>DNA codificante / elementos transponibles / duplicaciones segmentarias</td></tr>
+      <tr><td>16 kb · 37 genes</td><td>genoma mitocondrial (circular, sin intrones, &gt;1.000 copias, herencia materna); 95 % de proteínas mitocondriales importadas</td></tr>
+      <tr><td>171 pb · AT</td><td>monómero α-satélite (HORs de 1–3 kb, centrómero, CENP-A)</td></tr>
+      <tr><td>0,1 % · &gt;1 %</td><td>variabilidad entre genomas / umbral de frecuencia para hablar de SNP</td></tr>
+      <tr><td>40–70</td><td>mutaciones de novo germinales por descendiente (0–1 en el exoma)</td></tr>
+      <tr><td>1990–2003</td><td>PGH; borrador 2000–2001; T2T abril 2022; cromosoma Y agosto 2023</td></tr>
+      <tr><td>1/150 · 50 %</td><td>nacidos vivos con anomalía cromosómica / abortos de 1.er trimestre con anomalía</td></tr>
+      <tr><td>&gt;5–10 Mb · ~100 kb · ~500 pb</td><td>resolución de cariotipo · FISH · OGM (CGH convencional 5–10 Mb; array ≤1 Mb)</td></tr>
+      <tr><td>1/700–1.000</td><td>Down; 90 % libre, 2–4 % translocación, 1–3 % mosaico; 90 % materno (75 % MI)</td></tr>
+      <tr><td>1/6.000 · 1/22.700</td><td>Edwards (&gt;90 % materno, 70 % MII) · Patau (20 % por translocación)</td></tr>
+      <tr><td>1/500 · 1/1.000</td><td>translocaciones recíprocas equilibradas · robertsonianas</td></tr>
+      <tr><td>2,6 Mb · 320 kb</td><td>PAR1 · PAR2; 54 genes X con homólogo en Y; 15 % escapan totalmente, 20 % parcialmente</td></tr>
+      <tr><td>1/2.000–2.500</td><td>Turner (80 % no disyunción paterna; ~50 % 45,X homogéneo)</td></tr>
+      <tr><td>1/1.000</td><td>Klinefelter (60 % materno), triple X (MI materna); XYY por MII paterna</td></tr>
+      <tr><td>&lt;44 · &gt;200 CGG</td><td>FMR1 normal · mutación completa (penetrancia 80 % ♂, 30 % ♀)</td></tr>
+    </table></div>
+  </section>
+</main>
+
+<script>
+const Q = [
+/* 1.1 */
+{t:"1.1",q:"Comparando el genoma mitocondrial con el nuclear humano, ¿qué afirmación es CORRECTA?",o:["Contiene unos 37 genes, carece de intrones y está presente en más de 1.000 copias por célula","Codifica la mayoría (~95 %) de las proteínas que funcionan en la mitocondria","Está empaquetado en nucleosomas igual que el genoma nuclear","Recombina en cada generación y se hereda de forma mendeliana","Es mayoritariamente no codificante, al igual que el nuclear"],a:0,e:"El mtDNA (16 kb, circular) tiene 37 genes, sin intrones ni nucleosomas, >1.000 copias/célula, no recombina y es de herencia materna. Al revés que el nuclear, es mayoritariamente codificante. El 95 % de las proteínas mitocondriales (~1.000) se importan del citosol; solo 13 se sintetizan en la mitocondria."},
+{t:"1.1",q:"Un pseudogén PROCESADO se caracteriza por:",o:["Originarse por duplicación génica directa y conservar intrones y promotor","Proceder de la retrotranscripción de un mRNA maduro, por lo que carece de intrones y normalmente de promotor propio, y suele insertarse en otra localización","Perder la función sin duplicación previa, a partir del propio gen ancestral","Localizarse siempre en el mismo cromosoma que el gen parental","No tener nunca relevancia patológica"],a:1,e:"Procesados = retrotranscripción (sin intrones, sin promotor, otra localización). No procesados = duplicación (mantienen intrones, a menudo en el mismo cromosoma). Unitarios = el propio gen pierde la función sin duplicarse. Ejemplo de relevancia: PTENP1 en cáncer."},
+{t:"1.1",q:"Sobre los elementos transponibles del genoma humano, señala la CORRECTA:",o:["Los transposones de DNA (clase II) se mueven a través de un intermediario de RNA","Los SINEs, como Alu, son autónomos porque codifican su propia retrotranscriptasa","Los LINEs (p. ej. L1) codifican retrotranscriptasa y endonucleasa, y los SINEs dependen de esta maquinaria para moverse","Los HERVs son retrotransposones sin secuencias LTR","Suponen alrededor del 5 % del genoma"],a:2,e:"LINEs = autónomos (RT + endonucleasa). SINEs (Alu, SVA) = no autónomos, usan la maquinaria de los LINEs. Los transposones de DNA (clase II) usan cortar y pegar sin RNA y están todos inactivos. Los HERVs son retrotransposones CON LTR. Los transponibles ocupan casi el 50 % del genoma; el 5 % corresponde a las duplicaciones segmentarias."},
+{t:"1.1",q:"El DNA α-satélite:",o:["Está formado por unidades de ~68 pb ricas en GC en regiones pericentroméricas","Está formado por monómeros de ~171 pb ricos en AT, organizados en HORs específicos de cada cromosoma, y es esencial para formar el cinetocoro","Corresponde a las repeticiones TTAGGG de los telómeros","Está formado por unidades de ~220 pb subteloméricas sin función conocida","Forma eucromatina hipometilada muy transcrita"],a:1,e:"α: 171 pb, AT, centrómero, HORs de 1–3 kb específicos de cromosoma, recluta el cinetocoro (cromatina con CENP-A). β: ~68 pb, pericentromérico. γ: ~220 pb, pericentromérico/subtelomérico. Los bloques de heterocromatina repetitiva están hipermetilados con H3K9me3 y HP1."},
+{t:"1.1",q:"Las duplicaciones segmentarias:",o:["Son repeticiones de menos de 1 kb con homología inferior al 50 %","Ocupan aproximadamente la mitad del genoma","Son segmentos de 1–500 kb con más del 90 % de homología, ~5 % del genoma, y sirven de sustrato para la recombinación homóloga no alélica","Se encuentran exclusivamente dentro de exones","Son la causa principal de las trisomías autosómicas"],a:2,e:"Duplicaciones segmentarias (LCR): 1–500 kb, >90 % de homología, ~5 % del genoma, en tándem directo o invertido. Al desalinearse en meiosis permiten NAHR → deleciones/duplicaciones recurrentes (22q11.2 DiGeorge, 7q11.23 Williams). Las trisomías se deben a no disyunción, no a NAHR."},
+/* 1.2 */
+{t:"1.2",q:"Sobre las dos estrategias de secuenciación del Proyecto Genoma Humano:",o:["El whole-genome shotgun fue la estrategia del consorcio público","El hierarchical shotgun necesita un mapa físico previo y clonación ordenada en BACs; el whole-genome shotgun es más rápido pero mucho más exigente a nivel computacional","El hierarchical shotgun no utiliza BACs","El whole-genome shotgun es más fiable en genomas grandes y repetitivos","Ninguna de las dos necesita alinear secuencias solapadas"],a:1,e:"Público (Collins) = hierarchical shotgun: fragmentos ordenados de ~150 kb en BACs, mapa físico, más lento y robusto en genomas grandes. Celera (Venter) = WGS: fragmentación al azar sin mapa, más rápido, eficiente en genomas pequeños pero con ensamblaje computacional complejo."},
+{t:"1.2",q:"¿Cuál de estas afirmaciones NO es un resultado del PGH al finalizar en 2003?",o:["El genoma humano contiene unos 20.000–23.000 genes codificantes","Menos del 2 % del DNA codifica proteínas","La complejidad del organismo no depende directamente del número de genes","Se obtuvo la secuencia completa del genoma, incluidas las regiones repetitivas y el cromosoma Y","Se estableció un genoma de referencia a partir de donantes sanos (bibliotecas BAC RP11 y CTD sobre todo)"],a:3,e:"En 2003 se secuenció ~90 % del genoma con 99,9 % de fiabilidad; las regiones repetitivas quedaron como gaps. El genoma completo (T2T) llegó en abril de 2022 sin el Y, y el Y completo en agosto de 2023, gracias a la secuenciación de lecturas largas."},
+{t:"1.2",q:"Quieres caracterizar una variante estructural en una región rica en duplicaciones segmentarias de más de 50 kb. ¿Qué tecnología es la más adecuada?",o:["Sanger automatizada","Illumina (lecturas cortas por síntesis)","Secuenciación de lecturas largas (Oxford Nanopore o PacBio)","PCR convencional","Análisis de RFLP"],a:2,e:"Las lecturas cortas (Sanger ~100 pb en su origen, Illumina) no atraviesan repeticiones largas y no se pueden alinear de forma única. Las de tercera generación (Nanopore hasta ~2 Mb, PacBio ~100 kb) sí; por eso permitieron cerrar los gaps del genoma y el pangenoma."},
+{t:"1.2",q:"Sobre Oxford Nanopore, señala la CORRECTA:",o:["Produce lecturas de 100–300 pb con un error muy bajo","Amplifica los fragmentos por bridge PCR antes de secuenciar","Identifica las bases por los cambios de corriente al pasar la cadena por un poro; da lecturas muy largas (~2 Mb), tiene un error del 10–15 % y puede leer RNA directamente","Usa ddNTPs marcados radiactivamente y electroforesis en gel","Necesita terminadores fluorescentes reversibles"],a:2,e:"Bridge PCR y terminadores fluorescentes reversibles son de Illumina (2.ª generación). ddNTPs y gel son de Sanger. PacBio también es de lecturas largas, pero por síntesis con nucleótidos fluorescentes en pocillos."},
+{t:"1.2",q:"¿Qué proyecto concluyó en 2012 que ~80 % del genoma, aunque no codifique proteínas, tiene alguna función?",o:["HapMap","ENCODE","1000 Genomes","The Cancer Genome Atlas (TCGA)","Pangenoma humano"],a:1,e:"ENCODE (2003): elementos funcionales (cromatina, histonas, metilación, accesibilidad DNasa); ~400.000 reguladores que aumentan o reducen la actividad y ~70.000 activadores. HapMap (2002) = haplotipos/SNPs; 1000 Genomes (2007) = 2.504 individuos de 26 países; TCGA (2006) = cáncer; Pangenoma = referencia multipoblacional con lecturas largas."},
+/* 1.3 */
+{t:"1.3",q:"Respecto a SNV y SNP:",o:["Cualquier cambio de un solo nucleótido se considera un SNP","Un SNP es un SNV con una frecuencia poblacional superior al 1 %; aproximadamente 1 de cada 300 pb es polimórfica","Los SNPs son, en general, mutaciones patogénicas de alta penetrancia","Un SNV debe tener una frecuencia superior al 5 %","Los SNPs se detectan por cariotipo de alta resolución"],a:1,e:"No todo SNV es polimorfismo: hace falta una frecuencia >1 %. Los SNPs no suelen tener un efecto directo, pero pueden predisponer (GWAS). Las mutaciones patogénicas suelen ser poco frecuentes."},
+{t:"1.3",q:"¿Qué emparejamiento entre variante y técnica es el MÁS adecuado?",o:["Aneuploidía completa → secuenciación Sanger","CNV de 200 kb → array-CGH","SNP puntual → cariotipo con bandas G","Translocación recíproca equilibrada → array-CGH","Número de repeticiones de un STR → bandas C"],a:1,e:"Una CNV submicroscópica (1 kb–1 Mb) es justo lo que detecta un array-CGH (≤1 Mb). Trampa frecuente: el array-CGH no detecta alteraciones equilibradas porque no hay ganancia ni pérdida de DNA. Pequeña escala → secuenciación; gran escala (>5 Mb) → citogenética."},
+{t:"1.3",q:"La variante CFTR c.1521_1523delCTT (p.Phe508del) es:",o:["Una variante frameshift","Una variante nonsense","Una deleción en pauta (in-frame) de un aminoácido","Una variante de splicing","Una variante missense"],a:2,e:"Se pierden 3 nucleótidos (múltiplo de 3), así que se mantiene la pauta de lectura y se elimina una fenilalanina: ΔF508, pérdida de función que causa fibrosis quística. Frameshift sería, por ejemplo, c.1221dupT (p.Pro408fsX18); nonsense, p.Arg380Ter."},
+{t:"1.3",q:"Los síndromes de Williams, DiGeorge y Prader-Willi/Angelman por microdeleción comparten como mecanismo:",o:["No disyunción meiótica","Expansión de tripletes","Recombinación homóloga no alélica entre repeticiones de bajo número de copias (LCR) que flanquean la región crítica","Inserción de un LINE en la región crítica","Exclusivamente disomía uniparental"],a:2,e:"Son trastornos genómicos: las regiones 7q11.23, 22q11.2 y 15q11-q13 están flanqueadas por LCR/duplicaciones segmentarias. Un emparejamiento meiótico erróneo produce NAHR, con deleción y duplicación recíprocas (síndromes de duplicación en las mismas regiones)."},
+{t:"1.3",q:"La variante de FGFR3 que causa la acondroplasia es un ejemplo de:",o:["Variante neutra útil como marcador poblacional","Variante funcional no patogénica, como MC1R","Variante patogénica de ganancia de función, frecuentemente de novo","Variante patogénica de pérdida de función","SNP común identificado por GWAS"],a:2,e:"Variantes funcionales no patogénicas: CYP2D6, MC1R. Patogénicas LOF: ΔF508 en CFTR. Patogénicas GOF: FGFR3. La acondroplasia es el ejemplo de mutación de novo en enfermedad rara sin antecedentes familiares."},
+/* 2.1 */
+{t:"2.1",q:"Las bandas C tiñen preferentemente:",o:["La eucromatina rica en GC","La heterocromatina constitutiva: centrómeros, 1qh, 9qh, 16qh, satélites de los acrocéntricos y la heterocromatina distal de Yq","Solo los telómeros","El cromosoma X inactivo (heterocromatina facultativa)","Lo mismo que las bandas R, con el patrón invertido"],a:1,e:"Las bandas C marcan la heterocromatina constitutiva. G, Q y R dan un patrón de bandas específico de cada par para identificar cromosomas; G (Giemsa) es la más usada. El X inactivo es heterocromatina facultativa."},
+{t:"2.1",q:"Fórmula correcta de una mujer portadora de una translocación robertsoniana equilibrada entre los cromosomas 14 y 21:",o:["46,XX,t(14;21)(q10;q10)","45,XX,rob(14;21)(q10;q10)","45,XX,-14,-21","46,XX,rob(14,21)(q10,q10)","47,XX,+21"],a:1,e:"Se cuentan cromosomas estructurales: el derivado 14;21 cuenta como uno, así que son 45. Dentro del paréntesis se separa con «;». También es válida 45,XX,t(14;21)(q10;q10), con 45 y nunca 46."},
+{t:"2.1",q:"Una pareja con abortos de repetición: sospechas que uno es portador de una translocación recíproca equilibrada. ¿Qué técnica NO la detectaría?",o:["Cariotipo con bandas G","FISH con sondas de pintado cromosómico (WCP)","M-FISH / SKY","Array-CGH","Mapeo óptico del genoma (OGM)"],a:3,e:"El array-CGH compara cantidades de DNA (ganancias/pérdidas): una alteración equilibrada no cambia la dosis. El cariotipo la ve si es >5–10 Mb, WCP y M-FISH por cambio de color, y el OGM detecta equilibradas y desequilibradas."},
+{t:"2.1",q:"Sobre el mapeo óptico del genoma (OGM), señala la INCORRECTA:",o:["No necesita cultivo celular","Detecta alteraciones numéricas y estructurales, equilibradas y desequilibradas","Analiza con fiabilidad los centrómeros y las regiones subteloméricas","Requiere DNA de cadena muy larga","No permite distinguir clones"],a:2,e:"Las limitaciones del OGM son justo las regiones repetitivas (centrómeros, subtelómeros, heterocromatina) y los cambios muy pequeños como SNVs. Además tiene un coste elevado. Ventajas: genoma completo, alta resolución (~500 pb–5 kb), sin hipótesis previa y procesamiento automatizado."},
+{t:"2.1",q:"¿Cuándo se separan las cromátidas hermanas y qué dotación tiene cada célula resultante?",o:["Anafase I; 23 cromosomas y 46 cromátidas","Anafase II; 23 cromosomas y 23 cromátidas","Anafase I; 46 cromosomas y 46 cromátidas","Profase I; 23 cromosomas y 23 cromátidas","Metafase II; 46 cromosomas y 92 cromátidas"],a:1,e:"La meiosis I (reduccional) separa homólogos: 23 cromosomas y 46 cromátidas. La meiosis II (ecuacional) separa cromátidas hermanas: 23 y 23. La célula de partida tras la fase S tiene 46 cromosomas y 92 cromátidas."},
+/* 2.2 */
+{t:"2.2",q:"Respecto al síndrome de Down, señala la CORRECTA:",o:["Alrededor del 90 % son trisomías libres y el error es materno en ~90 % de los casos, sobre todo en meiosis I","La causa más frecuente es la translocación robertsoniana","El error suele ser paterno en meiosis II","La translocación más implicada es la 13;14","El 20 % de los casos son mosaicos"],a:0,e:"T21: 90 % libre, 2–4 % por translocación (la más frecuente, 14;21), 1–3 % mosaico. Origen materno ~90 % (75 % MI, 25 % MII), con riesgo creciente por edad materna (fallo del SAC, pérdida de cohesinas)."},
+{t:"2.2",q:"¿En cuál de estas aneuploidías el error se produce mayoritariamente en la MEIOSIS II materna?",o:["Trisomía 21","Trisomía 18","47,XXX","47,XYY","Trisomía 13 por translocación"],a:1,e:"Edwards: >90 % materno, 30 % MI y 70 % MII (al revés que Down). 47,XXX: MI materna. 47,XYY: MII paterna (dos Y solo pueden venir de una MII paterna). Una trisomía por translocación no se debe a no disyunción."},
+{t:"2.2",q:"Una gestación 69,XXY cuyo complemento extra procede de un error meiótico PATERNO se asocia típicamente a:",o:["Feto malformado con placenta pequeña","Mola hidatiforme parcial","Teratoma ovárico","Mola hidatiforme completa","Un recién nacido viable con fenotipo leve"],a:1,e:"Origen de la triploidía: dispermia, error meiótico materno (feto malformado) o error meiótico paterno (mola parcial). La mola completa no es triploide: es una diploidía uniparental androgenética. El teratoma ovárico es ginogenético."},
+{t:"2.2",q:"La inversión del intrón 22 del gen F8 (hemofilia A):",o:["Es una inversión pericéntrica del X visible en el cariotipo","Se produce por NAHR intracromátide entre una secuencia repetida del intrón 22 y sus copias invertidas por delante del exón 1, y explica ~45 % de las hemofilias A graves","Es una expansión de tripletes en el intrón 22","Resulta de una translocación X;autosoma","Es una deleción completa del gen detectable por array-CGH"],a:1,e:"A1 (intrón 22) recombina con A2/A3, en orientación invertida y situadas antes del exón 1, dentro de la misma cromátide: el gen queda partido. Es una alteración equilibrada (no cambia la dosis), así que el array-CGH no la detecta."},
+{t:"2.2",q:"Un cigoto ginogenético (diploidía uniparental bimaterna) origina:",o:["Mola hidatiforme","Teratoma ovárico","Síndrome de Prader-Willi","Triploidía","Quimera"],a:1,e:"Diploidía uniparental: los dos genomas haploides de un solo progenitor. Androgenético (bipaterno) → mola hidatiforme. Ginogenético (activación de un oocito no ovulado) → teratoma ovárico. La disomía uniparental afecta solo a un par cromosómico (p. ej. PWS por UPD materna del 15)."},
+/* 2.3 */
+{t:"2.3",q:"¿Cuántos corpúsculos de Barr esperas en una célula somática 48,XXXY?",o:["0","1","2","3","4"],a:2,e:"En diploides queda un solo X activo: corpúsculos de Barr = n.º de X − 1 = 2. (En triploides/tetraploides quedan dos X activos: 69,XXX tendría 1.) El Y se ve aparte como «masa Y» con bandas Q."},
+{t:"2.3",q:"Sobre el síndrome de Turner, señala la CORRECTA:",o:["El 80 % se debe a una no disyunción materna","Alrededor de la mitad tiene otros cariotipos (i(Xq), mosaicos…); la mayoría se debe a una no disyunción paterna y el fenotipo se explica por haploinsuficiencia de genes que escapan a la inactivación, como SHOX","Las células 45,X presentan un corpúsculo de Barr","Las pacientes suelen tener talla alta","Siempre asocia una discapacidad intelectual grave"],a:1,e:"Turner: 1/2.000–2.500; ~50 % 45,X y el resto 46,X,i(Xq) (15 %) y mosaicos; 80 % por no disyunción paterna. Talla baja (haploinsuficiencia de SHOX, gen PAR1), fallo ovárico, inteligencia normal con problemas de aprendizaje. 45,X no tiene corpúsculo de Barr."},
+{t:"2.3",q:"Sobre el síndrome X frágil, señala la INCORRECTA:",o:["Se debe a la expansión del triplete CGG en la región 5' (promotor) del gen FMR1, en Xq27.3","Con más de 200 repeticiones, el promotor se hipermetila, las histonas se desacetilan y se pierde la expresión de FMRP","La penetrancia es de ~80 % en varones y ~30 % en mujeres","Las premutaciones se expanden sobre todo al transmitirse por vía paterna","Es la primera causa hereditaria de discapacidad intelectual"],a:3,e:"La expansión de premutación a mutación completa ocurre al transmitirse por vía materna. Esto, junto con la anticipación, es la base de la paradoja de Sherman. Es la primera causa hereditaria de DI y la segunda cromosomopatía tras el Down."},
+{t:"2.3",q:"Sobre XIST y la inactivación del X:",o:["XIST se localiza en Xq13 y se expresa en el X activo","XIST se transcribe desde el X inactivo como un RNA no codificante de ~19 kb que inicia el silenciamiento, que luego se mantiene con metilación de CpG, desacetilación, macroH2A y metilación de H3K27","El RNA de XIST se traduce a una proteína represora","Las regiones PAR se inactivan con el resto del X","La inactivación se revierte en todas las células somáticas adultas"],a:1,e:"XIST (Xq13) es activo en el Xi e inactivo en el Xa; gen de 32 kb, RNA de 19 kb que no se traduce. La inactivación se elige en el blastocisto y es clonal (mosaico); solo se reactiva en la línea germinal (oocitos). PAR1/PAR2 escapan (15 % de los genes escapan del todo y 20 % en parte). Los LINEs actúan como estaciones de relevo."},
+{t:"2.3",q:"Una persona 46,XY tiene genitales externos femeninos, testículos intraabdominales y testosterona normal o alta. El diagnóstico más probable es:",o:["Hiperplasia suprarrenal congénita por déficit de 21-hidroxilasa","Síndrome de insensibilidad a andrógenos (mutación del receptor de andrógenos, Xq11-q12)","Síndrome de Turner","Varón 46,XX SRY+","Déficit de 5α-reductasa con genitales completamente femeninos de por vida"],a:1,e:"Hay testículos (SRY y la determinación funcionan) y testosterona, pero no hay respuesta: falla el receptor AR (82 % mutaciones puntuales). La HSC virilizaría a un feto 46,XX. En el déficit de 5α-reductasa no se forma la DHT: genitales ambiguos con virilización en la pubertad."}
+];
+
+const TEMAS = [
+{id:"A",title:"Abortos de repetición y Down familiar",tag:"2.1 + 2.2 + 1.3",
+ caso:"Una pareja acude a consulta de genética tras dos abortos espontáneos del primer trimestre. Tienen un hijo de 3 años con síndrome de Down. La madre tiene 29 años y el padre 31; ambos tienen fenotipo normal.",
+ lits:[["a","Indica qué estudio citogenético pedirías, a quién y por qué. Describe los pasos principales para obtener un cariotipo a partir de sangre periférica.","1,5"],
+ ["b","El cariotipo del niño es 46,XY,rob(14;21)(q10;q10),+21 y la madre resulta portadora. Escribe la fórmula de la madre, explica por qué tiene 45 cromosomas y fenotipo normal, y clasifica esta alteración.","2"],
+ ["c","Explica la segregación meiótica de esta madre: qué gametos puede formar y qué cigotos resultan al fecundarse con un espermatozoide normal. Relaciónalo con los abortos.","2,5"],
+ ["d","Compara la trisomía 21 libre con la trisomía 21 por translocación: frecuencia, origen parental y meiótico, relación con la edad materna (con sus mecanismos) y riesgo de recurrencia.","2"],
+ ["e","¿Detectarían la alteración de la madre un array-CGH, una FISH y un OGM? Justifícalo comparando resolución, capacidad de detectar alteraciones equilibradas y necesidad de hipótesis previa.","2"]],
+ model:`<h3>a) Estudio indicado</h3>
+<p>Cariotipo con bandas G del niño (para distinguir trisomía libre, por translocación o mosaico) y de ambos progenitores. Hay dos indicaciones: una trisomía 21 en la que hay que descartar progenitores portadores (riesgo de recurrencia) y abortos espontáneos de repetición (sospecha de una translocación equilibrada). La edad materna &lt;35 años hace sospechar algo distinto de una no disyunción ligada a la edad.</p>
+<p>Procedimiento: 0,75 ml de sangre heparinizada en 10 ml de medio (medio base, mitógeno como la PHA, suero fetal, antibióticos, glutamina), cultivo 48–72 h a 37 ºC → antimitótico (colchicina) para acumular metafases → centrifugación y choque hipotónico (30 min, 37 ºC) → fijación (metanol:acético) con varios lavados → extensión en portaobjetos → bandeo G (Giemsa), análisis de ≥400 bandas y fórmula ISCN.</p>
+<h3>b) Fórmula y clasificación</h3>
+<p>Madre: <code>45,XX,rob(14;21)(q10;q10)</code>. Es la fusión céntrica de dos acrocéntricos por q10 con pérdida de los brazos cortos. Se cuentan cromosomas estructurales: el derivado cuenta como uno, así que son 45. El fenotipo es normal porque los brazos cortos de los acrocéntricos solo contienen satélites y genes de rRNA repetidos en los otros acrocéntricos: no hay pérdida de dosis génica.</p>
+<p>Clasificación: anomalía estructural, equilibrada, constitucional, de línea única. Es de las más frecuentes (~1/1.000; las más comunes son 13;14 y 14;21). En el hijo (46 cromosomas, tres copias de 21q) es desequilibrada.</p>
+<h3>c) Segregación meiótica</h3>
+<p>En la profase I se forma un trivalente (14, 21 y der(14;21)). Gametos posibles: (1) 14 + 21 normales → cigoto normal; (2) der(14;21) → cigoto portador equilibrado; (3) der(14;21) + 21 → trisomía 21 por translocación (viable); (4) 14 solo → monosomía 21 (aborto); (5) der + 14 → trisomía 14 (aborto); (6) 21 solo → monosomía 14 (aborto). Los abortos del primer trimestre son los cigotos desequilibrados no viables. Riesgo empírico de Down en descendencia: ~10–15 % si la portadora es la madre y ~1–2 % si es el padre. Es útil para el consejo genético, aunque no aparece en las diapositivas.</p>
+<h3>d) Libre vs translocación</h3>
+<p>Libre: ~90 % de los Down, por no disyunción; origen materno ~90 % (75 % MI, 25 % MII); el riesgo aumenta con la edad materna por fallos del punto de control del huso (SAC), pérdida de cohesinas con el tiempo de arresto en dictiotene, disfunción mitocondrial, daño en el DNA y estrés oxidativo. La recurrencia es baja (~1 % más el riesgo por edad).</p>
+<p>Translocación: 2–4 %, sin relación con la edad materna; puede ser de novo o heredada de un portador equilibrado. Si es heredada, el riesgo de recurrencia es alto y hay riesgo de abortos, por lo que se estudia a los padres y se ofrece diagnóstico prenatal. Los mosaicos (1–3 %) tienen un fenotipo más leve.</p>
+<h3>e) Técnicas</h3>
+<p>Array-CGH: no la detecta. Compara cantidades de DNA (ganancias/pérdidas) y la alteración de la madre es equilibrada. En el hijo sí detectaría la ganancia de 21q, pero no distinguiría si es libre o por translocación.</p>
+<p>FISH: sí, con una sonda dirigida (hipótesis previa). Por ejemplo, WCP 14 y 21, o una sonda LSI 21q22 en metafase mostrando la señal sobre el derivado. Resolución ~100 kb (más en interfase y fiber-FISH).</p>
+<p>OGM: sí. Analiza el genoma completo sin hipótesis previa, detecta reordenamientos equilibrados y desequilibrados con alta resolución y sin cultivo. Limitación: las regiones repetitivas (centrómeros, brazos cortos de acrocéntricos), justo donde están los puntos de rotura de una robertsoniana, pueden dificultar su caracterización. Por eso el cariotipo sigue siendo la técnica de elección en este caso, y las técnicas son complementarias.</p>`,
+ rubric:["Pide cariotipo del niño Y de ambos padres y justifica las dos indicaciones","Describe el cultivo (mitógeno, 48–72 h), el antimitótico, el hipotónico, el fijador y el bandeo G","Fórmula de la madre correcta con 45 y explica por qué se cuentan 45","Explica el fenotipo normal (brazos cortos con rDNA redundante) y la clasifica como estructural equilibrada","Dibuja o enumera los 6 gametos posibles y sus cigotos","Relaciona los desequilibrados con los abortos","Da las cifras de la T21: 90 % libre, 2–4 % translocación, 1–3 % mosaico; 90 % materno, 75 % MI","Mecanismos de la edad materna: SAC y cohesinas","Contrasta el riesgo de recurrencia libre vs heredada","Array-CGH no detecta equilibradas; FISH necesita hipótesis; OGM genoma completo, con su limitación en zonas repetitivas"]},
+{id:"B",title:"Cromosoma X, dosis génica y sexo",tag:"2.3 + 1.1",
+ caso:"Pregunta de desarrollo sobre los cromosomas sexuales humanos.",
+ lits:[["a","Describe las características de los cromosomas X e Y: grupo, morfología, contenido génico, regiones pseudoautosómicas y heterocromatina.","1,5"],
+ ["b","Explica el mecanismo de inactivación del X: momento, gen responsable, marcas epigenéticas, papel de los LINEs, genes que escapan y consecuencias.","2,5"],
+ ["c","Indica cuántos corpúsculos de Barr y masas Y esperarías en 45,X; 46,XY; 47,XXY; 47,XXX; 48,XXXY; 47,XYY y 69,XXY. Enuncia la regla.","1,5"],
+ ["d","Compara el síndrome de Turner y el de Klinefelter: cariotipos, incidencia, origen parental, fenotipo y explicación genotipo-fenotipo basada en la dosis génica.","2,5"],
+ ["e","Explica cómo puede originarse un varón 46,XX y qué nos enseña sobre la determinación y la diferenciación sexual.","2"]],
+ model:`<h3>a) X e Y</h3>
+<p>X: grupo C, submetacéntrico, ~1.000 genes. Y: grupo G por tamaño, submetacéntrico (no acrocéntrico: SRY está en Yp), ~70 genes, la mayoría para la determinación sexual y la espermatogénesis, en Yp y Yq proximal. Yq distal (Yqh) es heterocromatina no codificante de tamaño polimórfico, brillante con bandas Q (masa Y en interfase) y teñida con bandas C. Regiones pseudoautosómicas: PAR1 (Xp/Yp, 2,6 Mb, con entrecruzamiento obligatorio en la meiosis masculina) y PAR2 (Xq/Yq, 320 kb). 54 genes del X tienen homólogo en el Y (24 en PAR1, 5 en PAR2). Los varones son hemicigotos constitutivos.</p>
+<h3>b) Inactivación (lyonización)</h3>
+<p>Compensa la dosis entre XX y XY. Se decide en el blastocisto, al azar (X paterno o materno), y es clonal: la mujer es un mosaico funcional, lo que importa en enfermedades ligadas al X. Centro de inactivación con XIST (Xq13): se transcribe solo desde el futuro Xi (gen de 32 kb, RNA de 19 kb no traducido), recubre el cromosoma en cis, cuenta los X y elige cuál inactivar. Mantenimiento: metilación de islas CpG en los promotores, desacetilación de histonas, H3K27me, macroH2A y replicación tardía en la fase S. Los LINEs actúan como estaciones de relevo que propagan el silenciamiento: en una translocación X;2 se inactiva también el segmento autosómico. Escapan totalmente ~15 % de los genes (incluidas las PAR) y parcialmente ~20 % según el tejido. Se reactiva solo en la línea germinal (oocitos). El Xi se ve como corpúsculo de Barr (heterocromatina facultativa).</p>
+<h3>c) Recuento</h3>
+<p>En diploides queda un X activo, así que Barr = n.º de X − 1. 45,X: 0; 46,XY: 0 Barr y 1 Y; 47,XXY: 1 y 1; 47,XXX: 2 y 0; 48,XXXY: 2 y 1; 47,XYY: 0 y 2. En triploides/tetraploides quedan dos X activos: 69,XXY tiene 0 Barr y 1 Y (69,XXX tendría 1).</p>
+<h3>d) Turner vs Klinefelter</h3>
+<p>Turner: 45,X (~50 %), 46,X,i(Xq) (15 %) y mosaicos 45,X/46,XX; 1/2.000–2.500 niñas; 80 % no disyunción paterna. Talla baja, cuello corto y ancho, implantación baja del pelo, cuarto metacarpiano corto, tórax ancho, fallo ovárico, alteraciones inmunitarias, inteligencia normal con dificultades de aprendizaje.</p>
+<p>Klinefelter: 47,XXY (80 %), además de 48,XXXY y mosaicos; 1/1.000 (prevalencia 1/500); 60 % no disyunción materna. Talla alta, piernas largas, hipogonadismo evidente en la pubertad, infertilidad (azoospermia), ginecomastia con mayor riesgo de cáncer de mama, problemas de atención. Diagnóstico por cariotipo más perfil hormonal (testosterona baja, LH y FSH altas).</p>
+<p>Genotipo-fenotipo: lo explica la dosis de los genes que escapan a la inactivación. Un XX normal tiene dos copias activas. Turner tiene una (haploinsuficiencia; SHOX en PAR1 explica la talla baja). Klinefelter tiene tres (exceso: SHOX y talla alta, NLGN4X y GTPBP6 en el neurodesarrollo, SLC25A6 en el QTc). Por eso estas cromosomopatías son más leves que las autosómicas: la inactivación amortigua casi todo menos los escapes.</p>
+<h3>e) Varón 46,XX</h3>
+<p>Un entrecruzamiento en la meiosis paterna fuera de PAR1, por debajo de SRY (~30 % entre los homólogos PRKX/PRKY, es decir, NAHR entre secuencias homólogas), traslada SRY al Xp: el hijo XX con SRY+ desarrolla testículos. El recíproco da una mujer 46,XY con SRY−. La proximidad de SRY a la PAR1 es un riesgo. Esto demuestra que SRY (1990) es el interruptor de la determinación (factor genético): en las células de soporte de la cresta genital (pre-Sertoli, semanas 7–9) activa SOX9 (17q24), mantenido con FGF9 (retroalimentación positiva), y reprime la vía ovárica WNT4/RSPO1 (y DAX1). Sin SRY, SOX9 cae y se forma el ovario. La diferenciación posterior es hormonal (testosterona, DHT, AMH). Lo ilustran la insensibilidad a andrógenos y el déficit de 5α-reductasa en 46,XY, y la HSC por déficit de 21-hidroxilasa en 46,XX.</p>`,
+ rubric:["X grupo C e Y grupo G, ambos submetacéntricos; n.º de genes aproximado","PAR1 2,6 Mb y PAR2 320 kb; Yqh y masa Y con bandas Q","XIST Xq13 expresado en el Xi, RNA no codificante, momento del blastocisto, azar y clonalidad","Marcas: metilación CpG, desacetilación, H3K27me, macroH2A, replicación tardía","LINEs como estaciones de relevo; escapes del 15 % y 20 %","Regla n.º X − 1 en diploides y la excepción de los triploides","Cariotipos e incidencia de Turner y Klinefelter con su origen parental","Explicación por dosis de genes que escapan (SHOX)","Recombinación fuera de PAR / PRKX-PRKY que transloca SRY","Distingue determinación (genética: SRY→SOX9 vs WNT4/RSPO1) de diferenciación (hormonal)"]},
+{id:"C",title:"Arquitectura del genoma y variación",tag:"1.1 + 1.2 + 1.3",
+ caso:"Pregunta de desarrollo sobre la organización del genoma humano y cómo origina variación y enfermedad.",
+ lits:[["a","Compara el genoma nuclear y el mitocondrial y explica cómo interaccionan.","1,5"],
+ ["b","Clasifica los tipos de secuencias del genoma nuclear, con un ejemplo y la proporción aproximada de cada uno.","2,5"],
+ ["c","Define las duplicaciones segmentarias y explica cómo provocan trastornos genómicos mediante NAHR. Pon dos ejemplos.","2"],
+ ["d","Clasifica la variación genética por tamaño, indica la técnica adecuada para cada escala y diferencia SNV, SNP y mutación.","2"],
+ ["e","Explica por qué el PGH dejó regiones sin secuenciar en 2003 y cómo las nuevas tecnologías permitieron completar el genoma (T2T, pangenoma).","2"]],
+ model:`<h3>a) Nuclear vs mitocondrial</h3>
+<p>Nuclear (99,9995 %): ~3.000.000 kb, ~20.000 genes codificantes, 23 moléculas lineales (24 distintas en el varón), dos copias por célula, nucleosomas, intrones, recombinación y herencia mendeliana (Y paterna). Mitocondrial: 16 kb, 37 genes, una molécula circular, &gt;1.000 copias, sin nucleosomas ni intrones, sin recombinación, herencia materna, mayoritariamente codificante.</p>
+<p>Interacción: ~95 % de las proteínas mitocondriales (~1.000) están codificadas en el núcleo e importadas; solo 13 se sintetizan en la mitocondria (cadena respiratoria, membrana interna). Además existe una comunicación por señales: el estrés y las ROS modulan la expresión nuclear y la proliferación.</p>
+<h3>b) Clasificación del DNA nuclear</h3>
+<p>Genes y secuencias relacionadas: DNA codificante (~2 %), con familias génicas (globinas α/β, histonas); pseudogenes procesados, no procesados y unitarios (PTENP1); genes de ncRNA (20.000–25.000): housekeeping (rRNA, tRNA, snRNA, snoRNA) y reguladores, pequeños &lt;200 nt (miRNA, siRNA, piRNA) y largos &gt;200 nt (lincRNA, circRNA, eRNA, NATs); fragmentos génicos.</p>
+<p>DNA extragénico: secuencia única o poco repetitiva; duplicaciones segmentarias (~5 %); moderadamente repetitivo en tándem (minisatélites/VNTR y microsatélites/STR de 1–6 pb, teloméricos TTAGGG) y disperso (elementos transponibles, ~50 %): transposones de DNA (clase II, cortar y pegar, inactivos), retrotransposones con LTR (HERVs, HERV-K activo en cáncer) y sin LTR (LINEs L1 autónomos con RT y endonucleasa; SINEs Alu/SVA no autónomos). Altamente repetitivo: satélites α (171 pb, AT, HORs, centrómero y cinetocoro con CENP-A), β (68 pb) y γ (220 pb), pericentroméricos. Funciones de los móviles: mutagénesis, silenciamiento epigenético, fuente de ncRNA y enhancers.</p>
+<h3>c) Duplicaciones segmentarias y NAHR</h3>
+<p>Son segmentos de 1–500 kb repetidos en dos o más localizaciones con &gt;90 % de homología, en tándem directo o invertido; pueden contener genes y pseudogenes (LCR). En la meiosis, la alta homología permite un emparejamiento desalineado y una recombinación entre copias no alélicas. Entre cromátides o cromosomas homólogos se generan productos recíprocos (deleción + duplicación); dentro de una misma cromátide, una deleción (con repeticiones directas) o una inversión (con repeticiones invertidas). Ejemplos: del 22q11.2 (DiGeorge/velocardiofacial, 1/4.000: cardiopatía, inmunodeficiencia, paladar, DI), del 7q11.23 (Williams, 1/20.000: ELN y estenosis aórtica supravalvular, cara élfica, hipercalcemia), 15q11-q13 (PWS/AS), inversión del intrón 22 de F8 (hemofilia A).</p>
+<h3>d) Variación por tamaño</h3>
+<p>El varioma supone un 0,1 % de diferencia entre genomas (3–4 millones de variantes), mayoritariamente compartida entre poblaciones. Pequeña escala (&lt;50 pb): SNV, indels y STR → secuenciación (Sanger, NGS). Mediana (1 kb–1 Mb): CNV y reordenamientos submicroscópicos → array-CGH, FISH, OGM, lecturas largas. Gran escala (&gt;5 Mb): reordenamientos, aneuploidías, heteromorfismos (1qh, 9qh, 16qh, inv(9), robertsonianas) → cariotipo. A mayor tamaño, mayor efecto fenotípico.</p>
+<p>SNV = cualquier cambio de un nucleótido; SNP = SNV con frecuencia &gt;1 % (1/300 pb), generalmente sin efecto directo pero útil en GWAS (rs…). Mutación = variante patogénica, normalmente rara (ΔF508 en CFTR por LOF; FGFR3 por GOF, a menudo de novo; 40–70 mutaciones de novo germinales por hijo). STR/VNTR son muy polimórficos y sirven de huella genética en forense.</p>
+<h3>e) Del PGH al T2T</h3>
+<p>El PGH (1990–2003; Watson y luego Collins frente a Venter/Celera) usó Sanger automatizada con ddNTPs fluorescentes, lecturas cortas y BACs: terminó con ~90 % del genoma y 99,9 % de precisión. Las regiones repetitivas (centrómeros, satélites, duplicaciones segmentarias, brazos cortos de los acrocéntricos, Y) no podían ensamblarse porque una lectura corta dentro de una repetición encaja en múltiples sitios. Illumina (2.ª generación: bridge PCR, terminadores reversibles) abarató y masificó la secuenciación, pero también con lecturas cortas. La 3.ª generación (Nanopore ~2 Mb con error del 10–15 % y lectura directa de RNA; PacBio ~100 kb) atraviesa las repeticiones: T2T completó el genoma en abril de 2022 y el Y en agosto de 2023 (todos los centrómeros con sus HORs). El pangenoma (47 genomas, ampliable a 350) sustituye una referencia derivada de pocos donantes por una diversa y permite ver variantes estructurales que 1000 Genomes (2.504 individuos, lecturas cortas) infraestimaba.</p>`,
+ rubric:["Tabla nuclear/mitocondrial completa (tamaño, genes, copias, intrones, recombinación, herencia)","95 % de proteínas importadas, 13 propias, señalización ROS","Codificante 2 %, transponibles ~50 %, duplicaciones segmentarias 5 %","Distingue LINE autónomo / SINE no autónomo / LTR-HERV / transposón de DNA","Satélite α 171 pb, AT, HORs, CENP-A","Define DS: 1–500 kb, >90 %; mecanismo NAHR inter e intracromátide con productos recíprocos","Dos ejemplos con región y fenotipo (22q11.2, 7q11.23)","Tres escalas con su técnica; SNV vs SNP (>1 %) vs mutación","Explica por qué las lecturas cortas no resuelven repeticiones","T2T 2022/2023 con lecturas largas y concepto de pangenoma"]}
+];
+
+/* Baraja las opciones con semilla fija (orden estable entre recargas) salvo en preguntas numéricas */
+(function(){let seed=20261018;const rnd=()=>{seed=(seed*1103515245+12345)%2147483648;return seed/2147483648};
+  Q.forEach((q,i)=>{if(i===25)return;const idx=[0,1,2,3,4];for(let k=4;k>0;k--){const r=Math.floor(rnd()*(k+1));[idx[k],idx[r]]=[idx[r],idx[k]]}
+    q.o=idx.map(j=>q.o[j]);q.a=idx.indexOf(q.a)})})();
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const L="ABCDE";
+
+/* Tabs */
+document.querySelectorAll("nav.tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+function showTab(t){document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===t)));["test","tema","plan"].forEach(p=>$("#pane-"+p).hidden=p!==t);store.set("tab",t)}
+showTab(store.get("tab","test"));
+
+/* Test */
+let answers=store.get("answers",{}); let graded=false;
+function renderQ(){
+  const box=$("#questions"); box.innerHTML="";
+  Q.forEach((q,i)=>{
+    const d=document.createElement("div"); d.className="q"; d.id="q"+i;
+    const sel=answers[i];
+    let h=`<div class="qhead"><span class="qnum">${String(i+1).padStart(2,"0")}</span><div class="qtext">${q.q}</div><span class="qtag">${q.t}</span></div><div class="opts">`;
+    q.o.forEach((o,j)=>{
+      let cls="opt"; if(sel===j)cls+=" sel";
+      if(graded){if(j===q.a)cls+=" right";else if(sel===j)cls+=" wrong"}
+      h+=`<label class="${cls}"><input type="radio" name="r${i}" id="r${i}_${j}" value="${j}" ${sel===j?"checked":""} ${graded?"disabled":""}><span class="l">${L[j]}</span><span>${o}</span></label>`;
+    });
+    h+=`</div><div class="qfoot">`;
+    if(graded){const v=sel==null?'<span class="verdict blank">EN BLANCO · 0</span>':sel===q.a?'<span class="verdict ok">CORRECTA · +1</span>':'<span class="verdict bad">ERROR · −0,20</span>';h+=v}
+    else if(sel!=null) h+=`<button class="link" type="button" data-blank="${i}">dejar en blanco</button>`;
+    h+=`</div>`;
+    if(graded) h+=`<div class="expl">${q.e}</div>`;
+    d.innerHTML=h; box.appendChild(d);
+  });
+  box.querySelectorAll("input[type=radio]").forEach(r=>r.addEventListener("change",e=>{const [i,j]=e.target.id.slice(1).split("_").map(Number);answers[i]=j;store.set("answers",answers);renderQ()}));
+  box.querySelectorAll("[data-blank]").forEach(b=>b.addEventListener("click",()=>{delete answers[b.dataset.blank];store.set("answers",answers);renderQ()}));
+}
+function grade(){
+  graded=true; stopTimer();
+  let ok=0,bad=0,blank=0; const by={};
+  Q.forEach((q,i)=>{by[q.t]=by[q.t]||{ok:0,bad:0,blank:0}; const s=answers[i];
+    if(s==null){blank++;by[q.t].blank++}else if(s===q.a){ok++;by[q.t].ok++}else{bad++;by[q.t].bad++}});
+  const raw=Math.max(0,ok-0.2*bad), nota=raw/30*10;
+  let rows=Object.keys(by).sort().map(t=>{const b=by[t];const n=Math.max(0,b.ok-0.2*b.bad);return `<tr><td>Tema ${t}</td><td>${b.ok}</td><td>${b.bad}</td><td>${b.blank}</td><td>${n.toFixed(1)} / 5</td></tr>`}).join("");
+  const weak=Object.keys(by).filter(t=>by[t].ok<4);
+  $("#scoreBox").innerHTML=`<div class="score"><div class="meta">NOTA DEL TEST</div><div class="big">${nota.toFixed(2).replace(".",",")}</div><div class="meta">${ok} aciertos · ${bad} errores · ${blank} en blanco · ${raw.toFixed(1).replace(".",",")} / 30 puntos</div>
+  <div class="tbl-wrap"><table><tr><th>Tema</th><th>Aciertos</th><th>Errores</th><th>Blanco</th><th>Puntos</th></tr>${rows}</table></div>
+  <p class="note">${weak.length?"Repasa primero: "+weak.map(t=>"tema "+t).join(", ")+". Lee las explicaciones de cada pregunta debajo.":"Ningún tema por debajo de 4/5. Lee las explicaciones de las que fallaste."}</p></div>`;
+  $("#scoreBox").hidden=false; $("#gradeBtn").disabled=true; renderQ(); $("#scoreBox").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("#gradeBtn").addEventListener("click",grade);
+$("#clearBtn").addEventListener("click",()=>{answers={};graded=false;store.set("answers",answers);$("#scoreBox").hidden=true;$("#gradeBtn").disabled=false;renderQ()});
+renderQ();
+
+/* Timer */
+let remaining=store.get("remaining",3600), tick=null;
+function fmt(s){const m=Math.floor(Math.abs(s)/60),x=Math.abs(s)%60;return (s<0?"−":"")+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")}
+function paint(){const c=$("#clock");c.textContent=fmt(remaining);c.classList.toggle("late",remaining<=300)}
+function stopTimer(){clearInterval(tick);tick=null;$("#timerBtn").textContent=remaining<3600?"Reanudar":"Empezar examen"}
+$("#timerBtn").addEventListener("click",()=>{if(tick){stopTimer();return}tick=setInterval(()=>{remaining--;store.set("remaining",remaining);paint()},1000);$("#timerBtn").textContent="Pausar"});
+$("#resetTimer").addEventListener("click",()=>{stopTimer();remaining=3600;store.set("remaining",remaining);paint();$("#timerBtn").textContent="Empezar examen"});
+paint();
+
+/* Tema */
+let cur=store.get("tema","A");
+function temaObj(){return TEMAS.find(t=>t.id===cur)}
+function renderPicker(){$("#temaPicker").innerHTML=TEMAS.map(t=>`<button type="button" aria-pressed="${t.id===cur}" data-t="${t.id}">Tema ${t.id} · ${t.title}</button>`).join("");
+  $("#temaPicker").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{cur=b.dataset.t;store.set("tema",cur);renderTema()}))}
+function renderTema(){
+  renderPicker(); const t=temaObj();
+  $("#temaCase").innerHTML=`<div class="case"><div class="meta">${t.tag} · 10 puntos</div><p>${t.caso}</p><ul class="lits">${t.lits.map(l=>`<li><span class="lk">${l[0]})</span><span>${l[1]}</span><span class="pts">${l[2]} p</span></li>`).join("")}</ul></div>`;
+  $("#answer").value=store.get("ans_"+cur,""); count(); $("#gradeOut").innerHTML=""; $("#modelOut").innerHTML=""; $("#showModel").textContent="Ver respuesta modelo y rúbrica";
+}
+function count(){const n=($("#answer").value.trim().match(/\S+/g)||[]).length;$("#wc").textContent=n+" palabras"}
+$("#answer").addEventListener("input",()=>{store.set("ans_"+cur,$("#answer").value);count()});
+$("#showModel").addEventListener("click",()=>{
+  if($("#modelOut").innerHTML){$("#modelOut").innerHTML="";$("#showModel").textContent="Ver respuesta modelo y rúbrica";return}
+  const t=temaObj();
+  $("#modelOut").innerHTML=`<div class="model"><h3>Rúbrica · marca lo que has incluido</h3><ul class="chk">${t.rubric.map((r,i)=>`<li><label><input type="checkbox" id="rb_${t.id}_${i}"><span>${r}</span></label></li>`).join("")}</ul><p class="meta" id="rbScore"></p>${t.model}</div>`;
+  const upd=()=>{const n=[...document.querySelectorAll(".chk input")].filter(c=>c.checked).length;$("#rbScore").textContent=`${n}/${t.rubric.length} puntos clave · nota orientativa ${(n/t.rubric.length*10).toFixed(1).replace(".",",")}`};
+  document.querySelectorAll(".chk input").forEach(c=>c.addEventListener("change",upd)); upd();
+  $("#showModel").textContent="Ocultar respuesta modelo";
+});
+
+/* Corrección con Claude */
+let sample=null, ctl=null;
+(async()=>{try{sample=await window.claude?.use?.("sample")}catch(e){sample=null} if(sample) $("#askGrade").hidden=false})();
+$("#stopGrade").addEventListener("click",()=>ctl?.abort());
+$("#askGrade").addEventListener("click",async()=>{
+  const t=temaObj(), ans=$("#answer").value.trim();
+  if(ans.length<80){$("#gradeOut").innerHTML=`<p class="note">Escribe primero tu respuesta (al menos unas líneas por literal) para poder corregirla.</p>`;return}
+  const prompt=`Eres profesor/a de Genética Médica (3.º de Ciencias Biomédicas, Universitat de Barcelona). Corrige con exigencia de matrícula de honor la respuesta de una alumna a una pregunta de tema de examen. Responde en español.
+
+ENUNCIADO
+${t.caso}
+${t.lits.map(l=>l[0]+") ("+l[2]+" p) "+l[1]).join("\n")}
+
+PUNTOS CLAVE QUE ESPERA EL PROFESORADO (rúbrica)
+${t.rubric.map(r=>"- "+r).join("\n")}
+
+RESPUESTA DE REFERENCIA (basada en las diapositivas del curso)
+${t.model.replace(/<[^>]+>/g," ").replace(/\s+/g," ")}
+
+RESPUESTA DE LA ALUMNA
+${ans}
+
+FORMATO DE TU CORRECCIÓN (texto plano, sin tablas):
+NOTA GLOBAL: x/10
+Luego, para cada literal: "a) nota/puntos máximos", qué está bien, qué falta (concreto), y cualquier error conceptual o de nomenclatura ISCN.
+Termina con "PARA LA MATRÍCULA:" y 3 acciones concretas para mejorar la redacción (precisión, mecanismos, cifras, conexiones entre temas).
+No inventes datos que no estén en la referencia; si la alumna aporta un dato correcto que no aparece, valóralo.`;
+  ctl=new AbortController(); $("#askGrade").disabled=true; $("#stopGrade").hidden=false;
+  const out=document.createElement("div"); out.className="feedback"; out.textContent="Corrigiendo… (puede tardar hasta un minuto)"; $("#gradeOut").innerHTML=""; $("#gradeOut").appendChild(out);
+  try{await sample(prompt,{modelTier:"complex",signal:ctl.signal,cache:false,onText:({text})=>{out.textContent=text}})}
+  catch(e){
+    if(e.code==="not_granted"||e.code==="sampling_disabled"){$("#askGrade").hidden=true;out.textContent="La corrección automática no está disponible aquí. Usa la rúbrica y la respuesta modelo, o pega tu respuesta en el chat."}
+    else if(e.code==="cancelled"){out.textContent=e.text||"Corrección detenida."}
+    else if(e.code==="rate_limited"){out.textContent=(e.text?e.text+"\n\n":"")+"Has hecho demasiadas peticiones seguidas. Prueba de nuevo en unos minutos."}
+    else{out.textContent=(e.text?e.text+"\n\n":"")+"No se pudo completar la corrección. Vuelve a intentarlo."}
+  }finally{$("#askGrade").disabled=false;$("#stopGrade").hidden=true}
+});
+renderTema();
+</script>
+
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body></html>

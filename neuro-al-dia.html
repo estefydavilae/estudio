@@ -1,0 +1,433 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Neuro al día</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow study column; card in the centre, tabs on top, progress as quiet bars below */
+:root{
+  --bg:#F4F5F9; --surface:#FFFFFF; --soft:#E4E5F6; --line:#D6D8E6;
+  --ink:#1A1C2C; --muted:#5D6078; --accent:#4A4DC0; --accent-ink:#FFFFFF;
+  --again:#B9413A; --hard:#B57C12; --good:#2C7F55; --easy:#2D66A8;
+  --new:#B7BAD3; --learn:#D9A441; --master:#3E8E64;
+  --f-display:"Newsreader", Georgia, "Times New Roman", serif;
+  --f-ui:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11121B; --surface:#1A1C29; --soft:#262946; --line:#2E3146;
+  --ink:#E8E9F3; --muted:#9A9DB8; --accent:#9C9FF6; --accent-ink:#11121B;
+  --again:#E2756D; --hard:#E0AE4C; --good:#5DBB8A; --easy:#78A9E6;
+  --new:#4A4D68; --learn:#D0A04A; --master:#55B583; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11121B; --surface:#1A1C29; --soft:#262946; --line:#2E3146;
+  --ink:#E8E9F3; --muted:#9A9DB8; --accent:#9C9FF6; --accent-ink:#11121B;
+  --again:#E2756D; --hard:#E0AE4C; --good:#5DBB8A; --easy:#78A9E6;
+  --new:#4A4D68; --learn:#D0A04A; --master:#55B583; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:500;font-size:2rem;line-height:1.1;margin:0;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.9rem;margin:2px 0 0}
+.exam{font-family:var(--f-mono);font-size:.82rem;text-align:right;color:var(--muted)}
+.exam b{display:block;font-family:var(--f-display);font-weight:500;font-size:1.6rem;color:var(--ink);line-height:1}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav a{color:var(--muted);text-decoration:none;padding:8px 12px;font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+nav a[aria-current="page"]{color:var(--ink);border-color:var(--accent)}
+nav a:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.note{background:var(--soft);border-radius:var(--r);padding:12px 14px;font-size:.92rem}
+.note.warn{border-left:3px solid var(--hard)}
+h2{font-family:var(--f-display);font-weight:500;font-size:1.35rem;margin:0;text-wrap:balance}
+.label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.today{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .n{font-family:var(--f-mono);font-size:1.6rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .k{color:var(--muted);font-size:.82rem}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:.8rem;color:var(--muted)}
+select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 14px;font-weight:500}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+/* study card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 0 var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-size:.74rem;border-radius:999px;padding:2px 9px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.chip.kind{border:1px solid var(--line);background:transparent;color:var(--muted)}
+.q{font-family:var(--f-display);font-size:1.32rem;line-height:1.35;margin:0;text-wrap:pretty}
+textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:84px;resize:vertical;width:100%}
+.answer{border-top:1px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.a{font-size:1.02rem;margin:0;max-width:65ch}
+.mine{font-size:.88rem;color:var(--muted);border-left:3px solid var(--line);padding-left:10px;white-space:pre-wrap}
+.extra{font-size:.88rem;background:var(--soft);border-radius:8px;padding:8px 10px}
+.src{font-size:.78rem;color:var(--muted);font-family:var(--f-mono)}
+.grades{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.grades button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px}
+.grades small{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);font-weight:400}
+.g0{border-color:var(--again)!important}.g0 span{color:var(--again)}
+.g1{border-color:var(--hard)!important}.g1 span{color:var(--hard)}
+.g2{border-color:var(--good)!important}.g2 span{color:var(--good)}
+.g3{border-color:var(--easy)!important}.g3 span{color:var(--easy)}
+.sessionbar{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.track{height:4px;background:var(--line);border-radius:4px;overflow:hidden;flex:1}
+.track i{display:block;height:100%;background:var(--accent)}
+.hint{font-size:.78rem;color:var(--muted)}
+/* progress */
+.topic{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.topic-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline}
+.topic-head p{margin:0;color:var(--muted);font-size:.86rem}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--new)}
+.bar .m{background:var(--master)}.bar .l{background:var(--learn)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+.secs{display:flex;flex-direction:column;gap:8px}
+.sec{display:grid;grid-template-columns:minmax(0,1fr) 120px 48px;gap:10px;align-items:center;font-size:.86rem}
+.sec .bar{height:7px}
+.sec .pct{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.days{display:flex;gap:3px;align-items:end;height:48px}
+.days div{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;opacity:.85}
+.days div.zero{background:var(--line);opacity:1}
+.hardlist{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:.9rem}
+.hardlist small{color:var(--muted);font-family:var(--f-mono)}
+/* browse */
+.list{display:flex;flex-direction:column;gap:8px}
+details.item{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+details.item summary{cursor:pointer;display:flex;gap:10px;align-items:baseline;list-style:none}
+details.item summary::-webkit-details-marker{display:none}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--new);transform:translateY(-1px)}
+.dot.l{background:var(--learn)}.dot.m{background:var(--master)}
+details.item p{margin:8px 0 0 18px;font-size:.92rem}
+input[type=search]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.empty{text-align:center;color:var(--muted);padding:28px 10px}
+@media (max-width:480px){.today{grid-template-columns:1fr 1fr 1fr}.stat .n{font-size:1.3rem}.q{font-size:1.18rem}.card{padding:16px}.sec{grid-template-columns:minmax(0,1fr) 80px 40px}}
+@media (prefers-reduced-motion:no-preference){.answer{animation:in .18s ease-out}@keyframes in{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Neuro al día</h1>
+      <p class="sub">Neurobiología · flashcards con repaso espaciado</p>
+    </div>
+    <div class="exam" id="exam"><b id="examDays">–</b>días para el parcial 2 · 14 dic</div>
+  </header>
+
+  <nav aria-label="Secciones">
+    <a href="#hoy" data-view="hoy">Hoy</a>
+    <a href="#estudiar" data-view="estudiar">Estudiar</a>
+    <a href="#progreso" data-view="progreso">Progreso</a>
+    <a href="#tarjetas" data-view="tarjetas">Tarjetas</a>
+  </nav>
+
+  <div id="status" class="note" hidden></div>
+
+  <!-- HOY -->
+  <section id="v-hoy" class="view" style="display:flex;flex-direction:column;gap:16px">
+    <div class="today">
+      <div class="stat"><div class="n" id="sDue">–</div><div class="k">para repasar hoy</div></div>
+      <div class="stat"><div class="n" id="sNew">–</div><div class="k">nuevas sin ver</div></div>
+      <div class="stat"><div class="n" id="sDone">–</div><div class="k">repasadas hoy</div></div>
+    </div>
+    <div class="controls">
+      <div class="field"><label for="topicSel">Tema</label><select id="topicSel"><option value="">Todos los temas</option></select></div>
+      <div class="field"><label for="newSel">Nuevas por sesión</label><select id="newSel"><option>5</option><option>10</option><option selected>15</option><option>25</option><option value="999">Todas</option></select></div>
+      <button class="primary" id="startBtn" type="button">Empezar sesión</button>
+    </div>
+    <p class="hint" id="planHint"></p>
+    <div class="note">
+      <span class="label">Cómo funciona</span><br>
+      Lee la pregunta, escribe o piensa tu respuesta y solo entonces muéstrala. Puntúate con honestidad: lo que marcas como «Otra vez» vuelve en esta misma sesión; lo que sabes bien se aleja unos días. Ninguna tarjeta se programa más allá del examen.
+    </div>
+  </section>
+
+  <!-- ESTUDIAR -->
+  <section id="v-estudiar" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="sessionbar"><span id="sessCount">–</span><div class="track"><i id="sessTrack" style="width:0%"></i></div><button type="button" id="endBtn">Terminar</button></div>
+    <div id="studyArea"></div>
+  </section>
+
+  <!-- PROGRESO -->
+  <section id="v-progreso" class="view" hidden style="flex-direction:column;gap:16px">
+    <div class="topic">
+      <div class="topic-head"><h2>Últimos 14 días</h2><p id="streak"></p></div>
+      <div class="days" id="days" aria-label="Tarjetas repasadas por día"></div>
+    </div>
+    <div id="topicsProg" style="display:flex;flex-direction:column;gap:16px"></div>
+    <div class="topic">
+      <h2>Las que más se te resisten</h2>
+      <ol class="hardlist" id="hard"></ol>
+    </div>
+  </section>
+
+  <!-- TARJETAS -->
+  <section id="v-tarjetas" class="view" hidden style="flex-direction:column;gap:12px">
+    <div class="controls">
+      <div class="field" style="flex:1 1 220px"><label for="q">Buscar</label><input type="search" id="q" placeholder="sinaptotagmina, cáliz, TTX…"></div>
+      <div class="field"><label for="topicSel2">Tema</label><select id="topicSel2"><option value="">Todos</option></select></div>
+    </div>
+    <div class="legend"><span style="--c:var(--new)">nueva</span><span style="--c:var(--learn)">aprendiendo</span><span style="--c:var(--master)">dominada (≥ 7 días)</span></div>
+    <div class="list" id="list"></div>
+  </section>
+</div>
+
+<script>
+/* Centro de estudio: tarjetas incluidas en la página y progreso guardado en este navegador (sin Claude). */
+(function(){
+var DATA={"cards": {"t11-A01": {"a": "Que la liberación de neurotransmisor la provoca la llegada de un potencial de acción al terminal. En la unión neuromuscular: se estimula el axón motor y se registra en la fibra muscular el potencial de placa (EPP); si supera el umbral, se dispara el PA muscular.", "kind": "concepto", "note": "", "order": 1, "q": "¿Qué significa que la neurotransmisión sea «evocada»?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "La neurotransmissió evocada", "topic": "t11"}, "t11-A02": {"a": "Porque la mayoría de sinapsis son pequeñas, inaccesibles y todo ocurre en milisegundos. La unión neuromuscular es grande y accesible: en una preparación ex vivo se estimula el axón motor y se registra con un microelectrodo dentro de la fibra muscular.", "kind": "experimento", "note": "", "order": 2, "q": "¿Por qué se usó la unión neuromuscular para estudiar las bases de la neurotransmisión?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "La neurotransmissió evocada", "topic": "t11"}, "t11-A03": {"a": "Pequeñas despolarizaciones (~0,4 mV) que aparecen sin estimular nada, en momentos aleatorios. Katz propuso que cada una es la liberación espontánea de una sola vesícula: un cuanto de acetilcolina.", "kind": "concepto", "note": "Registrados en voltage-clamp son corrientes: mEPSCs (miniature excitatory postsynaptic currents).", "order": 3, "q": "¿Qué son los MEPPs («minis») y qué propuso Katz sobre ellos?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "MEPPs", "topic": "t11"}, "t11-A04": {"a": "1) Hay liberación de neurotransmisor sin ningún estímulo (minis). 2) Las sinapsis fallan: a veces llega un PA y no se libera nada.", "kind": "concepto", "note": "", "order": 4, "q": "La diapositiva de neurotransmisión espontánea transmite dos conceptos. ¿Cuáles?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "La neurotransmissió espontània", "topic": "t11"}, "t11-A05": {"a": "Para reducir mucho la liberación: así el EPP queda por debajo del umbral, aparecen fallos y se ven respuestas de 1, 2 o 3 cuantos. En condiciones normales la unión neuromuscular casi nunca falla.", "kind": "experimento", "note": "Dato clásico del experimento de Katz; en la diapositiva se ve como «subthreshold EPP».", "order": 5, "q": "En el experimento clásico de Katz, ¿por qué se trabajaba con poco Ca²⁺ en el baño?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "La neurotransmissió espontània", "topic": "t11"}, "t11-A06": {"a": "La hipótesis cuántica: la liberación ocurre en paquetes discretos. Los picos son múltiplos enteros del mini (0,4 mV): 0 = fallo, 0,4 = 1 vesícula, 0,8 = 2 vesículas… Cuántas se liberan cada vez depende del azar.", "kind": "gráfica", "note": "En ese gráfico, lo más probable es que al llegar un PA se libere 1 vesícula.", "order": 6, "q": "Histograma de amplitudes de EPP con picos en 0; 0,4; 0,8; 1,2 mV… ¿Qué demuestra?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "1 sola vesícula", "topic": "t11"}, "t11-A07": {"a": "Los fallos: estímulos (18) en los que llegó el PA al terminal pero no se liberó ninguna vesícula.", "kind": "gráfica", "note": "", "order": 7, "q": "En el histograma de EPPs, ¿qué representa la barra en 0 mV?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "La neurotransmissió és un fenomen probabilístic", "topic": "t11"}, "t11-A08": {"a": "Porque ante el mismo PA unas veces se liberan 0 vesículas, otras 1, 2, 3… El número de cuantos liberados sigue una distribución binomial. Es precisa (cuantos de tamaño fijo) pero muy variable.", "kind": "por qué", "note": "Todas las sinapsis liberan vesículas de forma probabilística.", "order": 8, "q": "¿Por qué se dice que la neurotransmisión es un fenómeno probabilístico?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "El paràmetre P", "topic": "t11"}, "t11-A60": {"a": "La que aparece a ~40 ms. Las evocadas salen siempre a la misma latencia (el retardo sináptico, unos pocos ms); una respuesta tan tardía no está ligada al estímulo, así que es un MEPP espontáneo.", "kind": "gráfica", "note": "Retardo sináptico en una sinapsis química: del orden de 1–3 ms.", "order": 9.5, "q": "12 estimulaciones seguidas del axón motor: casi todas las respuestas aparecen a la misma latencia y una aparece a ~40 ms. ¿Cuál es espontánea y cómo lo sabes?", "section": "Transmisión cuántica (Katz)", "sectionKey": "A", "src": "La neurotransmissió espontània", "topic": "t11"}, "t11-B09": {"a": "Respuesta postsináptica media a la liberación de una vesícula (tamaño o carga cuántica). Se mide como la amplitud media de los minis.", "kind": "concepto", "note": "Q puede valer 0,4 mV de media, pero no todos los minis valen exactamente eso: es una distribución.", "order": 9, "q": "Define el parámetro Q.", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Paràmetres quantitatius", "topic": "t11"}, "t11-B10": {"a": "La probabilidad de que se libere una vesícula (en un sitio de liberación) al llegar un potencial de acción.", "kind": "concepto", "note": "La llegada del PA eleva esa probabilidad.", "order": 10, "q": "Define el parámetro P.", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Paràmetres quantitatius", "topic": "t11"}, "t11-B11": {"a": "El número de sitios independientes de liberación del contacto sináptico. Anatómicamente, el número de zonas activas.", "kind": "concepto", "note": "", "order": 11, "q": "Define el parámetro N y di a qué corresponde anatómicamente.", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Què representen els paràmetres quantals", "topic": "t11"}, "t11-B12": {"a": "Del lado postsináptico (cuántos receptores hay y lo sensibles que son) y de cuánto neurotransmisor lleva cada vesícula.", "kind": "concepto", "note": "", "order": 12, "q": "¿De qué depende sobre todo el valor de Q?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Què representen els paràmetres quantals", "topic": "t11"}, "t11-B13": {"a": "La TTX bloquea los canales de Na⁺ dependientes de voltaje, así que no hay potenciales de acción. Solo quedan los minis espontáneos, y con su amplitud media se mide Q (~8 pA).", "kind": "experimento", "note": "", "order": 13, "q": "En la sinapsis del tálamo se añade TTX. ¿Para qué?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "La P a una sinapsi del tàlem", "topic": "t11"}, "t11-B14": {"a": "Que en el SNC la liberación también es cuántica (picos múltiplos de Q ≈ 8 pA) y que esta sinapsis falla muchísimo más que la neuromuscular: su P es mucho menor, de 0,2 a 0,4. Es decir, entre un 60 y un 80% de los PA no liberan nada.", "kind": "gráfica", "note": "Lo más probable al llegar un PA es que no se libere ninguna vesícula.", "order": 14, "q": "Tálamo, EPSCs evocados: 117 fallos y picos en ~8, 16 y 24 pA. ¿Qué concluyes?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "La P a una sinapsi del tàlem", "topic": "t11"}, "t11-B15": {"a": "mV = voltaje → current-clamp (EPP, MEPP). pA = corriente → voltage-clamp (EPSC, mEPSC). La unión neuromuscular de Katz se ve en mV; la sinapsis del tálamo, en pA.", "kind": "comparación", "note": "El profe insiste en distinguir bien current-clamp y voltage-clamp.", "order": 15, "q": "Un gráfico de minis tiene el eje en mV y otro en pA. ¿Qué técnica se usó en cada uno?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "La P a una sinapsi del tàlem", "topic": "t11"}, "t11-B16": {"a": "En la placa motora cada fibra recibe un solo axón y el mensaje es siempre «contrae»: tiene que funcionar cada vez. En el SNC hay muchísimas sinapsis: si todas liberasen siempre, el sistema se saturaría y no habría información. Una P baja deja margen para subir o bajar el peso de cada conexión (plasticidad). Los fallos forman parte de cómo se codifica la información.", "kind": "por qué", "note": "Si ese equilibrio se rompe hacia la sobreexcitación, aparecen cuadros como la epilepsia.", "order": 16, "q": "¿Por qué la unión neuromuscular está diseñada para no fallar y en el SNC se toleran muchos fallos?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "La P a una sinapsi del tàlem", "topic": "t11"}, "t11-B17": {"a": "P ≈ 0,8 (dato de clase). Se estima contando las veces que se libera alguna vesícula frente a las que falla: en el histograma hay muy pocos fallos (~18). Es tan alta porque se encarga de la contracción: no tiene sentido que falle.", "kind": "por qué", "note": "Matiz: con muchos sitios, la probabilidad de que falle toda la sinapsis es (1 − P)^N. Para el examen, quédate con P ≈ 0,8 en la unión neuromuscular frente a 0,2–0,4 en el tálamo.", "order": 17, "q": "¿Qué P tiene la unión neuromuscular y cómo se estima a partir del histograma?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "La P a la unió neuromuscular", "topic": "t11"}, "t11-B18": {"a": "I(EPSC) = Q · N · P", "kind": "cálculo", "note": "N · P es el contenido cuántico medio: cuántas vesículas se liberan de media por PA.", "order": 18, "q": "¿Cómo se calcula la corriente postsináptica a partir de los parámetros cuánticos?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Es possible calcular el corrent postsinàptic", "topic": "t11"}, "t11-B19": {"a": "P = I / (Q · N) = 4.000 pA / (27 pA × 700) ≈ 0,2. De media, en cada PA libera el 20% de las zonas activas: unas 140 vesículas (N · P).", "kind": "cálculo", "note": "Ojo: 140 es un número de vesículas, no una probabilidad. Es el ejercicio que se hizo en clase.", "order": 19, "q": "Cáliz de Held: I = 4 nA, Q = 27 pA, N = 700. Calcula P e interpreta el resultado.", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Es possible calcular el corrent postsinàptic", "topic": "t11"}, "t11-B20": {"a": "De media, en 3 se libera la vesícula y en 7 hay fallo (no se libera neurotransmisor).", "kind": "cálculo", "note": "Un botón del hipocampo tiene una sola zona activa con unas 200 vesículas. Con P = 0,2 serían 2 de cada 10.", "order": 20, "q": "Sinapsis del hipocampo con N = 1 y P = 0,3. Llegan 10 PA. ¿Qué esperas?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "La connectivitat sinàptica presenta múltiples possibilitats", "topic": "t11"}, "t11-B21": {"a": "En la práctica nunca: la probabilidad de que no se libere ninguna vesícula es 0,7^700 ≈ 0. Con tantos sitios siempre se liberan vesículas aunque P sea baja.", "kind": "cálculo", "note": "", "order": 21, "q": "Cáliz de Held con P = 0,3 por sitio y N ≈ 700. ¿Puede fallar?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Zones actives en el calyx of Held", "topic": "t11"}, "t11-B22": {"a": "Presinapsis en current-clamp (se ve el PA, en mV). Postsinapsis en voltage-clamp (se ve la EPSC, en nA). El retraso entre ambos es el retardo sináptico.", "kind": "comparación", "note": "", "order": 22, "q": "Registro pareado en el cáliz de Held: ¿en qué modo se registra la pre y en cuál la post?", "section": "Parámetros Q, N y P", "sectionKey": "B", "src": "Es possible calcular el corrent postsinàptic", "topic": "t11"}, "t11-C23": {"a": "La región de la membrana presináptica donde se acoplan las vesículas y se concentran los canales de Ca²⁺ y la maquinaria de liberación, justo enfrente de los receptores postsinápticos. Todas las sinapsis químicas tienen zonas activas.", "kind": "concepto", "note": "", "order": 23, "q": "¿Qué es una zona activa?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Què representen els paràmetres quantals?", "topic": "t11"}, "t11-C24": {"a": "N: cada zona activa (bandas a lo largo del espacio sináptico). Q: una vesícula acoplada. P: las partículas de la criofractura, que son canales de Ca²⁺ alineados junto a las vesículas.", "kind": "gráfica", "note": "La zona activa es como una banda a lo largo de todo el espacio sináptico: diseñada para fallar poco.", "order": 24, "q": "Imágenes de la zona activa de la unión neuromuscular: ¿qué representa cada flecha (N, Q, P)?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Zones actives a la unió neuromuscular", "topic": "t11"}, "t11-C25": {"a": "Botones pequeños con una sola zona activa (N ≈ 1) y pocas vesículas acopladas. Son sitios independientes de liberación que fallan mucho.", "kind": "concepto", "note": "", "order": 25, "q": "¿Cómo son las zonas activas de las sinapsis del hipocampo y qué implica?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Zones actives a les sinapsis hipocampals", "topic": "t11"}, "t11-C26": {"a": "Una sinapsis gigante de la vía auditiva del tronco del encéfalo que envuelve el soma postsináptico. Tiene entre 700 y 1.000 zonas activas pequeñas, así que transmite siempre aunque su P sea baja (~0,1–0,2).", "kind": "concepto", "note": "Por su tamaño permite registrar a la vez pre y post: por eso sale tanto en estos estudios.", "order": 26, "q": "¿Qué es el cáliz de Held y por qué siempre transmite?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Zones actives en el calyx of Held", "topic": "t11"}, "t11-C27": {"a": "Convergencia: varias sinapsis (de distintos terminales) llevan información a una misma neurona. Divergencia: un elemento presináptico reparte su información a varios sitios o neuronas postsinápticas.", "kind": "concepto", "note": "En los apuntes de otros años: en la divergencia la P suele ser alta (si no, se pararía el flujo de información); en la convergencia suele ser baja. Más conectividad «corrige» una P baja.", "order": 27, "q": "Convergencia y divergencia sináptica: ¿qué es cada una?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "La connectivitat sinàptica presenta múltiples possibilitats", "topic": "t11"}, "t11-C28": {"a": "En fotorreceptores y células bipolares de la retina y en las células ciliadas del oído.", "kind": "concepto", "note": "La proteína característica de la cinta es RIBEYE.", "order": 28, "q": "¿Dónde encontramos sinapsis en cinta (ribbon)?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Les ribbon synapses", "topic": "t11"}, "t11-C29": {"a": "La cinta sujeta muchas vesículas y las va acercando a los canales de Ca²⁺ de la base, como una cinta de equipajes del aeropuerto (aquí lo que se mueve son las vesículas). Permite una liberación continua y graduada.", "kind": "concepto", "note": "", "order": 29, "q": "¿Cómo funciona una sinapsis en cinta?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Les ribbon synapses", "topic": "t11"}, "t11-C30": {"a": "Porque no funcionan a base de PA: con potenciales graduales liberan continuamente y nunca fallan. Lo que varía no es si se libera, sino cuántas vesículas (cuánta información se da).", "kind": "por qué", "note": "Siguen siendo probabilísticas, pero en la cantidad: una sinapsis tónica libera entre 1 y 8 vesículas, una fásica entre 0 y 2.", "order": 30, "q": "¿Por qué en las sinapsis en cinta no hablamos de P como en las demás?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Les ribbon synapses", "topic": "t11"}, "t11-C31": {"a": "Estas células no hacen PA: sus canales de Ca²⁺ se abren y cierran de forma graduada y la sinapsis es tónica. Cada fibra recibe un patrón distinto, y así se codifica la intensidad del estímulo en un rango dinámico amplio.", "kind": "por qué", "note": "", "order": 31, "q": "Una célula ciliada contacta con varias fibras mediante zonas activas distintas. ¿Para qué?", "section": "Zonas activas y tipos de sinapsis", "sectionKey": "C", "src": "Possible significat de tenir múltiples zones actives", "topic": "t11"}, "t11-D32": {"a": "Una bomba de H⁺ (V-ATPasa), un transportador del neurotransmisor (vGlut, vAChT…), proteínas de fusión (sinaptobrevina/VAMP2, del complejo SNARE), el sensor de Ca²⁺ (sinaptotagmina) y proteínas que la posicionen (sinapsinas, Rab…).", "kind": "concepto", "note": "Es un orgánulo con composición muy definida: todas las vesículas se parecen mucho.", "order": 32, "q": "¿Qué componentes necesita como mínimo una vesícula sináptica?", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "Una vesícula sinàptica típica", "topic": "t11"}, "t11-D33": {"a": "Bombea H⁺ hacia dentro y acidifica la vesícula. Ese gradiente de protones es la energía que usa el transportador vesicular para meter y concentrar el neurotransmisor.", "kind": "por qué", "note": "", "order": 33, "q": "¿Para qué sirve la V-ATPasa de la vesícula?", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "Una vesícula sinàptica típica", "topic": "t11"}, "t11-D34": {"a": "~42 nm de diámetro y ~1.800 moléculas de neurotransmisor. Por vesícula: ~70 sinaptobrevinas, ~30 sinaptofisinas, ~15 sinaptotagminas y solo 1–2 V-ATPasas.", "kind": "números", "note": "En cryo-EM, las protuberancias son bombas de H⁺; de media, una por vesícula.", "order": 34, "q": "Cifras de una vesícula típica: diámetro, moléculas de NT y copias de sus proteínas principales.", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "Anàlisi quantitatiu", "topic": "t11"}, "t11-D35": {"a": "Porque las vesículas están solo en el terminal y se reciclan allí mismo, sin depender del soma. Cada terminal tiene un número finito de vesículas, y todas deben ser equivalentes.", "kind": "concepto", "note": "", "order": 35, "q": "¿Por qué se dice que los terminales sinápticos son «entidades autónomas»?", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "Els terminals sinàptics són entitats autònomes", "topic": "t11"}, "t11-D36": {"a": "Carga de neurotransmisor (gracias a la acidificación) → reserva → docking en la zona activa → priming (requiere ATP) → fusión disparada por Ca²⁺ → recuperación de la membrana → reutilización directa o vía endosoma → nueva carga.", "kind": "secuencia", "note": "Lo difícil es dejar cada vesícula en la posición adecuada cada vez; todo acaba dependiendo del Ca²⁺.", "order": 36, "q": "Ordena el ciclo vesicular desde que la vesícula se llena hasta que se recicla.", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "El cicle vesicular", "topic": "t11"}, "t11-D37": {"a": "1a: recuperación rápida tipo kiss-and-run, sin desmontar la vesícula. 1b: endocitosis mediada por clatrina. Después, la vesícula se reutiliza directamente (2a) o pasa por el endosoma temprano (2b).", "kind": "comparación", "note": "", "order": 37, "q": "¿Qué dos vías de recuperación de la vesícula muestra el esquema (1a y 1b)?", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "El cicle vesicular", "topic": "t11"}, "t11-D38": {"a": "Docking → priming molecular → priming posicional (acercarse a los canales de Ca²⁺) → fusión → limpieza del sitio. Son las etapas clave que determinan la probabilidad de liberación.", "kind": "secuencia", "note": "", "order": 38, "q": "Etapas moleculares que llevan a la fusión (Neher) y qué determinan.", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "Les etapes moleculars", "topic": "t11"}, "t11-D61": {"a": "Porque cada vesícula debe dar la misma respuesta (el mismo cuanto, Q). Si unas fueran más grandes que otras, llevarían más neurotransmisor, darían respuestas distintas y se perdería la precisión de la transmisión.", "kind": "por qué", "note": "Q tiende a ser muy estable; P es la que varía mucho.", "order": 38.5, "q": "¿Por qué todas las vesículas sinápticas tienen que ser casi idénticas?", "section": "La vesícula y el ciclo vesicular", "sectionKey": "D", "src": "Una vesícula sinàptica típica", "topic": "t11"}, "t11-E39": {"a": "Reposo: ~100 nM. Exterior: ~2 mM (unas 20.000 veces más). Activado (global): 500–1.000 nM. Junto a la boca de un canal abierto (nanodominio): decenas de µM (~50 µM a 20 nm).", "kind": "números", "note": "", "order": 39, "q": "Concentraciones de Ca²⁺: citosol en reposo, exterior, citosol activado y junto al canal.", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "La concentració de calci està altament regulada", "topic": "t11"}, "t11-E40": {"a": "1) Entrada desde el espacio extracelular (canales dependientes de voltaje, receptores NMDA, AMPA permeables al Ca²⁺): fundamental en los terminales presinápticos. 2) Liberación desde depósitos internos (RE: receptores de IP₃ y de rianodina): más importante en el soma.", "kind": "concepto", "note": "", "order": 40, "q": "Mecanismos ON: ¿de dónde sale el Ca²⁺ y dónde importa más cada fuente?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Mecanismes ON", "topic": "t11"}, "t11-E41": {"a": "Proteínas tampón (calbindina, parvalbúmina, calmodulina), expulsión al exterior (PMCA y NCX), recaptación al RE (SERCA) y captación mitocondrial (uniportador).", "kind": "concepto", "note": "Tampones: rápidos pero limitados, se saturan. Transportadores de membrana: no se saturan pero son lentos. RE y mitocondria: capacidad casi ilimitada, lentos. Por eso cuesta más sacar el Ca²⁺ que dejarlo entrar.", "order": 41, "q": "Mecanismos OFF: ¿cómo vuelve el Ca²⁺ a su nivel basal?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Mecanismes OFF", "topic": "t11"}, "t11-E42": {"a": "Que las señales de Ca²⁺ son locales: una espina sube mientras el tronco dendrítico ni se entera. El MCPG bloquea los receptores mGluR y elimina la señal de Ca²⁺ en la espina, aunque la EPSC se mantiene.", "kind": "gráfica", "note": "Las señales de Ca²⁺ son más lentas que las de voltaje; el indicador sube cuanto más Ca²⁺ libre hay.", "order": 42, "q": "Imagen de Ca²⁺ en espinas y dendrita (Grienberger y Konnerth). ¿Qué muestra y qué hace el MCPG?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "La concentració de calci està altament regulada", "topic": "t11"}, "t11-E43": {"a": "HVA (high-voltage activated: L, P/Q, N, R; Caᵥ1 y Caᵥ2) necesitan una despolarización fuerte y se asocian a β y α₂δ. LVA (low-voltage activated: tipo T, Caᵥ3) se abren con despolarizaciones pequeñas, cerca del reposo: actividad marcapasos y oscilaciones subumbral. Caᵥ1.1 es HVA; Caᵥ3.1 es LVA.", "kind": "comparación", "note": "Pregunta que el profe ha puesto en examen.", "order": 43, "q": "Diferencia entre canales de Ca²⁺ HVA y LVA. Pon un ejemplo de cada.", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Canals de calci voltatge depenents", "topic": "t11"}, "t11-E44": {"a": "Terminal: sobre todo P/Q (Caᵥ2.1) y N (Caᵥ2.2), que disparan la liberación. Soma: tipo L (transcripción dependiente de Ca²⁺) y T (marcapasos). Dendritas: varios tipos.", "kind": "concepto", "note": "", "order": 44, "q": "¿Qué canales de Ca²⁺ hay en el terminal presináptico y cuáles en el soma?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Distribució dels canals de calci", "topic": "t11"}, "t11-E45": {"a": "Por long-lasting: se inactivan muy poco.", "kind": "concepto", "note": "", "order": 45, "q": "¿Por qué los canales tipo L se llaman así?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Canals de calci voltatge depenents", "topic": "t11"}, "t11-E46": {"a": "Una subunidad auxiliar de los canales HVA que ayuda a llevar y anclar el canal en la membrana. Gabapentina y pregabalina se unen a ella: llegan menos canales y se libera menos neurotransmisor.", "kind": "concepto", "note": "", "order": 46, "q": "¿Qué es la subunidad α₂δ y qué fármacos actúan sobre ella?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Canals de calci voltatge depenents", "topic": "t11"}, "t11-E47": {"a": "S4 es el sensor de voltaje (tiene cargas positivas). El synprint es una región intracelular que une SNAREs y sinaptotagmina, y acerca el canal a las vesículas.", "kind": "concepto", "note": "Las proteínas G (subunidad βγ) inhiben estos canales.", "order": 47, "q": "En la subunidad α₁ del canal de Ca²⁺, ¿qué es el segmento S4 y qué es el sitio synprint?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Canals de calci voltatge depenents", "topic": "t11"}, "t11-E48": {"a": "Al abrirse el canal, la [Ca²⁺] es altísima en su boca y cae rápido con la distancia (~50 µM a 20 nm, ~20 µM a 50 nm, ~10 µM a 100 nm). Además, el Ca²⁺ solo entra durante ~1–2 ms y los tampones compiten por él. Cuanto más cerca está la vesícula, mayor P.", "kind": "por qué", "note": "P depende de cuánto Ca²⁺ entra, durante cuánto tiempo y a qué distancia.", "order": 48, "q": "¿Por qué la distancia entre canal y vesícula marca la probabilidad de liberación?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "La distància entre canals i vesícules", "topic": "t11"}, "t11-E49": {"a": "Una curva muy empinada: pequeñas subidas de Ca²⁺ aumentan muchísimo la liberación (hacen falta varios Ca²⁺ cooperando). El Ca²⁺ global de un PA (~0,5 µM) libera poco; el pico del nanodominio (>10 µM) libera muchísimo. A Ca²⁺ muy alto lo que limita es el reclutamiento de vesículas.", "kind": "gráfica", "note": "El pico de nanodominio corresponde a estimular a frecuencia muy alta mucho tiempo: el máximo.", "order": 49, "q": "Velocidad de liberación frente a [Ca²⁺] en el cáliz de Held. ¿Qué forma tiene y qué significa?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "La probabilitat d'alliberament en funció del calci", "topic": "t11"}, "t11-E50": {"a": "Lo que dura la despolarización: del orden de 1–2 ms.", "kind": "números", "note": "", "order": 50, "q": "¿Cuánto tiempo está abierto un canal de Ca²⁺ presináptico tras un PA?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Les etapes moleculars", "topic": "t11"}, "t11-E62": {"a": "No. La sinapsis en cinta libera de forma sostenida, así que necesita canales que se inactiven poco. Una zona activa clásica usa canales que se inactivan más rápido, para no saturar el sistema.", "kind": "comparación", "note": "", "order": 45.5, "q": "¿Una sinapsis en cinta usa el mismo tipo de canal de Ca²⁺ que una zona activa clásica?", "section": "Calcio: ON, OFF y canales", "sectionKey": "E", "src": "Distribució dels canals de calci", "topic": "t11"}, "t11-F51": {"a": "Sinaptobrevina/VAMP2 en la vesícula; sintaxina y SNAP-25 en la membrana plasmática. Se enrollan en un haz de 4 hélices que, al cerrarse como una cremallera, junta las membranas. Estas tres bastan para fusionar una vesícula.", "kind": "concepto", "note": "", "order": 51, "q": "¿Qué proteínas forman el complejo SNARE y dónde está cada una?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "Exocitosi i proteïnes SNARE", "topic": "t11"}, "t11-F52": {"a": "Las neurotoxinas botulínicas (bótox) y la tetánica. Botulínicas A y E cortan SNAP-25; la C corta sintaxina (y SNAP-25); B, D, F, G y la tetánica cortan sinaptobrevina. Sin SNARE no hay liberación.", "kind": "concepto", "note": "", "order": 52, "q": "¿Qué toxinas rompen el complejo SNARE y a qué proteína atacan?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "Exocitosi i proteïnes SNARE", "topic": "t11"}, "t11-F53": {"a": "Sí: las tres SNARE bastan para fusionar, incluso sin Ca²⁺, pero la probabilidad es muy baja (así se explican los minis). El Ca²⁺ con la sinaptotagmina hace que la fusión ocurra justo en la zona activa y en el momento preciso.", "kind": "por qué", "note": "", "order": 53, "q": "¿Se puede formar el complejo SNARE sin Ca²⁺?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "La sinaptotagmina és el sensor de calci", "topic": "t11"}, "t11-F54": {"a": "Sus dominios C2A y C2B unen Ca²⁺ y fosfolípidos. Con Ca²⁺ se inserta en la membrana, libera el freno sobre el complejo SNARE (complexina) y se abre el poro de fusión.", "kind": "concepto", "note": "Todas las vesículas tienen sinaptotagmina, pero en distintas isoformas con distinta sensibilidad al Ca²⁺.", "order": 54, "q": "¿Cómo actúa la sinaptotagmina como sensor de Ca²⁺?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "La sinaptotagmina és el sensor de calci", "topic": "t11"}, "t11-F55": {"a": "RIM (con RIM-BP) ancla los canales de Ca²⁺ cerca de la vesícula. Munc13 hace el priming. Munc18 acompaña a la sintaxina en el ensamblaje del SNARE. La complexina hace de pinza sobre el complejo hasta que llega el Ca²⁺.", "kind": "concepto", "note": "El profe pidió no entrar en detalle molecular: quédate con la función general.", "order": 55, "q": "Papel de RIM, Munc13, Munc18 y complexina en la zona activa.", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "La sinaptotagmina és el sensor de calci", "topic": "t11"}, "t11-F56": {"a": "Sincrónica: inmediata y concentrada justo tras el PA (mecanismos ON). Asincrónica: se prolonga después del estímulo mientras el Ca²⁺ sigue algo elevado y actúan los mecanismos OFF. Espontánea: minis sin estímulo, con Ca²⁺ basal.", "kind": "comparación", "note": "", "order": 56, "q": "Tres modalidades de liberación de neurotransmisor: descríbelas.", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "Modalitats d'alliberament", "topic": "t11"}, "t11-F57": {"a": "Desaparece la liberación sincrónica, pero queda la asincrónica y siguen los minis. Demuestra que Syt-1 es el sensor de Ca²⁺ de la liberación rápida y sincrónica.", "kind": "experimento", "note": "", "order": 57, "q": "¿Qué pasa en un ratón sin sinaptotagmina-1 (KO)? ¿Qué demuestra?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "Conseqüències de l'eliminació de la Syt-1", "topic": "t11"}, "t11-F58": {"a": "Syt1, Syt2 y Syt9: sensores de la exocitosis rápida. Syt7: exocitosis de vesículas grandes de núcleo denso (LDCV) y liberación lenta. Varias isoformas no unen Ca²⁺ o tienen función desconocida.", "kind": "comparación", "note": "", "order": 58, "q": "¿Qué sinaptotagminas median la exocitosis rápida y cuál la de vesículas grandes?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "Tipus de sinaptotagmines", "topic": "t11"}, "t11-F59": {"a": "Con el Ca²⁺ basal (~100 nM) la probabilidad de fusión es muy baja, pero no cero: de vez en cuando una vesícula se fusiona sola. La evocada, en cambio, necesita la gran subida de Ca²⁺ que provoca el PA.", "kind": "por qué", "note": "", "order": 59, "q": "¿Por qué hay liberación espontánea en reposo si casi no hay Ca²⁺?", "section": "Fusión: SNARE, sinaptotagmina y modos de liberación", "sectionKey": "F", "src": "Neurotransmissió espontània i evocada", "topic": "t11"}}, "topics": {"t11": {"added": "2026-11-04", "order": 11, "parcial": 2, "subtitle": "Aspectos cuantitativos de la transmisión sináptica · Ciclo vesicular", "title": "Temas 11–12"}}}, LS='neuro-al-dia-local-v1';
+function load(){try{return JSON.parse(localStorage.getItem(LS))||{}}catch(e){return {}}}
+function store(o){try{localStorage.setItem(LS,JSON.stringify(o))}catch(e){}}
+var L=load(); L.progress=L.progress||{}; L.stats=L.stats||null;
+var subs={};
+function col(name){var src=name==='progress'?L.progress:(DATA[name]||{});
+  return {docs:Object.keys(src).map(function(k){return {id:k,data:function(){return JSON.parse(JSON.stringify(src[k]))}}}),metadata:{fromCache:false}}}
+function docSnap(path){var v=path==='stats/days'?L.stats:null;return {exists:!!v,data:function(){return JSON.parse(JSON.stringify(v))}}}
+function fire(key){(subs[key]||[]).forEach(function(cb){setTimeout(function(){cb(key.indexOf('/')>0?docSnap(key):col(key))},0)})}
+var db={
+  collection:function(name){return {
+    onSnapshot:function(cb){(subs[name]=subs[name]||[]).push(cb);setTimeout(function(){cb(col(name))},0);return function(){}},
+    get:function(){return Promise.resolve(col(name))}}},
+  doc:function(path){return {
+    onSnapshot:function(cb){(subs[path]=subs[path]||[]).push(cb);setTimeout(function(){cb(docSnap(path))},0);return function(){}},
+    set:function(v){var p=path.split('/');v=JSON.parse(JSON.stringify(v));
+      if(p[0]==='progress'){L.progress[p[1]]=v;store(L);fire('progress')}
+      else if(path==='stats/days'){L.stats=v;store(L);fire(path)}
+      return Promise.resolve()}}}
+};
+window.claude={use:function(k){return Promise.resolve(k==='db'?db:null)}};
+})();
+</script>
+<script>
+const EXAM = new Date(2026, 11, 14);           // 14 dic 2026
+const DAY = 86400000;
+let db = null;
+let cards = [], topics = {}, prog = {}, stats = {days:{}};
+let loaded = {cards:false, topics:false, progress:false};
+let session = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const todayKey = (d = new Date()) => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const startOfDay = (t = Date.now()) => { const d = new Date(t); d.setHours(0,0,0,0); return d.getTime(); };
+const daysToExam = () => Math.max(0, Math.ceil((EXAM.getTime() - startOfDay()) / DAY));
+
+function status(msg, warn){ const s = $("#status"); if(!msg){ s.hidden = true; return; } s.textContent = msg; s.className = "note" + (warn ? " warn" : ""); s.hidden = false; }
+
+/* ---------- scheduling ---------- */
+function stateOf(id){ return prog[id] || null; }
+function level(id){ const p = stateOf(id); if(!p || !p.reps && !p.lapses && !p.last) return "n"; return (p.interval||0) >= 7 ? "m" : "l"; }
+function isDue(id, now = Date.now()){ const p = stateOf(id); return p && p.last && (p.due||0) <= now; }
+function cap(days){ const left = daysToExam() - 1; return Math.max(1, Math.min(days, left > 0 ? left : 1)); }
+function schedule(id, g){
+  const p = Object.assign({reps:0, interval:0, ease:2.5, lapses:0}, stateOf(id) || {});
+  const now = Date.now();
+  if(g === 0){ p.lapses++; p.reps = 0; p.interval = 0; p.ease = Math.max(1.3, p.ease - .2); p.due = now + 10*60000; }
+  else {
+    let iv;
+    if(g === 1){ iv = Math.max(1, Math.round((p.interval||1) * 1.2)); p.ease = Math.max(1.3, p.ease - .15); }
+    else if(g === 2){ iv = p.reps === 0 ? 1 : p.reps === 1 ? 3 : Math.round(p.interval * p.ease); }
+    else { iv = p.reps === 0 ? 3 : Math.round(Math.max(p.interval,1) * p.ease * 1.3); p.ease += .15; }
+    p.interval = cap(iv); p.reps++;
+    p.due = startOfDay(now) + p.interval*DAY + 4*3600000;  // 4:00 del día que toque
+  }
+  p.last = now; p.lastGrade = g; p.seen = (p.seen||0) + 1;
+  return p;
+}
+function preview(id, g){ if(g===0) return "<10 min"; const d = schedule(id, g).interval; return d === 1 ? "1 día" : d + " días"; }
+
+/* ---------- data ---------- */
+async function boot(){
+  $("#examDays").textContent = daysToExam();
+  route();
+  const timer = setTimeout(() => { if(!loaded.cards) status("No consigo cargar las tarjetas todavía. Si sigue así, recarga la página desde claude.ai con tu sesión iniciada.", true); }, 10000);
+  try { db = await window.claude?.use?.("db"); } catch(e){ db = null; }
+  if(!db){ clearTimeout(timer); status("Esta página guarda tus tarjetas y tu progreso en claude.ai. Ábrela desde claude.ai con tu sesión iniciada para estudiar.", true); return; }
+  const fail = e => { clearTimeout(timer); status("Se ha perdido la conexión con tus datos. Recarga la página para volver a conectar.", true); };
+  db.collection("cards").onSnapshot(s => { cards = s.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b)=> (a.topic>b.topic?1:a.topic<b.topic?-1:a.order-b.order)); loaded.cards = true; if(!s.metadata.fromCache){ clearTimeout(timer); status(""); } render(); }, fail);
+  db.collection("topics").onSnapshot(s => { topics = {}; s.docs.forEach(d => topics[d.id] = d.data()); loaded.topics = true; fillTopics(); render(); }, fail);
+  db.collection("progress").onSnapshot(s => { if(session) return mergeProg(s); prog = {}; s.docs.forEach(d => prog[d.id] = d.data()); loaded.progress = true; render(); }, fail);
+  db.doc("stats/days").onSnapshot(s => { stats = s.exists ? s.data() : {days:{}}; render(); }, fail);
+}
+function mergeProg(s){ s.docs.forEach(d => { if(!session.touched.has(d.id)) prog[d.id] = d.data(); }); }
+
+let saving = Promise.resolve();
+function save(id, p, g){
+  const day = todayKey();
+  const cur = (stats.days && stats.days[day]) || {n:0, ok:0};
+  const next = {n: cur.n + 1, ok: cur.ok + (g >= 2 ? 1 : 0)};
+  stats = {days: Object.assign({}, stats.days, {[day]: next})};
+  saving = saving.then(async () => {
+    try { await db.doc("progress/"+id).set(p); await db.doc("stats/days").set(stats); }
+    catch(e){ status("No he podido guardar la última respuesta. Comprueba la conexión; el resto de la sesión sigue funcionando.", true); }
+  });
+}
+
+/* ---------- views ---------- */
+function route(){
+  const v = (location.hash || "#hoy").slice(1);
+  const view = ["hoy","estudiar","progreso","tarjetas"].includes(v) ? v : "hoy";
+  if(view === "estudiar" && !session){ location.hash = "#hoy"; return; }
+  document.querySelectorAll(".view").forEach(el => { const on = el.id === "v-"+view; el.hidden = !on; if(on) el.style.display = "flex"; });
+  document.querySelectorAll("nav a").forEach(a => a.dataset.view === view ? a.setAttribute("aria-current","page") : a.removeAttribute("aria-current"));
+  render();
+}
+window.addEventListener("hashchange", route);
+
+function fillTopics(){
+  for(const sel of [$("#topicSel"), $("#topicSel2")]){
+    const v = sel.value; const first = sel.options[0].outerHTML;
+    sel.innerHTML = first + Object.entries(topics).sort((a,b)=>a[1].order-b[1].order).map(([id,t]) => `<option value="${esc(id)}">${esc(t.title)}</option>`).join("");
+    sel.value = v;
+  }
+}
+const inTopic = (c, t) => !t || c.topic === t;
+
+function render(){
+  if(!loaded.cards) return;
+  const t = $("#topicSel").value; const now = Date.now();
+  const pool = cards.filter(c => inTopic(c,t));
+  const due = pool.filter(c => isDue(c.id, now)).length;
+  const fresh = pool.filter(c => level(c.id) === "n").length;
+  const done = (stats.days && stats.days[todayKey()] || {}).n || 0;
+  $("#sDue").textContent = due; $("#sNew").textContent = fresh; $("#sDone").textContent = done;
+  const nNew = Math.min(fresh, +$("#newSel").value);
+  $("#startBtn").disabled = !(due + nNew);
+  $("#planHint").textContent = cards.length ? (due + nNew ? `Esta sesión: ${due} de repaso + ${nNew} nuevas. Unos ${Math.max(1, Math.round((due+nNew)*0.4))} minutos.` : "Nada pendiente por hoy. Vuelve mañana o sube el número de nuevas.") : "";
+  if(!cards.length){ $("#planHint").textContent = "Aún no hay tarjetas. Cuando Claude añada las de un tema, aparecerán aquí."; }
+  const view = (location.hash || "#hoy").slice(1);
+  if(view === "progreso") renderProgress();
+  if(view === "tarjetas") renderList();
+}
+
+/* ---------- session ---------- */
+function start(){
+  const t = $("#topicSel").value; const now = Date.now();
+  const pool = cards.filter(c => inTopic(c,t));
+  const due = pool.filter(c => isDue(c.id, now)).sort((a,b) => prog[a.id].due - prog[b.id].due);
+  const fresh = pool.filter(c => level(c.id) === "n").slice(0, +$("#newSel").value);
+  const queue = [...due, ...fresh].map(c => c.id);
+  if(!queue.length) return;
+  session = {queue, total: queue.length, done: 0, ok: 0, touched: new Set(), revealed: false};
+  location.hash = "#estudiar"; showCard();
+}
+function interleave(a){ return a.slice().sort((x,y) => (x.sectionKey===y.sectionKey? x.order-y.order : 0)); }
+
+function showCard(){
+  const area = $("#studyArea");
+  updateBar();
+  if(!session.queue.length){ return finish(); }
+  const c = cards.find(x => x.id === session.queue[0]);
+  if(!c){ session.queue.shift(); return showCard(); }
+  session.revealed = false;
+  const tt = topics[c.topic]?.title || "";
+  area.innerHTML = `<article class="card">
+    <div class="meta"><span class="chip">${esc(tt)}</span><span class="chip">${esc(c.section)}</span><span class="chip kind">${esc(c.kind)}</span></div>
+    <p class="q">${esc(c.q)}</p>
+    <label class="label" for="mineInput">Tu respuesta</label>
+    <textarea id="mineInput" placeholder="Escríbela o dila en voz alta antes de mirar…"></textarea>
+    <button class="primary" type="button" id="revealBtn">Mostrar respuesta</button>
+    <p class="hint">Atajos: Ctrl + Enter para mostrar · 1–4 para puntuar</p>
+  </article>`;
+  $("#revealBtn").onclick = reveal;
+}
+function reveal(){
+  if(!session || session.revealed) return;
+  session.revealed = true;
+  const c = cards.find(x => x.id === session.queue[0]);
+  const mine = $("#mineInput").value.trim();
+  const art = $("#studyArea .card");
+  $("#revealBtn").remove(); art.querySelector(".hint").remove();
+  const mineEl = $("#mineInput"); const lbl = art.querySelector("label.label"); mineEl.remove(); lbl.remove();
+  const ans = document.createElement("div"); ans.className = "answer";
+  ans.innerHTML = `${mine ? `<div class="mine"><span class="label">Lo que pusiste</span><br>${esc(mine)}</div>` : ""}
+    <p class="a">${esc(c.a)}</p>
+    ${c.note ? `<div class="extra">${esc(c.note)}</div>` : ""}
+    <div class="src">Diapositiva: ${esc(c.src)}</div>
+    <div class="grades">
+      ${["Otra vez","Difícil","Bien","Fácil"].map((l,g) => `<button type="button" class="g${g}" data-g="${g}"><span>${l}</span><small>${g+1} · ${preview(c.id,g)}</small></button>`).join("")}
+    </div>`;
+  art.appendChild(ans);
+  ans.querySelectorAll("button[data-g]").forEach(b => b.onclick = () => grade(+b.dataset.g));
+  ans.querySelector(".g2").focus();
+}
+function grade(g){
+  if(!session || !session.revealed) return;
+  const id = session.queue.shift();
+  const p = schedule(id, g); prog[id] = p; session.touched.add(id);
+  save(id, p, g);
+  if(g === 0){ session.queue.splice(Math.min(session.queue.length, 4), 0, id); }
+  else { session.done++; if(g >= 2) session.ok++; }
+  showCard();
+}
+function updateBar(){
+  const left = session.queue.length;
+  $("#sessCount").textContent = `${session.done} hechas · ${left} por delante`;
+  $("#sessTrack").style.width = (100 * session.done / Math.max(1, session.done + left)) + "%";
+}
+function finish(){
+  const s = session;
+  $("#studyArea").innerHTML = `<article class="card"><h2>Sesión terminada</h2>
+    <p class="a">Has repasado ${s.done} tarjetas y ${s.ok} te han salido bien o fáciles. Lo que marcaste como difícil volverá pronto; lo demás, en unos días.</p>
+    <div><button class="primary" type="button" id="backBtn">Volver a Hoy</button></div></article>`;
+  $("#backBtn").onclick = endSession;
+}
+function endSession(){ session = null; location.hash = "#hoy"; if(db) db.collection("progress").get().then(s => { prog = {}; s.docs.forEach(d => prog[d.id] = d.data()); render(); }).catch(()=>{}); }
+
+/* ---------- progress ---------- */
+function renderProgress(){
+  const days = []; let streak = 0, counting = true;
+  for(let i = 13; i >= 0; i--){ const d = new Date(startOfDay() - i*DAY); days.push((stats.days||{})[todayKey(d)]?.n || 0); }
+  for(let i = 0; i < 400; i++){ const n = (stats.days||{})[todayKey(new Date(startOfDay() - i*DAY))]?.n || 0; if(n) streak++; else if(i === 0) continue; else break; }
+  const max = Math.max(1, ...days);
+  $("#days").innerHTML = days.map(n => `<div class="${n?'':'zero'}" style="height:${n ? 8 + 92*n/max : 4}%" title="${n} tarjetas"></div>`).join("");
+  $("#streak").textContent = streak ? `${streak} ${streak===1?"día":"días"} seguidos estudiando` : "Hoy aún no has repasado";
+  const byTopic = {};
+  cards.forEach(c => (byTopic[c.topic] ||= []).push(c));
+  $("#topicsProg").innerHTML = Object.entries(byTopic).sort((a,b)=>(topics[a[0]]?.order||0)-(topics[b[0]]?.order||0)).map(([tid, list]) => {
+    const t = topics[tid] || {title: tid};
+    const cnt = k => list.filter(c => level(c.id) === k).length;
+    const m = cnt("m"), l = cnt("l"), n = cnt("n");
+    const reviewed = list.filter(c => prog[c.id]?.seen);
+    const right = reviewed.filter(c => (prog[c.id].lastGrade ?? 0) >= 2).length;
+    const secs = {}; list.forEach(c => (secs[c.section] ||= []).push(c));
+    return `<div class="topic">
+      <div class="topic-head"><div><span class="label">Parcial ${esc(t.parcial ?? "")}</span><h2>${esc(t.title)}</h2><p>${esc(t.subtitle||"")}</p></div>
+      <p style="font-family:var(--f-mono)">${m}/${list.length} dominadas${reviewed.length ? ` · ${Math.round(100*right/reviewed.length)}% acierto en el último intento` : ""}</p></div>
+      <div class="bar" role="img" aria-label="${m} dominadas, ${l} aprendiendo, ${n} nuevas"><div class="m" style="width:${100*m/list.length}%"></div><div class="l" style="width:${100*l/list.length}%"></div></div>
+      <div class="legend"><span style="--c:var(--master)">${m} dominadas</span><span style="--c:var(--learn)">${l} aprendiendo</span><span style="--c:var(--new)">${n} nuevas</span></div>
+      <div class="secs">${Object.entries(secs).map(([s, cs]) => { const sm = cs.filter(c=>level(c.id)==="m").length, sl = cs.filter(c=>level(c.id)==="l").length; return `<div class="sec"><span>${esc(s)}</span><div class="bar"><div class="m" style="width:${100*sm/cs.length}%"></div><div class="l" style="width:${100*sl/cs.length}%"></div></div><span class="pct">${sm}/${cs.length}</span></div>`; }).join("")}</div>
+    </div>`;
+  }).join("") || `<div class="empty">Todavía no hay temas.</div>`;
+  const hard = cards.filter(c => prog[c.id]?.lapses).sort((a,b) => prog[b.id].lapses - prog[a.id].lapses || prog[a.id].ease - prog[b.id].ease).slice(0, 8);
+  $("#hard").innerHTML = hard.length ? hard.map(c => `<li>${esc(c.q)} <small>· ${prog[c.id].lapses} ${prog[c.id].lapses===1?"fallo":"fallos"}</small></li>`).join("") : `<li style="list-style:none;margin-left:-18px;color:var(--muted)">Cuando falles alguna tarjeta, aparecerá aquí para que sepas qué reforzar.</li>`;
+}
+
+/* ---------- browse ---------- */
+function renderList(){
+  const q = $("#q").value.trim().toLowerCase(); const t = $("#topicSel2").value;
+  const list = cards.filter(c => inTopic(c,t) && (!q || (c.q+" "+c.a+" "+c.section).toLowerCase().includes(q)));
+  $("#list").innerHTML = list.length ? list.map(c => { const lv = level(c.id); return `<details class="item"><summary><span class="dot ${lv==="n"?"":lv}" title="${lv==="n"?"nueva":lv==="l"?"aprendiendo":"dominada"}"></span><span>${esc(c.q)}</span></summary><p>${esc(c.a)}</p>${c.note?`<p class="hint">${esc(c.note)}</p>`:""}</details>`; }).join("") : `<div class="empty">No hay tarjetas que coincidan.</div>`;
+}
+
+/* ---------- wiring ---------- */
+$("#startBtn").onclick = start;
+$("#endBtn").onclick = () => { if(session && session.done) finish(); else endSession(); };
+$("#topicSel").onchange = render; $("#newSel").onchange = render;
+$("#q").oninput = renderList; $("#topicSel2").onchange = renderList;
+document.addEventListener("keydown", e => {
+  if(!session || location.hash !== "#estudiar") return;
+  if(!session.revealed && e.key === "Enter" && (e.ctrlKey || e.metaKey)){ e.preventDefault(); reveal(); return; }
+  if(!session.revealed && e.key === " " && document.activeElement?.id !== "mineInput"){ e.preventDefault(); reveal(); return; }
+  if(session.revealed && ["1","2","3","4"].includes(e.key)){ e.preventDefault(); grade(+e.key - 1); }
+});
+boot();
+</script>
+
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body></html>
