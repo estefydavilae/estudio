@@ -1,12 +1,12 @@
 // Guarda una copia de todo para que el centro de estudio funcione sin conexión.
 // Al cambiar o añadir juegos, sube el número de versión.
-const VERSION = 'cde-v3';
+const VERSION = 'cde-v4';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png',
   './neurolab-bloque-2.html', './neuro-al-dia.html', './autapsis-voltage-clamp.html',
   './embriones-fase-a-fase.html', './planos-y-perspectivas.html', './organogenesis.html',
   './dominios-y-senalizacion.html', './flashcards-endocrino.html', './mapa-de-senalizacion.html',
-  './lligament-diari.html', './simulacro-genetica-medica.html'
+  './genetica-ruta.html', './lligament-diari.html', './simulacro-genetica-medica.html'
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

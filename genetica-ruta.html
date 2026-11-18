@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ruta de Genética</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Una columna de lectura. Violeta Giemsa como en el simulacro; un color por bloque temático. */
+:root{--bg:#f6f5f9;--card:#fff;--ink:#1d1a26;--muted:#5e5870;--line:#e2deec;--acc:#6b2f8f;--acc-soft:#efe6f6;
+--t3:#6b2f8f;--t4:#2f6db3;--t5:#c0632b;--t6:#2e8b57;--ok:#1f7a4a;--ok-soft:#e3f3ea;--warn:#9a6400;--warn-soft:#fdf1d8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15131b;--card:#1e1b27;--ink:#ece8f4;--muted:#a59fb6;--line:#332e40;--acc:#c79be6;--acc-soft:#2c2238;
+--t3:#c79be6;--t4:#78a9e6;--t5:#eb9a63;--t6:#5fcf8c;--ok:#5fd29a;--ok-soft:#173226;--warn:#e8b55a;--warn-soft:#3a2d17;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15131b;--card:#1e1b27;--ink:#ece8f4;--muted:#a59fb6;--line:#332e40;--acc:#c79be6;--acc-soft:#2c2238;
+--t3:#c79be6;--t4:#78a9e6;--t5:#eb9a63;--t6:#5fcf8c;--ok:#5fd29a;--ok-soft:#173226;--warn:#e8b55a;--warn-soft:#3a2d17;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 90px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em;margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(30px,6vw,42px)}
+h2{font-size:24px;margin:36px 0 12px}
+h3{font-size:19px}
+p{margin:0 0 10px}
+.lead{color:var(--muted);font-size:16.5px;margin-top:10px}
+.eyebrow{font:500 12px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.prog{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.prog .row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px}
+.prog .row b{color:var(--ink);font-family:'IBM Plex Mono',monospace}
+.pbar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;display:flex}
+.pbar i{display:block;height:100%}
+/* hilo */
+.thread{display:grid;gap:0;margin-top:6px}
+.step{display:grid;grid-template-columns:34px 1fr;gap:12px;position:relative}
+.step .dot{width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font:700 14px Inter,sans-serif;z-index:1}
+.step:not(:last-child)::before{content:"";position:absolute;left:16px;top:34px;bottom:0;width:2px;background:var(--line)}
+.step .txt{padding:4px 0 18px}
+.step .txt b{display:block;font-size:16px}
+.step .txt span{color:var(--muted);font-size:14.5px}
+/* plan */
+.plan{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.week{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px 14px;border-top:1px solid var(--line);font-size:14.5px}
+.week:first-child{border-top:0}
+.week .d{font:500 12.5px 'IBM Plex Mono',monospace;color:var(--muted);padding-top:2px}
+.week.now{background:var(--acc-soft)}.week.now .d{color:var(--acc);font-weight:700}
+.week .tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--warn-soft);color:var(--warn);margin-left:6px}
+.note{background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-size:14.5px;margin-top:12px}
+/* temas */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filters button{font:600 13.5px Inter,sans-serif;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+details.topic{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;margin-bottom:10px}
+details.topic>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;gap:12px;align-items:center}
+details.topic>summary::-webkit-details-marker{display:none}
+.num{font:700 13px 'IBM Plex Mono',monospace;color:var(--c);min-width:34px}
+.sumtxt{flex:1;min-width:0}
+.sumtxt b{display:block;font-size:16px;line-height:1.3}
+.sumtxt span{font-size:13.5px;color:var(--muted)}
+.state{font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
+.state.s1{background:var(--warn-soft);color:var(--warn)}.state.s2{background:var(--ok-soft);color:var(--ok)}
+.body{padding:2px 16px 16px;border-top:1px dashed var(--line)}
+.q{font-family:Fraunces,serif;font-size:18px;margin:14px 0 10px;line-height:1.35}
+.lbl{font:500 11.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.concepts{display:grid;gap:8px}
+.concept{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:14.5px}
+.concept b{color:var(--c)}
+.exam{background:var(--acc-soft);border-radius:10px;padding:10px 12px;font-size:14.5px}
+.exam li,.deep li,.self li{margin:3px 0}
+ul{margin:0;padding-left:20px}
+.formula{font:500 14px 'IBM Plex Mono',monospace;background:var(--bg);border-radius:8px;padding:8px 10px;margin:4px 0;overflow-x:auto;white-space:nowrap}
+.deep li,.self li{font-size:14.5px}
+.self li{color:var(--ink)}
+.go{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.go a{font-weight:600;font-size:14.5px;color:var(--acc);text-decoration:none;border:1.5px solid var(--acc);border-radius:99px;padding:7px 14px}
+.marks{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.marks button{font:600 13.5px Inter,sans-serif;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px;cursor:pointer}
+.marks button[aria-pressed="true"].m1{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.marks button[aria-pressed="true"].m2{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.mcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.mcard .n{font:700 20px Fraunces,serif;color:var(--acc)}
+.mcard b{display:block;margin:2px 0 4px}
+.mcard p{font-size:13px;line-height:1.4;color:var(--muted);margin:0}
+footer{margin-top:30px;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="eyebrow">Genética · segundo parcial (enero)</div>
+<h1>Ruta de Genética</h1>
+<p class="lead">Temas 3.1 a 6.3. Empieza aquí: primero el hilo que los une, después el orden semana a semana y, para cada tema, un mapa que leer <b>antes</b> de abrir las diapositivas.</p>
+<div class="prog"><div class="row"><span>Tu progreso</span><b id="pnum">0/9</b></div><div class="pbar" id="pbar"></div><div class="row" style="margin:8px 0 0"><span>🟡 entendido · 🟢 repasado y practicado</span></div></div>
+
+<h2>Cómo estudiar cada tema</h2>
+<div class="method">
+ <div class="mcard"><div class="n">1</div><b>Lee el mapa (10 min)</b><p>La pregunta del tema y sus conceptos clave. No memorices: solo entiende de qué va.</p></div>
+ <div class="mcard"><div class="n">2</div><b>Diapositivas con el mapa al lado</b><p>Cada diapo encaja en un concepto del mapa. Profundiza en lo que marca «Profundiza en».</p></div>
+ <div class="mcard"><div class="n">3</div><b>Explícalo en voz alta</b><p>Responde «¿Lo has entendido?» sin mirar. Si puedes, marca 🟡.</p></div>
+ <div class="mcard"><div class="n">4</div><b>Juego o problemas</b><p>Solo ahora. Cuando te salgan, marca 🟢.</p></div>
+</div>
+
+<h2>El hilo del temario</h2>
+<div class="thread">
+ <div class="step" style="--c:var(--t3)"><div class="dot">3</div><div class="txt"><b>Enfermedades de un gen… que no siempre cumplen Mendel</b><span>3.1: por qué el mismo genotipo puede dar fenotipos distintos. 3.2–3.3: cómo encontrar en el genoma cuál es ese gen.</span></div></div>
+ <div class="step" style="--c:var(--t4)"><div class="dot">4</div><div class="txt"><b>¿Y si no es un gen, sino muchos más el ambiente?</b><span>4.1: enfermedades complejas y el modelo umbral. 4.2: cuánto de la variación es genética (heredabilidad).</span></div></div>
+ <div class="step" style="--c:var(--t5)"><div class="dot">5</div><div class="txt"><b>Los factores no solo se suman: interactúan</b><span>5.1: gen × ambiente. 5.2: gen × gen (epistasis).</span></div></div>
+ <div class="step" style="--c:var(--t6)"><div class="dot">6</div><div class="txt"><b>Lo mismo, pero en toda una población</b><span>Hardy-Weinberg y qué lo rompe: consanguinidad, selección, mutación, migración, deriva.</span></div></div>
+</div>
+<p style="font-size:14.5px;color:var(--muted)">Vas de lo más simple (un gen, una familia) a lo más complejo (muchos genes, ambiente, poblaciones enteras). Si un tema te parece suelto, pregúntate en qué punto de este camino está.</p>
+
+<h2>Plan hasta el examen</h2>
+<div class="plan" id="plan"></div>
+<div class="note"><b>Recuperación del parcial 1:</b> un bloque a la semana (por ejemplo, el sábado por la mañana), un tema antiguo cada vez, con el simulacro. Poco y espaciado funciona mejor que todo de golpe en enero.</div>
+
+<h2>Los temas</h2>
+<div class="filters" id="filters"></div>
+<div id="topics"></div>
+
+<footer>Hecho a partir de tus diapositivas y de tus notas de clase. Lo que tu profesora marcó como «examen» sale en violeta. Tu progreso se guarda en este dispositivo.</footer>
+</div>
+
+<script>
+"use strict";
+const LS='genetica-ruta-v1';
+let ST={};try{ST=JSON.parse(localStorage.getItem(LS)||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(ST))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const C={3:'var(--t3)',4:'var(--t4)',5:'var(--t5)',6:'var(--t6)'};
+const GAME={href:'lligament-diari.html',name:'Lligament diari'};
+
+const T=[
+{id:'3.1',b:3,t:'Excepciones a la herencia mendeliana',s:'Penetrancia, expresividad, imprinting, mitocondrial…',
+ q:'Si una enfermedad es de un solo gen, ¿por qué dos personas con la misma mutación pueden estar tan distintas, o una no tenerla?',
+ c:[['Penetrancia vs expresividad','Penetrancia: <i>si</i> se expresa la enfermedad (completa 100 %, incompleta <100 %: puede transmitirla sin tenerla). Expresividad: <i>cuánto</i> se expresa (edad de inicio, gravedad, qué síntomas).'],
+  ['Pleiotropía','Una mutación en un gen afecta a varios órganos. Marfan (FBN1: corazón, ojo, esqueleto), fibrosis quística.'],
+  ['El sexo cambia el fenotipo','Limitados por el sexo: solo se expresan en uno (pubertad precoz masculina, LHCGR). Influidos: en los dos, pero más en uno (cáncer de mama, hemocromatosis).'],
+  ['Inactivación del X y mosaicismo','Las mujeres son mosaico para el X (XIST, al azar): X frágil 80 % ♂ vs 30 % ♀. Mosaicismo somático (formas más leves, NF1 segmentaria) vs germinal (difícil de distinguir de una mutación de novo).'],
+  ['Disomía uniparental e imprinting','Dos copias de un cromosoma del mismo progenitor (isodisomía/heterodisomía). Con genes improntados: Prader-Willi = falta la expresión paterna; Angelman = falta la materna (UBE3A).'],
+  ['Anticipación','Más grave o más temprano en cada generación: expansión de tripletes. Steinert (CTG): normal 5–37, premutado 38–180, afectado 200–2000, neonatal >2000.'],
+  ['Herencia mitocondrial','Materna, heteroplasmia, segregación replicativa al azar y efecto umbral. MERRF, MELAS, LHON, Leigh.']],
+ x:['Saber <b>diferenciar penetrancia y expresividad</b>: es clave para los cálculos de riesgo.','Prader-Willi vs Angelman: qué progenitor falta y por qué se diagnostica con FISH y no con cariotipo.','Los rangos de repeticiones de Steinert y que, dentro de los afectados, la expresividad aumenta con el nº de repeticiones.'],
+ d:['Imprinting: el esquema de la región 15q11-q13 y de dónde viene cada síndrome.','Mosaicismo según el momento del desarrollo en que aparece la mutación.','Mitocondrial: por qué existe un umbral y por qué la heteroplasmia varía entre tejidos.'],
+ a:['¿Qué diferencia hay entre una persona con penetrancia incompleta y una con expresividad leve?','Una niña con disomía uniparental materna del 15: ¿qué síndrome tiene y por qué?','¿Por qué una mujer con una mutación del X suele estar menos afectada que un hombre?']},
+{id:'3.2a',b:3,t:'Mapas físicos',s:'Sondas, FISH, mapas de restricción, clones, secuenciación',
+ q:'¿Cómo sé dónde está exactamente un gen, en pares de bases?',
+ c:[['Físico vs genético','Mapa físico: posición real, en pb/kb/Mb, con técnicas moleculares, muy preciso. Mapa genético: según la frecuencia de recombinación, en cM, relativo.'],
+  ['Sondas y marcaje','PCR (marca y amplifica, sondas cortas, hay que conocer la secuencia), nick translation (DNasa I + DNA pol I, 200–500 pb), random primed (hexámeros), sondas de RNA (T7/T3/SP6), oligos (end labeling). Marcaje directo (rápido) vs indirecto (hapteno + anticuerpo, más sensible).'],
+  ['FISH: la resolución depende del DNA','Metafase >1–2 Mb · interfase 100–500 kb · fiber-FISH ~5 kb.'],
+  ['Mapas de restricción a gran escala','Enzimas de corte raro (NotI, BssHII, SmaI) + electroforesis de campo pulsante (hasta ~2 Mb) + Southern.'],
+  ['Mapas de clones','Clones solapados en contigs. YAC (1–2 Mb), BAC (100–300 kb, los más usados en el PGH), PAC (70–100 kb). Se ordenan con STS/EST o secuenciando los extremos.'],
+  ['Secuenciación','Consorcio público (por clones, top-down) vs Celera (shotgun). Sanger (ddNTPs, ~1000 pb) vs NGS (lecturas cortas, millones a la vez).']],
+ x:['Comparativa mapa físico vs genético (tabla).','Por qué los mapas de restricción se corren siempre en campo pulsante.'],
+ d:['Tabla de ventajas y limitaciones de cada método de marcaje.','Resoluciones de cada tipo de FISH.','Vectores: tamaño de inserto de BAC, YAC y PAC.'],
+ a:['Quiero ver una deleción de 300 kb: ¿FISH en metafase o en interfase?','¿Por qué hacen falta enzimas de corte raro para un mapa de restricción grande?']},
+{id:'3.2b',b:3,t:'Mapas genéticos, ligamiento y LOD score',s:'θ, cM, Haldane, marcadores, LOD',
+ q:'Si no sé dónde está el gen de una enfermedad, ¿cómo lo localizo mirando cómo se hereda en familias?',
+ c:[['Ligamiento','Dos loci cercanos en el mismo cromosoma tienden a heredarse juntos. Cuanto más lejos, más recombinación.'],
+  ['Frecuencia de recombinación θ','θ = recombinantes / meiosis informativas. Va de 0 (muy cerca) a 0,5 (no ligados). 1 cM ≈ 1 % de recombinación ≈ 1 Mb (♂ 1,1 Mb, ♀ 0,7 Mb: las mujeres recombinan más).'],
+  ['Función de Haldane','Corrige las dobles recombinaciones que no vemos: pesa más cuanto mayor es la distancia.'],
+  ['Marcadores','Tienen que ser variables. RFLP (bialélicos, poco informativos), VNTR/minisatélites y STR/microsatélites (muchos alelos, muy informativos), SNP (bialélicos pero abundantísimos y automatizables).'],
+  ['Informatividad','Meiosis informativa = puedo distinguir recombinantes. Se mide con la heterocigosidad (H) y el PIC (más realista). Hay que saber la fase: si no hay abuelos, se calcula con las dos fases, al 50 %.'],
+  ['LOD score','Probabilidad del pedigrí si están ligados a θ frente a si no lo están (θ = 0,5). Z > 3 → ligamiento; Z < −2 → descartado. La θ más probable es la del LOD máximo. Fase desconocida → LOD más bajo.'],
+  ['Acotar la región','Con haplotipos, los recombinantes marcan los límites. En familias consanguíneas (recesivas): mapeo por homocigosidad.']],
+ f:['θ = nº recombinantes / nº meiosis informativas','w = −½ · ln(1 − 2θ)   (Haldane, en Morgans)','Z(θ) = log₁₀ [ θᵏ (1−θ)ⁿ⁻ᵏ / 0,5ⁿ ]','Fase desconocida: Z = log₁₀ { ½[θᵏ(1−θ)ⁿ⁻ᵏ + θⁿ⁻ᵏ(1−θ)ᵏ] / 0,5ⁿ }','H = 1 − Σ pᵢ²'],
+ x:['<b>La fórmula de Haldane hay que saberla</b>.','Calcular θ, cM y LOD en un pedigrí, con fase conocida y desconocida.','Reconocer meiosis informativas y no informativas en un pedigrí.'],
+ d:['Los ejemplos de pedigrí A–D (informativos o no).','Tabla de H y PIC según el nº de alelos.','Las familias A y B del LOD: por qué la B da un máximo más bajo.'],
+ a:['¿Por qué θ no puede pasar de 0,5?','Tengo 2 recombinantes en 7 meiosis: θ, distancia en cM con Haldane y en Mb.','¿Qué significa un LOD de 3,5? ¿Y uno de −2,5?'],
+ game:true},
+{id:'3.3',b:3,t:'Genética directa y reversa',s:'Clonaje posicional vs funcional · Sotos · MEB',
+ q:'Tengo una enfermedad: ¿cómo llego hasta el gen que la causa?',
+ c:[['Genética reversa = clonaje posicional','Partes de la <b>posición</b>: mapeas en familias, acotas la región candidata, miras qué genes hay, los priorizas y buscas mutaciones en los pacientes. La más usada.'],
+  ['Genética directa = clonaje funcional','Partes de la <b>función</b> o la proteína (una pista bioquímica): deduces la secuencia, haces una sonda, cribas una genoteca de cDNA. Hoy es la menos usada.'],
+  ['Modelos animales','Mucha descendencia (mejor para calcular distancias) y knockouts del gen homólogo.'],
+  ['Síndrome de Sotos','Sobrecrecimiento, AD. Se encontró por translocaciones t(5;8) con punto de rotura en 5q35 → NSD1; también microdeleciones.'],
+  ['Muscle-Eye-Brain (MEB)','Muy frecuente en Finlandia (efecto fundador). Ligamiento + homocigosidad en familias consanguíneas → 9 cM en 1p32-p34 (~90 genes) → LOD multipunto y mapa físico → POMGnT1. Glicosilación defectuosa del α-distroglicano: no se une a la laminina → distrofia muscular y migración neuronal alterada.']],
+ x:['Para el trabajo de prácticas de informática: explicar la <b>estrategia</b> (mapas físicos, genéticos…) que llevó hasta el gen.','Diferencia entre clonaje posicional y funcional.'],
+ d:['El caso MEB paso a paso: es el ejemplo completo que une todo el tema 3.','Del genotipo al fenotipo: por qué una glicosiltransferasa da clínica de músculo, ojo y cerebro.'],
+ a:['Pon en orden los pasos del clonaje posicional.','¿Por qué sirvió estudiar familias consanguíneas en el MEB?','¿Por qué en Sotos ayudaron las translocaciones?']},
+{id:'4.1',b:4,t:'Herencia cuantitativa y enfermedades complejas',s:'Poligénica, modelo umbral, varianzas',
+ q:'¿Qué pasa cuando una enfermedad no depende de un gen, sino de muchos genes y del ambiente?',
+ c:[['Herencia compleja','Fenotipo = genotipo + ambiente. Los genes no causan la enfermedad: dan <b>predisposición</b>.'],
+  ['Tipos de caracteres','Según nº de genes: oligogénicos vs poligénicos. Según la variación: dicotómicos (lo tienes o no), merísticos, continuos (altura, peso). QTL para continuos, genes de susceptibilidad para dicotómicos.'],
+  ['Qué lo complica','Penetrancia incompleta, fenocopias (fenotipo igual, causa no genética), heterogeneidad genética (de locus o alélica), herencia poligénica.'],
+  ['Modelo poligénico de Fisher','Muchos genes con efecto pequeño, aditivo e independiente → al sumar loci y ambiente sale una campana de Gauss.'],
+  ['Modelo umbral de Falconer','La susceptibilidad es continua, pero la enfermedad aparece solo si superas el umbral. Los familiares de un afectado tienen la curva desplazada → más riesgo (riesgo empírico).'],
+  ['Estenosis pilórica','Más frecuente en hombres (1/200 vs 1/1000): las mujeres necesitan más factores para pasar el umbral, así que los hijos de una mujer afectada tienen más riesgo.'],
+  ['Varianzas','VP = VG + VE. VG = aditiva + dominancia + interacción. Solo la aditiva es estrictamente genética (heredable).']],
+ x:['Las predicciones del modelo umbral (el riesgo sube con familiares afectados, con la gravedad y en la descendencia del sexo menos afectado).','Tabla de monogénicas vs complejas.'],
+ d:['La gráfica del umbral con la curva de familiares desplazada.','Las 5 predicciones del modelo umbral.'],
+ a:['¿Por qué una enfermedad dicotómica (infarto sí o no) puede tener base continua?','¿Por qué es mayor el riesgo de los hijos de una mujer con estenosis pilórica?','¿Qué es una fenocopia? Pon un ejemplo.'],
+ game:true},
+{id:'4.2',b:4,t:'Heredabilidad',s:'H² vs h², gemelos, adopción, ACE, limitaciones',
+ q:'¿Qué parte de las diferencias entre personas se debe a los genes?',
+ c:[['Definición','Proporción de la varianza fenotípica de una <b>población</b> debida a factores genéticos. Amplia H² = VG/VP; estricta h² = VA/VP (lo único que se transmite y sobre lo que actúa la selección). Va de 0 a 1.'],
+  ['Estudios familiares','λR = riesgo en familiares / riesgo en la población. Baja al alejarse el parentesco.'],
+  ['Gemelos','MZ comparten el 100 % de los genes y los DZ el 50 %, con ambiente parecido. Si es genético, la concordancia es mayor en MZ. Para continuos: correlación.'],
+  ['Modelo ACE','A = genético aditivo, C = ambiente compartido, E = ambiente individual.'],
+  ['Adopción','Comparar con los padres biológicos (genes) y con los adoptivos (ambiente). Limitaciones legales y de selección.'],
+  ['Limitaciones','Es propia de una población y un ambiente. Un individuo no tiene heredabilidad. Alta heredabilidad ≠ el ambiente no influye. No explica diferencias entre poblaciones.']],
+ f:['H² = VG / VP     h² = VA / VP','H (gemelos) = 2 · (C_MZ − C_DZ)','λR = riesgo familiares / riesgo población'],
+ x:['Diferencia entre heredabilidad en sentido amplio y estricto.','Problemas de los estudios de gemelos (corion/amnios, mutaciones somáticas, metilación, inactivación del X).'],
+ d:['Tabla de concordancias MZ/DZ: qué te dice cada carácter.','Lista de limitaciones de la heredabilidad.'],
+ a:['¿Por qué la selección solo actúa sobre la varianza aditiva?','Concordancia MZ 0,6 y DZ 0,2: calcula la heredabilidad.','«La altura tiene heredabilidad 0,8, así que tu altura es 80 % genética.» ¿Qué está mal?'],
+ game:true},
+{id:'5.1',b:5,t:'Interacciones gen-ambiente',s:'Modelos aditivo/multiplicativo, gráfica GxE, rGE',
+ q:'¿Cuándo el efecto de un gen depende del ambiente (y al revés)?',
+ c:[['Interacción','Hay interacción cuando el efecto conjunto de dos factores no se explica sumando (o multiplicando) sus efectos por separado.'],
+  ['Aditivo vs multiplicativo','Riesgos 5 y 5: modelo aditivo → 10; multiplicativo → 25. En su propia escala, cualquiera de los dos es «sin interacción».'],
+  ['Diseño','Dos variables → 4 grupos: ninguna, solo A, solo B, las dos.'],
+  ['La gráfica (norma de reacción)','Fenotipo frente al ambiente para cada genotipo. Rectas planas e iguales: nada. Paralelas: efecto de G y de E, sin interacción. Pendientes distintas o que se cruzan: <b>interacción</b>. Ojo: si se cruzan con pendientes opuestas, los efectos marginales pueden salir 0 aunque haya interacción.'],
+  ['Biológica vs estadística','Biológica: los dos factores forman parte del mismo mecanismo causal. Estadística: sale en los datos, pero no conoces el mecanismo.'],
+  ['Correlación gen-ambiente (rGE)','No es lo mismo que GxE: el genotipo influye en a qué ambiente te expones. Pasiva (te lo dan tus padres), evocativa (el ambiente reacciona a ti), activa (lo buscas tú).'],
+  ['GWAS y heredabilidad perdida','Los SNP del GWAS explican poca heredabilidad: variantes raras, de efecto pequeño, estructurales, interacciones… Para estudiar GxE hace falta una muestra grande, un factor medible, un gen candidato y replicar.']],
+ x:['<b>«La gráfica entra en el examen sí o sí»</b>: los cuatro casos (A–D) de la norma de reacción.','Tipos de rGE con el ejemplo de la música.','Odds ratio: OR = 1 → no hay asociación. Tipos: ambiente modificador, gen modificador, sinérgica, redundante.'],
+ d:['Los cuatro paneles A–D del crecimiento de plantas según la temperatura.','El ejemplo de cafeína × falta de sueño (4 grupos).','Las fórmulas del modelo logístico NO hay que estudiarlas (lo dijo la profe).'],
+ a:['Dibuja de memoria las 4 gráficas: sin efectos, solo G, G + E sin interacción y GxE.','Riesgo 3 por el gen, 4 por el ambiente y 12 con los dos: ¿hay interacción en el modelo multiplicativo? ¿Y en el aditivo?','Un niño con talento musical al que su escuela pone en un coro: ¿qué tipo de rGE es?'],
+ game:true},
+{id:'5.2',b:5,t:'Interacciones gen-gen (epistasis)',s:'Epistasis, genes complementarios, poder estadístico',
+ q:'¿Qué pasa cuando un gen tapa o necesita a otro?',
+ c:[['Epistasis','Un gen (<b>epistático</b>) enmascara el efecto de otro gen distinto (<b>hipostático</b>). No es dominancia: es entre genes, no entre alelos. Altera las proporciones mendelianas.'],
+  ['Epistasis recesiva','cc = albino, sea cual sea el otro gen (B negro / b marrón). Proporción clásica 9:3:4.'],
+  ['Epistasis dominante','Un alelo dominante (W) da blanco, sea cual sea el otro gen. Proporción clásica 12:3:1.'],
+  ['Genes complementarios','Hacen falta los dos para el pigmento: si uno es doble recesivo, no hay color. 9:7.'],
+  ['Genes duplicados','Cualquiera de los dos basta. 15:1.'],
+  ['Estudiarlo en humanos','GWAS con interacciones (MDR, PLINK, BEAM). Las variantes génicas son más fáciles de medir que el ambiente (no cambian con el tiempo ni tienen sesgo de recuerdo).']],
+ x:['<b>Pregunta de examen:</b> nº de casos necesarios para detectar una interacción según la OR de cada gen y la frecuencia alélica (OR grande y alelo frecuente → hacen falta menos casos).','Los tipos de diseño de estudio NO los pregunta.'],
+ d:['Los ejemplos de color (ratón/perro, calabaza, guisante de olor).','La tabla de nº de casos según OR y frecuencia alélica.'],
+ a:['¿Qué diferencia hay entre dominancia y epistasis?','En un cruce sale 9:7: ¿qué tipo de interacción es?','¿Por qué hacen falta más casos si el alelo es raro?']},
+{id:'6',b:6,t:'Genética de poblaciones',s:'Hardy-Weinberg, consanguinidad, selección, migración, deriva',
+ q:'¿Cómo cambian las frecuencias de los alelos en una población, y qué las mantiene estables?',
+ c:[['Hardy-Weinberg','Con unión al azar, población grande, sin selección, sin migración y sin mutación neta: p² + 2pq + q² = 1, y las frecuencias se mantienen. Máximo de heterocigotos con p = q = 0,5.'],
+  ['Frecuencias desde recuentos','p = (2·AA + Aa) / 2N. Solo si está en equilibrio puedes sacar q = √(frecuencia de aa). Comprobar el equilibrio: esperados frente a observados → χ² (te dan la fórmula).'],
+  ['Portadores y ligado al X','Portadores = 2pq. Ligado al X: en hombres frecuencia = q; en mujeres, q².'],
+  ['Cambian los genotipos, no los alelos','Estratificación, apareamiento selectivo, consanguinidad. F sube los homocigotos: f(aa) = q² + Fpq. El aumento relativo ≈ F/q: afecta mucho más a los alelos raros.'],
+  ['Cambian los alelos','Direccionales: mutación (10⁻⁴–10⁻⁸), selección (s, fitness w = 1 − s), migración. No direccional: deriva genética (azar, poblaciones pequeñas, efecto fundador y cuello de botella).'],
+  ['Selección','Contra un recesivo: eficiente al principio y luego muy lenta (se esconde en heterocigotos). Contra un dominante: muy eficiente. Ventaja del heterocigoto: anemia falciforme y malaria. Direccional, disruptiva, estabilizadora.']],
+ f:['p = (2·n_AA + n_Aa) / 2N','Esperados: p²·N, 2pq·N, q²·N','f(aa) = q² + Fpq    f(Aa) = 2pq(1 − F)','F_ST = (H_esp − H_obs) / H_esp','q ≈ μ / s  (equilibrio mutación-selección)','p₁′ = (1 − m)·p₁ + m·p₂  (migración)'],
+ x:['<b>Cae seguro:</b> una población que NO está en equilibrio. Calcula p y q desde los recuentos, no con la raíz.','Distingue bien frecuencia, porcentaje y nº de individuos.','<b>La fórmula de F_ST hay que saberla.</b>','Migración: no pide la fórmula tal cual, pero hay pregunta de esta parte.'],
+ d:['Ejemplo de esperados/observados (392/707/320).','Tabla de coeficientes de parentesco (hermanos 1/4, primos hermanos 1/16…).','Gráficas de selección contra recesivo vs dominante.','Deriva: por qué afecta más a N pequeños y a alelos raros.'],
+ a:['En una población hay 50 AA, 20 Aa y 30 aa: ¿está en equilibrio? Calcula p con los recuentos.','¿Por qué la consanguinidad casi no se nota en un alelo frecuente?','¿Por qué la selección no elimina nunca del todo un alelo recesivo letal?']}
+];
+
+/* Plan semanal (lunes) */
+const PLAN=[
+ ['2026-11-16','Esta semana','3.1 Excepciones mendelianas'],
+ ['2026-11-23','23–29 nov','3.2 Mapas físicos + mapas genéticos y LOD · juego: Lligament diari'],
+ ['2026-11-30','30 nov–6 dic','3.3 Directa y reversa (cierra el tema 3 con el caso MEB) + 4.1'],
+ ['2026-12-07','7–13 dic','Solo 4.2 (corto) <span class="tag">semana del parcial de Neuro y de Marfan</span>'],
+ ['2026-12-14','14–20 dic','5.1 Gen-ambiente (la gráfica) + 5.2 Epistasis'],
+ ['2026-12-21','21 dic–6 ene','Tema 6 Poblaciones: Hardy-Weinberg primero, después las fuerzas · muchos problemas'],
+ ['2027-01-07','Enero','Repaso de los mapas marcados 🟡 + problemas de LOD y Hardy-Weinberg + temas nuevos que vayáis dando']
+];
+function drawPlan(){
+ const now=new Date();let cur=0;PLAN.forEach((p,i)=>{if(new Date(p[0]+'T00:00')<=now)cur=i});
+ document.getElementById('plan').innerHTML=PLAN.map((p,i)=>`<div class="week${i===cur?' now':''}"><div class="d">${p[1]}</div><div>${p[2]}</div></div>`).join('');
+}
+function drawProg(){
+ const n2=T.filter(t=>ST[t.id]===2).length,n1=T.filter(t=>ST[t.id]===1).length;
+ document.getElementById('pnum').textContent=`${n1+n2}/${T.length}`;
+ document.getElementById('pbar').innerHTML=`<i style="width:${100*n2/T.length}%;background:var(--ok)"></i><i style="width:${100*n1/T.length}%;background:var(--warn)"></i>`;
+}
+const stateTxt=s=>s===2?'🟢 repasado':s===1?'🟡 entendido':'sin empezar';
+let FIL='all';try{FIL=localStorage.getItem(LS+'-f')||'all'}catch(e){}
+function drawFilters(){
+ const opts=[['all','Todos'],['3','Tema 3'],['4','Tema 4'],['5','Tema 5'],['6','Tema 6'],['todo','Me falta']];
+ const el=document.getElementById('filters');
+ el.innerHTML=opts.map(([k,n])=>`<button type="button" data-f="${k}" aria-pressed="${FIL===k}">${n}</button>`).join('');
+ el.onclick=e=>{const b=e.target.closest('button');if(!b)return;FIL=b.dataset.f;try{localStorage.setItem(LS+'-f',FIL)}catch(e){}drawFilters();drawTopics()};
+}
+function drawTopics(){
+ const open=new Set([...document.querySelectorAll('details.topic[open]')].map(d=>d.dataset.id));
+ const list=T.filter(t=>FIL==='all'||(FIL==='todo'?ST[t.id]!==2:String(t.b)===FIL));
+ document.getElementById('topics').innerHTML=list.map(t=>`
+ <details class="topic" data-id="${t.id}" style="--c:${C[t.b]}" ${open.has(t.id)?'open':''}>
+  <summary><span class="num">${t.id.replace(/[ab]$/,'')}</span><span class="sumtxt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></span><span class="state s${ST[t.id]||0}">${stateTxt(ST[t.id])}</span></summary>
+  <div class="body">
+   <div class="q">${esc(t.q)}</div>
+   <div class="lbl">Conceptos clave</div>
+   <div class="concepts">${t.c.map(([h,b])=>`<div class="concept"><b>${h}.</b> ${b}</div>`).join('')}</div>
+   ${t.f?`<div class="lbl">Fórmulas</div>${t.f.map(f=>`<div class="formula">${esc(f)}</div>`).join('')}`:''}
+   <div class="lbl">Lo que tu profe marcó para examen</div>
+   <div class="exam"><ul>${t.x.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+   <div class="lbl">Profundiza en (diapositivas)</div>
+   <ul class="deep">${t.d.map(x=>`<li>${x}</li>`).join('')}</ul>
+   <div class="lbl">¿Lo has entendido? Explícalo sin mirar</div>
+   <ul class="self">${t.a.map(x=>`<li>${x}</li>`).join('')}</ul>
+   ${t.game?`<div class="go"><span style="font-size:14px;color:var(--muted)">Cuando ya lo entiendas:</span><a href="${GAME.href}">Practica en ${GAME.name} →</a></div>`:''}
+   <div class="marks"><button type="button" class="m1" data-id="${t.id}" data-v="1" aria-pressed="${ST[t.id]===1}">🟡 Lo entiendo</button><button type="button" class="m2" data-id="${t.id}" data-v="2" aria-pressed="${ST[t.id]===2}">🟢 Repasado y practicado</button></div>
+  </div>
+ </details>`).join('')||'<p style="color:var(--muted)">¡Nada pendiente aquí! 🎉</p>';
+ document.querySelectorAll('.marks button').forEach(b=>b.onclick=()=>{const id=b.dataset.id,v=+b.dataset.v;ST[id]=ST[id]===v?0:v;save();drawProg();drawTopics()});
+}
+drawPlan();drawProg();drawFilters();drawTopics();
+</script>
+
+<a href="index.html" id="cde-home" aria-label="Volver al centro de estudio" title="Centro de estudio">⌂</a>
+<style>#cde-home{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483000;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(30,32,44,.82);color:#fff;font:22px/1 system-ui,sans-serif;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}#cde-home:hover{background:rgba(30,32,44,.95)}</style>
+<script>try{localStorage.setItem('cde-last',location.pathname.split('/').pop())}catch(e){}</script>
+</body>
+</html>
